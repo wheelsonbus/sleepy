@@ -13,7 +13,7 @@ set target=playground
 set compilerFlags=-g
 set includeFlags=-Isrc -I../engine/src
 set linkerFlags=-L../bin/ -lengine.lib
-set defines=-D_DEBUG -DZZ_IMPORT
+set definitions=-DZZ_DEBUG -DZZ_IMPORT
 
 echo "Building %target%%..."
-clang %cFilenames% %compilerFlags% -o ../bin/%target%.exe %defines% %includeFlags% %linkerFlags%
+clang %cFilenames% %compilerFlags% -o ../bin/%target%.exe %definitions% %includeFlags% %linkerFlags%
