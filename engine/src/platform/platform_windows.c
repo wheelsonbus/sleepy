@@ -3,10 +3,10 @@
 
 #if defined(ZZ_PLATFORM_WINDOWS)
 
-b8 platform_initialize(struct platform_state* platform_state, const char* application_name, i32 x, i32 y, i32 width, i32 height)
+b8 platform_initialize(struct platform* platform, const char* application_name, i32 x, i32 y, i32 width, i32 height)
 {
-    platform_state->state = malloc(sizeof(struct windows_state));
-    struct windows_state* state = (struct windows_state*)platform_state->state;
+    platform->state = malloc(sizeof(struct platform_windows_state));
+    struct platform_windows_state* state = (struct platform_windows_state*)platform->state;
 
     state->hInstance = GetModuleHandleA(0);
 
@@ -14,7 +14,7 @@ b8 platform_initialize(struct platform_state* platform_state, const char* applic
     WNDCLASSA wc;
     memset(&wc, 0, sizeof(wc));
     wc.style = CS_DBLCLKS;
-    wc.lpfnWndProc = windows_process_message;
+    wc.lpfnWndProc = platform_windows_process_message;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = state->hInstance;
@@ -74,9 +74,9 @@ b8 platform_initialize(struct platform_state* platform_state, const char* applic
     return TRUE;
 }
 
-void platform_deinitialize(struct platform_state* platform_state)
+void platform_deinitialize(struct platform* platform)
 {
-    struct windows_state* state = (struct windows_state*)platform_state->state;
+    struct platform_windows_state* state = (struct platform_windows_state*)platform->state;
 
     if(state->hWnd)
     {
@@ -85,7 +85,7 @@ void platform_deinitialize(struct platform_state* platform_state)
     }
 }
 
-b8 platform_pump_messages(struct platform_state* platform_state)
+b8 platform_pump_messages(struct platform* platform)
 {
     MSG msg;
     while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
@@ -97,7 +97,7 @@ b8 platform_pump_messages(struct platform_state* platform_state)
     return TRUE;
 }
 
-LRESULT CALLBACK windows_process_message(HWND hWnd, u32 msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK platform_windows_process_message(HWND hWnd, u32 msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {

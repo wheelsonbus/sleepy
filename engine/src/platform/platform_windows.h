@@ -6,9 +6,9 @@
 #include <windowsx.h>
 #include <stdlib.h>
 
-#include "core/logger.h"
+#include "core/logger/logger.h"
 
-struct windows_state
+struct platform_windows_state
 {
     HINSTANCE hInstance;
     HWND hWnd;
@@ -17,6 +17,6 @@ struct windows_state
     LARGE_INTEGER applicationStartTime;
 };
 
-LRESULT CALLBACK windows_process_message(HWND hWnd, u32 msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK platform_windows_process_message(HWND hWnd, u32 msg, WPARAM wParam, LPARAM lParam);
 
 #endif

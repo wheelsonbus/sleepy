@@ -1,14 +1,14 @@
 #pragma once
 
-#include "definitions.h"
+#include "zz.h"
 
-struct platform_state
+struct platform
 {
     void* state;
 };
 
-ZZ_API b8 platform_initialize(struct platform_state* platform_state, const char* application_name, i32 x, i32 y, i32 width, i32 height);
-ZZ_API void platform_deinitialize(struct platform_state* platform_state);
+b8 platform_initialize(struct platform* platform, const char* application_name, i32 x, i32 y, i32 width, i32 height);
+void platform_deinitialize(struct platform* platform);
 
-ZZ_API b8 platform_pump_messages(struct platform_state* platform_state);
+b8 platform_pump_messages(struct platform* platform);
 
