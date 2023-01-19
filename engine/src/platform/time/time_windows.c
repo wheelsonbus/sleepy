@@ -1,0 +1,24 @@
+#include "time.h"
+#include "time_windows.h"
+
+#if defined(ZZ_PLATFORM_WINDOWS)
+
+#include <windows.h>
+
+#include "platform/platform_windows.h"
+
+f64 platform_time_get(struct platform* platform)
+{
+    struct platform_windows_state* state = (struct platform_windows_state*)platform->state;
+
+    LARGE_INTEGER currentTime;
+    QueryPerformanceCounter(&currentTime);
+    return (f64)currentTime.QuadPart * state->clock_frequency;
+}
+
+void platform_time_sleep(u64 milliseconds)
+{
+    Sleep(milliseconds);
+}
+
+#endif
