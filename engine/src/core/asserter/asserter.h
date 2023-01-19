@@ -30,9 +30,4 @@ ZZ_API void asserter_report_assertion_failure(const char* expression, const char
 #define ZZ_ASSERT_MESSAGE(expression, message) {if (expression) {} else {asserter_report_assertion_failure(#expression, message, __FILE__, __LINE__); DEBUG_BREAK();}}
 #define ZZ_ASSERT_DEBUG(expression)
 
-#else
-#define ZZ_ASSERT(expression)
-#define ZZ_ASSERT_MESSAGE(expression, message)
-#define ZZ_ASSERT_DEBUG(expression)
-
 #endif

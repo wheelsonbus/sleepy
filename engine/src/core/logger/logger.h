@@ -23,12 +23,4 @@ ZZ_API void logger_log(int level, const char* message, ...);
 #define ZZ_LOG_DEBUG(message, ...)
 #define ZZ_LOG_TRACE(message, ...)
 
-#else
-#define ZZ_LOG_FATAL(message, ...)
-#define ZZ_LOG_ERROR(message, ...)
-#define ZZ_LOG_WARNING(message, ...)
-#define ZZ_LOG_INFO(message, ...)
-#define ZZ_LOG_DEBUG(message, ...)
-#define ZZ_LOG_TRACE(message, ...)
-
 #endif
