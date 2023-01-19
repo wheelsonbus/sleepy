@@ -1,7 +1,6 @@
 #pragma once
 
 #include "zz.h"
-#include "core/logger/logger.h"
 
 #if defined(ZZ_DEBUG)
 #if _MSC_VER

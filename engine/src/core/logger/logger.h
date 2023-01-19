@@ -1,11 +1,6 @@
 #pragma once
 
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-
 #include "zz.h"
-#include "core/console/console.h"
 
 ZZ_API b8 logger_initialize();
 ZZ_API void logger_deinitialize();

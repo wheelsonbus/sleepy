@@ -3,6 +3,10 @@
 
 #if defined(ZZ_PLATFORM_WINDOWS)
 
+#include <windows.h>
+
+#include "platform/platform_windows.h"
+
 f64 time_get(struct platform* platform)
 {
     struct platform_windows_state* state = (struct platform_windows_state*)platform->state;

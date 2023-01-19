@@ -4,9 +4,6 @@
 
 #include <windows.h>
 #include <windowsx.h>
-#include <stdlib.h>
-
-#include "core/logger/logger.h"
 
 struct platform_windows_state
 {

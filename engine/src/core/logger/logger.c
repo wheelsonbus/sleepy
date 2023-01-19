@@ -1,5 +1,11 @@
 #include "logger.h"
 
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+
+#include "core/console/console.h"
+
 b8 logger_initialize() {
     return TRUE;
 }

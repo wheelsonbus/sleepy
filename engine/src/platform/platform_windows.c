@@ -3,6 +3,10 @@
 
 #if defined(ZZ_PLATFORM_WINDOWS)
 
+#include <stdlib.h>
+
+#include "core/logger/logger.h"
+
 b8 platform_initialize(struct platform* platform, const char* application_name, i32 x, i32 y, i32 width, i32 height)
 {
     platform->state = malloc(sizeof(struct platform_windows_state));

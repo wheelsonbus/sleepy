@@ -3,6 +3,9 @@
 
 #if defined(ZZ_PLATFORM_WINDOWS)
 
+#include <stdlib.h>
+#include <string.h>
+
 void* platform_memory_allocate(u64 size, b8 aligned)
 {
     return malloc(size);

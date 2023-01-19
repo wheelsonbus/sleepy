@@ -1,8 +1,6 @@
 #pragma once
 
 #include "zz.h"
-#include "platform/platform.h"
-#include "core/logger/logger.h"
 
 struct game;
 

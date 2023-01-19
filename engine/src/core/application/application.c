@@ -1,7 +1,9 @@
 #include "application.h"
 
 #include "game.h"
+#include "core/logger/logger.h"
 #include "core/memory/memory.h"
+#include "platform/platform.h"
 
 struct application
 {

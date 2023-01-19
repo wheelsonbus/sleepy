@@ -3,6 +3,8 @@
 
 #if defined(ZZ_PLATFORM_WINDOWS)
 
+#include <windows.h>
+
 void console_write(const char* message, u8 color)
 {   
     const u8 level_colors[6] = {64, 4, 6, 2, 1, 8};
