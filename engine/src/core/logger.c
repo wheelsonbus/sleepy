@@ -1,9 +1,5 @@
 #include "logger.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-
 b8 initialize_logger() {
     return TRUE;
 }
@@ -12,7 +8,7 @@ void deinitialize_logger() {
 
 }
 
-ZZ_API void zz_log(int level, const char* message, ...)
+void zz_log(int level, const char* message, ...)
 {
     const char* level_prefixes[6] = {"[FATAL] ", "[ERROR] ", "[WARNING] ", "[INFO] ", "[DEBUG] ", "[TRACE] "};
     
@@ -25,5 +21,12 @@ ZZ_API void zz_log(int level, const char* message, ...)
     char output[32000];
     sprintf(output, "%s%s\n", level_prefixes[level], formatted_message);
 
-    printf("%s", output);
+    if (level < 2)
+    {
+        console_write_error(output, level);
+    }
+    else 
+    {
+        console_write(output, level);
+    }
 }

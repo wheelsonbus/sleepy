@@ -3,17 +3,17 @@ rem Playground build script
 setlocal enabledelayedexpansion
 
 rem Get all .c files
-set sourceFilenames=
+set sourceFiles=
 for /r %%f in (*.c) do (
-    set cFilenames=!cFilenames! %%f
+    set sourceFiles=!sourceFiles! %%f
 )
-rem echo "Source files:" %cFilenames%
+rem echo "Source files:" %sourceFiles%
 
 set target=playground
 set compilerFlags=-g
 set includeFlags=-Isrc -I../engine/src
 set linkerFlags=-L../bin/ -lengine.lib
-set definitions=-DZZ_DEBUG -DZZ_IMPORT
+set definitions=-DZZ_PLATFORM_WINDOWS -DZZ_DEBUG -DZZ_IMPORT
 
 echo "Building %target%%..."
-clang %cFilenames% %compilerFlags% -o ../bin/%target%.exe %definitions% %includeFlags% %linkerFlags%
+clang %sourceFiles% %compilerFlags% -o ../bin/%target%.exe %definitions% %includeFlags% %linkerFlags%

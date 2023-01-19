@@ -43,37 +43,6 @@ STATIC_ASSERT(sizeof(i64) == 8, "Expected i64 to be 8 bytes.");
 STATIC_ASSERT(sizeof(f32) == 4, "Expected f32 to be 4 bytes.");
 STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 
-// Platform detection
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
-#define ZZ_PLATFORM_WINDOWS 1
-#ifndef _WIN64
-#error "64-bit Windows is required."
-#endif
-#elif defined(__linux__) || defined(__gnu_linux__)
-#define ZZ_PLATFORM_WINDOWS 1
-#if defined(__ANDROID__)
-#define ZZ_PLATFORM_ANDROID 1
-#endif
-#elif defined(__unix__)
-#define ZZ_PLATFORM_UNIX 1
-#elif defined(_POSIX_VERSION)
-#define ZZ_PLATFORM_POSIX 1
-#elif __APPLE__
-#define ZZ_PLATFORM_APPLE 1
-#include <TargetConditionals.h>
-#if TARGET_IPHONE_SIMULATOR
-#define ZZ_PLATFORM_IOS 1
-#define ZZ_PLATFORM_IOS_SIMULATOR 1
-#elif TARGET_OS_IPHONE
-#define ZZ_PLATFORM_IOS 1
-#elif TARGET_OS_MAC
-#else
-#error "Unknown Apple platform."
-#endif
-#else
-#error "Unknown platform."
-#endif
-
 #ifdef ZZ_EXPORT
 // Exports
 #ifdef _MSC_VER
