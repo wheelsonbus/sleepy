@@ -2,7 +2,7 @@
 
 #include <zz.h>
 #include <game.h>
-#include <core/logger/logger.h>
+#include <core/log/log.h>
 
 struct playground_state
 {

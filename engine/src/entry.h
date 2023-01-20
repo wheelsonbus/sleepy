@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/application/application.h"
-#include "core/logger/logger.h"
+#include "core/log/log.h"
 #include "core/memory/memory.h"
 #include "core/event/event.h"
 #include "game.h"
@@ -10,7 +10,7 @@ extern b8 entry(struct game* game);
 
 int main()
 {
-    if (!logger_initialize()) { return -1; }
+    if (!log_initialize()) { return -1; }
     if (!memory_initialize()) { return -2; }
     if (!event_initialize()) { return -3; }
 
@@ -55,7 +55,7 @@ int main()
 
     event_deinitialize();
     memory_deinitialize();
-    logger_deinitialize();
+    log_deinitialize();
 
     return 0;
 }

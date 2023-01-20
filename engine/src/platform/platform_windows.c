@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 
-#include "core/logger/logger.h"
+#include "core/log/log.h"
 
 b8 platform_initialize(struct platform* platform, const char* application_name, i32 x, i32 y, i32 width, i32 height)
 {

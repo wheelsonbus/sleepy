@@ -1,7 +1,7 @@
 #include "dynamic_array.h"
 
 #include "core/memory/memory.h"
-#include "core/logger/logger.h"
+#include "core/log/log.h"
 
 ZZ_API void* _dynamic_array_create(u64 capacity, u64 stride)
 {

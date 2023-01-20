@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "core/logger/logger.h"
+#include "core/log/log.h"
 #include "platform/memory/memory.h"
 
 struct memory_statistics
