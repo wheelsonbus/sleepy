@@ -14,13 +14,15 @@ struct memory_statistics
 static struct memory_statistics memory_statistics;
 
 static const char* memory_tag_strings[ZZ_MEMORY_TAG_MAX] = {
-    "UNKNOWN",
-    "GAME   ",
+    "UNKNOWN      ",
+    "GAME         ",
+    "DYNAMIC_ARRAY",
 };
 
-void memory_initialize()
+b8 memory_initialize()
 {
     platform_memory_zero(&memory_statistics, sizeof(memory_statistics));
+    return TRUE;
 }
 
 void memory_deinitialize()

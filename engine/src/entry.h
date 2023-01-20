@@ -3,14 +3,16 @@
 #include "core/application/application.h"
 #include "core/logger/logger.h"
 #include "core/memory/memory.h"
+#include "core/event/event.h"
 #include "game.h"
 
 extern b8 entry(struct game* game);
 
 int main()
 {
-    memory_initialize();
-    logger_initialize();
+    if (!logger_initialize()) { return -1; }
+    if (!memory_initialize()) { return -2; }
+    if (!event_initialize()) { return -3; }
 
     struct game game;
     if (!entry(&game))
@@ -51,8 +53,9 @@ int main()
         return 2;
     }
 
-    logger_deinitialize();
+    event_deinitialize();
     memory_deinitialize();
+    logger_deinitialize();
 
     return 0;
 }

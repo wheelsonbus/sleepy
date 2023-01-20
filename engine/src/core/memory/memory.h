@@ -6,11 +6,12 @@ enum memory_tag
 {
     ZZ_MEMORY_TAG_UNKNOWN,
     ZZ_MEMORY_TAG_GAME,
+    ZZ_MEMORY_TAG_DYNAMIC_ARRAY,
 
     ZZ_MEMORY_TAG_MAX,
 };
 
-ZZ_API void memory_initialize();
+ZZ_API b8 memory_initialize();
 ZZ_API void memory_deinitialize();
 
 ZZ_API void* memory_allocate(u64 size, enum memory_tag tag);
