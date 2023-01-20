@@ -2,7 +2,7 @@
 
 #include "core/memory/memory.h"
 #include "core/log/log.h"
-#include "containers/dynamic_array/dynamic_array.h"
+#include "utility/dynamic_array/dynamic_array.h"
 
 struct event_receiver_registration
 {
