@@ -4,6 +4,7 @@
 #include "core/log/log.h"
 #include "core/memory/memory.h"
 #include "core/event/event.h"
+#include "core/input/input.h"
 #include "game.h"
 
 extern b8 entry(struct game* game);
@@ -13,6 +14,7 @@ int main()
     if (!log_initialize()) { return -1; }
     if (!memory_initialize()) { return -2; }
     if (!event_initialize()) { return -3; }
+    if (!input_initialize()) { return -4; }
 
     struct game game;
     if (!entry(&game))
@@ -53,6 +55,7 @@ int main()
         return 2;
     }
 
+    input_deinitialize();
     event_deinitialize();
     memory_deinitialize();
     log_deinitialize();

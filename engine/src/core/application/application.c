@@ -3,6 +3,7 @@
 #include "game.h"
 #include "core/log/log.h"
 #include "core/memory/memory.h"
+#include "core/input/input.h"
 #include "platform/platform.h"
 
 struct application
@@ -61,6 +62,7 @@ b8 application_run()
 
         if (!application.suspended)
         {
+            input_update(0.0f);
             if (!application.game->update(application.game, 0.0f))
             {
                 ZZ_LOG_FATAL("Game update failed.");
