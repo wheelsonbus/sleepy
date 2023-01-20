@@ -33,46 +33,46 @@ void input_update(f64 delta_time)
     memory_copy(&previous_input_state, &input_state, sizeof(struct input_state));
 }
 
-b8 input_get_key_state(enum input_key key)
+b8 input_get_key_state(enum input_key_code code)
 {
-    return input_state.key_states[key];
+    return input_state.key_states[code];
 }
 
-b8 input_get_previous_key_state(enum input_key key)
+b8 input_get_previous_key_state(enum input_key_code code)
 {
-    return previous_input_state.key_states[key];
+    return previous_input_state.key_states[code];
 }
 
-void input_set_key_state(enum input_key key, b8 down)
+void input_set_key_state(enum input_key_code code, b8 down)
 {
-    if (input_state.key_states[key] != down)
+    if (input_state.key_states[code] != down)
     {
-        input_state.key_states[key] = down;
+        input_state.key_states[code] = down;
 
         union event_data event_data;
-        event_data.u16[0] = (u16)key;
+        event_data.u16[0] = (u16)code;
         event_send(down ? ZZ_EVENT_CODE_KEY_PRESSED : ZZ_EVENT_CODE_KEY_RELEASED, 0, event_data);
     }
 }
 
-b8 input_get_mouse_button_state(enum input_mouse_button mouse_button)
+b8 input_get_mouse_button_state(enum input_mouse_button_code code)
 {
-    return input_state.mouse_button_states[mouse_button];
+    return input_state.mouse_button_states[code];
 }
 
-b8 input_get_previous_mouse_button_state(enum input_mouse_button mouse_button)
+b8 input_get_previous_mouse_button_state(enum input_mouse_button_code code)
 {
-    return previous_input_state.mouse_button_states[mouse_button];
+    return previous_input_state.mouse_button_states[code];
 }
 
-void input_set_mouse_button_state(enum input_mouse_button mouse_button, b8 down)
+void input_set_mouse_button_state(enum input_mouse_button_code code, b8 down)
 {
-    if (input_state.mouse_button_states[mouse_button] != down)
+    if (input_state.mouse_button_states[code] != down)
     {
-        input_state.mouse_button_states[mouse_button] = down;
+        input_state.mouse_button_states[code] = down;
 
         union event_data event_data;
-        event_data.u16[0] = mouse_button;
+        event_data.u16[0] = code;
         event_send(down ? ZZ_EVENT_CODE_MOUSE_BUTTON_PRESSED : ZZ_EVENT_CODE_MOUSE_BUTTON_PRESSED, 0, event_data);
     }
 }

@@ -102,7 +102,7 @@ b8 event_send(u16 code, void* sender, union event_data data)
 {
     if (event_system.registries[code].registrations == 0)
     {
-        ZZ_LOG_WARNING("Attemped to send an event with no receivers.");
+        //ZZ_LOG_WARNING("Attemped to send an event with no receivers.");
         return FALSE;
     }
 
@@ -116,6 +116,6 @@ b8 event_send(u16 code, void* sender, union event_data data)
         }
     }
 
-    ZZ_LOG_WARNING("Event was not handled.");
+    //ZZ_LOG_WARNING("Event was not handled.");
     return FALSE;
 }

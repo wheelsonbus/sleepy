@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "core/log/log.h"
+#include "core/input/input.h"
 
 b8 platform_initialize(struct platform* platform, const char* application_name, i32 x, i32 y, i32 width, i32 height)
 {
@@ -122,32 +123,30 @@ LRESULT CALLBACK platform_windows_process_message(HWND hWnd, u32 msg, WPARAM wPa
         case WM_SYSKEYDOWN:
         case WM_KEYUP:
         case WM_SYSKEYUP:
-            /*{
-                b8 pressed = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
-                // TODO: Process input
-            }*/
+            {
+                b8 down = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
+                input_set_key_state((u16)wParam, down);
+            }
             break;
         case WM_MOUSEMOVE:
-            /*{
-                i32 mouse_x = GET_X_LPARAM(lParam);
-                i32 mouse_y = GET_Y_LPARAM(lParam);
-                // TODO: Process input
-            }*/
+            {
+                i32 x = GET_X_LPARAM(lParam);
+                i32 y = GET_Y_LPARAM(lParam);
+                input_set_mouse_position(x, y);
+            }
             break;
         case WM_MOUSEWHEEL:
-            /*{
-                i32 mouse_wheel_delta = GET_WHEEL_DELTA_WPARAM(wParam);
-                if (mouse_wheel_delta < 0)
+            {
+                i32 delta = GET_WHEEL_DELTA_WPARAM(wParam);
+                if (delta < 0)
                 {
-                    mouse_wheel_delta = -1;
-                    // TODO: Process input
+                    input_move_mouse_wheel(-1);
                 }
-                else if (mouse_wheel_delta > 0)
+                else if (delta > 0)
                 {
-                    mouse_wheel_delta = 1;
-                    // TODO: Process input
+                    input_move_mouse_wheel(1);
                 }
-            }*/
+            }
             break;
         case WM_LBUTTONDOWN:
         case WM_MBUTTONDOWN:
@@ -155,10 +154,29 @@ LRESULT CALLBACK platform_windows_process_message(HWND hWnd, u32 msg, WPARAM wPa
         case WM_LBUTTONUP:
         case WM_MBUTTONUP:
         case WM_RBUTTONUP:
-            /*{
-                b8 pressed = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
-                //TODO: Process input
-            }*/
+            {
+                b8 down = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
+                enum input_mouse_button_code code = ZZ_INPUT_MOUSE_BUTTON_CODE_MAX;
+                switch (msg)
+                {
+                    case WM_LBUTTONDOWN:
+                    case WM_LBUTTONUP:
+                        code = ZZ_INPUT_MOUSE_BUTTON_CODE_LEFT;
+                        break;
+                    case WM_MBUTTONDOWN:
+                    case WM_MBUTTONUP:
+                        code = ZZ_INPUT_MOUSE_BUTTON_CODE_MIDDLE;
+                        break;
+                    case WM_RBUTTONDOWN:
+                    case WM_RBUTTONUP:
+                        code = ZZ_INPUT_MOUSE_BUTTON_CODE_RIGHT;
+                        break;
+                }
+                if (code != ZZ_INPUT_MOUSE_BUTTON_CODE_MAX)
+                {
+                    input_set_mouse_button_state(code, down);
+                }
+            }
             break;
     }
 

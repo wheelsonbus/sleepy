@@ -2,7 +2,7 @@
 
 #include "zz.h"
 
-enum input_mouse_button
+enum input_mouse_button_code
 {
     ZZ_INPUT_MOUSE_BUTTON_CODE_LEFT,
     ZZ_INPUT_MOUSE_BUTTON_CODE_MIDDLE,
@@ -11,7 +11,7 @@ enum input_mouse_button
     ZZ_INPUT_MOUSE_BUTTON_CODE_MAX
 };
 
-enum input_key
+enum input_key_code
 {
     ZZ_INPUT_KEY_CODE_BACKSPACE = 0x08,
     ZZ_INPUT_KEY_CODE_ENTER = 0x0D,
@@ -127,14 +127,16 @@ ZZ_API void input_deinitialize();
 
 void input_update(f64 delta_time);
 
-ZZ_API b8 input_get_key_state(enum input_key key);
-ZZ_API b8 input_get_previous_key_state(enum input_key key);
-void input_set_key_state(enum input_key key, b8 down);
+ZZ_API b8 input_get_key_state(enum input_key_code code);
+ZZ_API b8 input_get_previous_key_state(enum input_key_code code);
+void input_set_key_state(enum input_key_code code, b8 down);
 
-ZZ_API b8 input_get_mouse_button_state(enum input_mouse_button mouse_button);
-ZZ_API b8 input_get_mouse_button_state(enum input_mouse_button mouse_button);
-void input_set_mouse_button_state(enum input_mouse_button mouse_button, b8 down);
+ZZ_API b8 input_get_mouse_button_state(enum input_mouse_button_code code);
+ZZ_API b8 input_get_mouse_button_state(enum input_mouse_button_code code);
+void input_set_mouse_button_state(enum input_mouse_button_code code, b8 down);
 
 ZZ_API void input_get_mouse_position(i32* x, i32* y);
 ZZ_API void input_get_previous_mouse_position(i32* x, i32* y);
 void input_set_mouse_position(i16 x, i16 y);
+
+void input_move_mouse_wheel(i8 delta);
