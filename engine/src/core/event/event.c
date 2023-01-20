@@ -110,7 +110,7 @@ b8 event_send(u16 code, void* sender, union event_data data)
     for (u64 i = 0; i < receivers_registered; i += 1)
     {
         struct event_receiver_registration registration = event_system.registries[code].registrations[i];
-        if (registration.callback(code, sender, registration.receiver, data))
+        if (registration.callback(sender, registration.receiver, data))
         {
             return TRUE;
         }

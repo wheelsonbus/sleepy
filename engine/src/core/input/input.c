@@ -51,7 +51,7 @@ void input_set_key_state(enum input_key_code code, b8 down)
 
         union event_data event_data;
         event_data.u16[0] = (u16)code;
-        event_send(down ? ZZ_EVENT_CODE_KEY_PRESSED : ZZ_EVENT_CODE_KEY_RELEASED, 0, event_data);
+        event_send(down ? ZZ_EVENT_CODE_KEY_PRESS : ZZ_EVENT_CODE_KEY_RELEASE, 0, event_data);
     }
 }
 
@@ -73,7 +73,7 @@ void input_set_mouse_button_state(enum input_mouse_button_code code, b8 down)
 
         union event_data event_data;
         event_data.u16[0] = code;
-        event_send(down ? ZZ_EVENT_CODE_MOUSE_BUTTON_PRESSED : ZZ_EVENT_CODE_MOUSE_BUTTON_PRESSED, 0, event_data);
+        event_send(down ? ZZ_EVENT_CODE_MOUSE_BUTTON_PRESS : ZZ_EVENT_CODE_MOUSE_BUTTON_RELEASE, 0, event_data);
     }
 }
 
@@ -99,7 +99,7 @@ void input_set_mouse_position(i16 x, i16 y)
         union event_data event_data;
         event_data.u16[0] = x;
         event_data.u16[1] = y;
-        event_send(ZZ_EVENT_CODE_MOUSE_MOVED, 0, event_data);
+        event_send(ZZ_EVENT_CODE_MOUSE_MOVE, 0, event_data);
     }
 }
 
@@ -107,5 +107,5 @@ void input_move_mouse_wheel(i8 delta)
 {
         union event_data event_data;
         event_data.u8[0] = delta;
-        event_send(ZZ_EVENT_CODE_MOUSE_WHEEL_MOVED, 0, event_data);
+        event_send(ZZ_EVENT_CODE_MOUSE_WHEEL_MOVE, 0, event_data);
 }
