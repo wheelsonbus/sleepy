@@ -3,17 +3,11 @@
 
 #if defined(ZZ_PLATFORM_WINDOWS)
 
-#include <windows.h>
+#include "platform/application/application_windows.h"
 
-#include "platform/platform_windows.h"
-
-f64 platform_time_get(struct platform* platform)
+f64 platform_time_get()
 {
-    struct platform_windows_state* state = (struct platform_windows_state*)platform->state;
-
-    LARGE_INTEGER currentTime;
-    QueryPerformanceCounter(&currentTime);
-    return (f64)currentTime.QuadPart * state->clock_frequency;
+    return platform_application_windows_time_get();
 }
 
 void platform_time_sleep(u64 milliseconds)
