@@ -4,7 +4,7 @@
 
 #include "platform/application/application.h"
 
-b8 backend_initialize(struct platform_application* platform_application, const char* application_name);
+b8 backend_initialize(const char* application_name, struct platform_application* platform_application);
 void backend_deinitialize();
 
 void backend_resize(u16 width, u16 height);

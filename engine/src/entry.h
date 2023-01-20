@@ -31,22 +31,22 @@ int main()
     if (!game.update)
     {
         ZZ_LOG_FATAL("The game's update function pointer is not assigned.");
-        return -2;
+        return -3;
     }
     if (!game.render)
     {
         ZZ_LOG_FATAL("The game's render function pointer is not assigned.");
-        return -2;
+        return -4;
     }
     if (!game.resize)
     {
         ZZ_LOG_FATAL("The game's resize function pointer is not assigned.");
-        return -2;
+        return -5;
     }
 
     if (!application_initialize(&game))
     {
-        ZZ_LOG_FATAL("Application failed to initialize.");
+        ZZ_LOG_FATAL("Failed to initialize application.");
         return 1;
     }
     if (!application_run())

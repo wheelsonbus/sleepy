@@ -5,9 +5,10 @@
 #include "core/memory/memory.h"
 #include "core/event/event.h"
 #include "core/input/input.h"
+#include "core/time/time.h"
 #include "core/clock/clock.h"
+#include "core/render/render.h"
 #include "platform/application/application.h"
-#include "platform/time/time.h"
 
 struct application
 {
@@ -62,9 +63,15 @@ b8 application_initialize(struct game* game)
         return FALSE;
     }
 
+    if (!render_initialize(config->name, &application.platform_application))
+    {
+        ZZ_LOG_FATAL("Failed to initialize render.");
+        return FALSE;
+    }
+
     if (!application.game->initialize(application.game))
     {
-        ZZ_LOG_FATAL("Game failed to initialize.");
+        ZZ_LOG_FATAL("Failed to initialize game.");
         return FALSE;
     }
     application.game->resize(application.game, application.width, application.height);
@@ -96,7 +103,7 @@ b8 application_run()
         {
             clock_update(&application.clock);
             f64 delta_time = application.clock.elapsed_time - application.last_time;
-            f64 frame_start_time = platform_time_get();
+            f64 frame_start_time = time_get();
 
             input_update(delta_time);
 
@@ -113,8 +120,11 @@ b8 application_run()
                 application.running = FALSE;
                 break;
             }
+            struct render_packet packet;
+            packet.delta_time = delta_time;
+            render_draw_frame(&packet);
 
-            f64 current_time = platform_time_get();
+            f64 current_time = time_get();
             f64 frame_elapsed_time = current_time - frame_start_time;
             //running_time += frame_elapsed_time;
             f64 remaining_time = target_time_per_frame - frame_elapsed_time;
@@ -125,7 +135,7 @@ b8 application_run()
                 b8 limit_frames = FALSE;
                 if (remaining_time_milliseconds > 0 && limit_frames)
                 {
-                    platform_time_sleep(remaining_time_milliseconds);
+                    time_sleep(remaining_time_milliseconds);
                 }
 
                 //frame_count += 1;
@@ -139,6 +149,7 @@ b8 application_run()
     event_unregister_receiver(ZZ_EVENT_CODE_QUIT, 0, application_on_quit);
     event_unregister_receiver(ZZ_EVENT_CODE_KEY_PRESS, 0, application_on_key_press);
 
+    render_deinitialize();
     platform_application_deinitialize(&application.platform_application);
 
     return TRUE;
