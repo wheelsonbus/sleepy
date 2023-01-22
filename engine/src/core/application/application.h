@@ -2,7 +2,7 @@
 
 #include "zz.h"
 
-struct game;
+struct program;
 
 struct application_config
 {
@@ -11,6 +11,7 @@ struct application_config
     char* name;
 };
 
-ZZ_API b8 application_initialize(struct game* game);
+ZZ_API b8 application_initialize(struct program* program);
+void application_deinitialize(struct program* program);
 
 ZZ_API b8 application_run();

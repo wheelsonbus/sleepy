@@ -1,13 +1,13 @@
 #pragma once
 
+#include "program.h"
 #include "core/application/application.h"
 #include "core/log/log.h"
 #include "core/memory/memory.h"
 #include "core/event/event.h"
 #include "core/input/input.h"
-#include "game.h"
 
-extern b8 entry(struct game* game);
+extern b8 entry(struct program* program);
 
 int main()
 {
@@ -16,35 +16,40 @@ int main()
     if (!event_initialize()) { return -3; }
     if (!input_initialize()) { return -4; }
 
-    struct game game;
-    if (!entry(&game))
+    struct program program;
+    if (!entry(&program))
     {
         ZZ_LOG_FATAL("Could not create game.");
         return -1;
     }
 
-    if (!game.initialize)
+    if (!program.initialize)
     {
-        ZZ_LOG_FATAL("The game's initialize function pointer is not assigned.");
+        ZZ_LOG_FATAL("The program's initialize function pointer is not assigned.");
         return -2;
     }
-    if (!game.update)
+    if (!program.deinitialize)
     {
-        ZZ_LOG_FATAL("The game's update function pointer is not assigned.");
+        ZZ_LOG_FATAL("The program's deinitialize function pointer is not assigned.");
         return -3;
     }
-    if (!game.render)
+    if (!program.update)
     {
-        ZZ_LOG_FATAL("The game's render function pointer is not assigned.");
+        ZZ_LOG_FATAL("The program's update function pointer is not assigned.");
         return -4;
     }
-    if (!game.resize)
+    if (!program.render)
     {
-        ZZ_LOG_FATAL("The game's resize function pointer is not assigned.");
+        ZZ_LOG_FATAL("The program's render function pointer is not assigned.");
         return -5;
     }
+    if (!program.resize)
+    {
+        ZZ_LOG_FATAL("The program's resize function pointer is not assigned.");
+        return -6;
+    }
 
-    if (!application_initialize(&game))
+    if (!application_initialize(&program))
     {
         ZZ_LOG_FATAL("Failed to initialize application.");
         return 1;

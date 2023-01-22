@@ -1,6 +1,6 @@
 #include "application.h"
 
-#include "game.h"
+#include "program.h"
 #include "core/log/log.h"
 #include "core/memory/memory.h"
 #include "core/event/event.h"
@@ -12,7 +12,7 @@
 
 struct application
 {
-    struct game* game;
+    struct program* program;
     struct platform_application platform_application;
     b8 running;
     b8 suspended;
@@ -45,7 +45,7 @@ b8 application_on_key_press(void* sender, void* receiver, union event_data data)
     return FALSE;
 }
 
-b8 application_initialize(struct game* game)
+b8 application_initialize(struct program* program)
 {
     if (application_initialized)
     {
@@ -53,11 +53,11 @@ b8 application_initialize(struct game* game)
         return FALSE;
     }
 
-    application.game = game;
+    application.program = program;
     application.running = TRUE;
     application.suspended = FALSE;
 
-    struct application_config* config = &(application.game->application_config);
+    struct application_config* config = &(application.program->application_config);
     if (!platform_application_initialize(&application.platform_application, config->name, config->x, config->y, config->width, config->height))
     {
         return FALSE;
@@ -69,18 +69,23 @@ b8 application_initialize(struct game* game)
         return FALSE;
     }
 
-    if (!application.game->initialize(application.game))
+    if (!application.program->initialize(application.program))
     {
         ZZ_LOG_FATAL("Failed to initialize game.");
         return FALSE;
     }
-    application.game->resize(application.game, application.width, application.height);
+    application.program->resize(application.program, application.width, application.height);
 
     event_register_receiver(ZZ_EVENT_CODE_QUIT, 0, application_on_quit);
     event_register_receiver(ZZ_EVENT_CODE_KEY_PRESS, 0, application_on_key_press);
 
     application_initialized = TRUE;
     return TRUE;
+}
+
+void application_deinitialize(struct program* program)
+{
+    application_initialized = FALSE;
 }
 
 b8 application_run()
@@ -107,14 +112,14 @@ b8 application_run()
 
             input_update(delta_time);
 
-            if (!application.game->update(application.game, delta_time))
+            if (!application.program->update(application.program, delta_time))
             {
                 ZZ_LOG_FATAL("Game update failed.");
                 application.running = FALSE;
                 break;
             }
             
-            if (!application.game->render(application.game, delta_time))
+            if (!application.program->render(application.program, delta_time))
             {
                 ZZ_LOG_FATAL("Game render failed.");
                 application.running = FALSE;
