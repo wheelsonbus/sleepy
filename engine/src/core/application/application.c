@@ -32,19 +32,6 @@ b8 application_on_quit(void* sender, void* receiver, union event_data data)
     return TRUE;
 }
 
-b8 application_on_key_press(void* sender, void* receiver, union event_data data)
-{
-    enum input_key_code code = data.u16[0];
-    if (code == ZZ_INPUT_KEY_CODE_ESCAPE)
-    {
-        union event_data data;
-        data.u8[0] = 0;
-        event_send(ZZ_EVENT_CODE_QUIT, 0, data);
-    }
-
-    return FALSE;
-}
-
 b8 application_initialize(struct program* program)
 {
     if (application_initialized)
@@ -77,7 +64,6 @@ b8 application_initialize(struct program* program)
     application.program->resize(application.program, application.width, application.height);
 
     event_register_receiver(ZZ_EVENT_CODE_QUIT, 0, application_on_quit);
-    event_register_receiver(ZZ_EVENT_CODE_KEY_PRESS, 0, application_on_key_press);
 
     application_initialized = TRUE;
     return TRUE;
@@ -152,7 +138,6 @@ b8 application_run()
     application.running = FALSE;
 
     event_unregister_receiver(ZZ_EVENT_CODE_QUIT, 0, application_on_quit);
-    event_unregister_receiver(ZZ_EVENT_CODE_KEY_PRESS, 0, application_on_key_press);
 
     render_deinitialize();
     platform_application_deinitialize(&application.platform_application);

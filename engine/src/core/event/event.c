@@ -119,3 +119,10 @@ b8 event_send(u16 code, void* sender, union event_data data)
     //ZZ_LOG_WARNING("Event was not handled.");
     return FALSE;
 }
+
+b8 event_send_null(u16 code, void* sender)
+{
+    union event_data data;
+    data.null = (struct event_data_null){};
+    return event_send(ZZ_EVENT_CODE_QUIT, 0, data);
+}

@@ -111,10 +111,12 @@ void backend_deinitialize()
         PFN_vkDestroyDebugUtilsMessengerEXT destroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(backend_vulkan_context.instance, "vkDestroyDebugUtilsMessengerEXT");
         destroyDebugUtilsMessengerEXT(backend_vulkan_context.instance, backend_vulkan_context.debugUtilsMessenger, backend_vulkan_context.allocator);
     }
-
-    vkDestroyInstance(backend_vulkan_context.instance, backend_vulkan_context.allocator);
 #elif defined(ZZ_RELEASE)
 #endif
+
+    backend_vulkan_context_destroy_device(&backend_vulkan_context);
+    vkDestroySurfaceKHR(backend_vulkan_context.instance, backend_vulkan_context.surface, backend_vulkan_context.allocator);
+    vkDestroyInstance(backend_vulkan_context.instance, backend_vulkan_context.allocator);
 }
 
 void backend_resize(u16 width, u16 height)

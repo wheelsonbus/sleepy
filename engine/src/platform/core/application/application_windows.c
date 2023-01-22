@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "core/log/log.h"
+#include "core/event/event.h"
 #include "core/input/input.h"
 
 static f64 platform_application_windows_clock_frequency;
@@ -112,7 +113,7 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
         case WM_ERASEBKGND:
             return 1;
         case WM_CLOSE:
-            // TODO Fire quit event
+            event_send_null(ZZ_EVENT_CODE_QUIT, 0);
             return 0;
         case WM_DESTROY:
             PostQuitMessage(0);

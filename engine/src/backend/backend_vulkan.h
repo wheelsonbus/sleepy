@@ -10,6 +10,19 @@
 
 #define ZZ_BACKEND_VULKAN_ASSERT(expression) ZZ_ASSERT(expression == VK_SUCCESS);
 
+struct backend_vulkan_physical_device_requirements
+{
+    b8 graphics;
+    b8 present;
+    b8 compute;
+    b8 transfer;
+
+    b8 sampler_anisotropy;
+    b8 discrete_gpu;
+
+    const char** extension_names;
+};
+
 struct backend_vulkan_physical_device_swapchain_support_info
 {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -43,19 +56,6 @@ struct backend_vulkan_device
 
     struct backend_vulkan_physical_device_queue_family_info queue_family_info;
     struct backend_vulkan_physical_device_swapchain_support_info swapchain_support_info;
-};
-
-struct backend_vulkan_physical_device_requirements
-{
-    b8 graphics;
-    b8 present;
-    b8 compute;
-    b8 transfer;
-
-    b8 sampler_anisotropy;
-    b8 discrete_gpu;
-
-    const char** extension_names;
 };
 
 struct backend_vulkan_context

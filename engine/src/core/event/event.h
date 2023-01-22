@@ -19,8 +19,15 @@ enum event_code
     ZZ_EVENT_CODE_MAX = 0xFF,
 };
 
+struct event_data_null
+{
+    i64 i64[2];
+};
+
 union event_data
 {
+    struct event_data_null null;
+
     i64 i64[2];
     u64 u64[2];
     f64 f64[2];
@@ -47,3 +54,4 @@ ZZ_API b8 event_register_receiver(u16 code, void* receiver, event_callback_t cal
 ZZ_API b8 event_unregister_receiver(u16 code, void* receiver, event_callback_t callback);
 
 ZZ_API b8 event_send(u16 code, void* sender, union event_data data);
+ZZ_API b8 event_send_null(u16 code, void* sender);
