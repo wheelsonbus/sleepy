@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "core/log/log.h"
-#include "platform/memory/memory.h"
+#include "platform/core/memory/memory.h"
 
 struct memory_statistics
 {

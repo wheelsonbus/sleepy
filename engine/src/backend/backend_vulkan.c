@@ -7,7 +7,7 @@
 #include "core/string/string.h"
 #include "core/log/log.h"
 #include "core/memory/memory.h"
-#include "platform/backend/vulkan/vulkan.h"
+#include "platform/backend/backend_vulkan.h"
 
 static struct backend_vulkan_context backend_vulkan_context;
 

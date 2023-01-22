@@ -2,7 +2,7 @@
 
 #include "zz.h"
 
-#include "platform/application/application.h"
+#include "platform/core/application/application.h"
 
 b8 backend_initialize(const char* application_name, struct platform_application* platform_application);
 void backend_deinitialize();

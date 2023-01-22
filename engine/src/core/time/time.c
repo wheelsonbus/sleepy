@@ -1,6 +1,6 @@
 #include "time.h"
 
-#include "platform/time/time.h"
+#include "platform/core/time/time.h"
 
 f64 time_get()
 {

@@ -1,5 +1,5 @@
-#include "vulkan.h"
-#include "vulkan_windows.h"
+#include "backend_vulkan.h"
+#include "backend_vulkan_windows.h"
 
 #if defined(ZZ_PLATFORM_WINDOWS)
 
@@ -7,8 +7,8 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_win32.h>
 
-#include "platform/application/application.h"
-#include "platform/application/application_windows.h"
+#include "platform/core/application/application.h"
+#include "platform/core/application/application_windows.h"
 #include "backend/backend_vulkan.h"
 
 void platform_backend_vulkan_dynamic_array_push_required_extension_names(const char*** dynamic_array)

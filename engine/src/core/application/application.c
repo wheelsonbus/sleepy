@@ -8,7 +8,7 @@
 #include "core/time/time.h"
 #include "core/clock/clock.h"
 #include "core/render/render.h"
-#include "platform/application/application.h"
+#include "platform/core/application/application.h"
 
 struct application
 {

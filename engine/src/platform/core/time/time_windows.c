@@ -3,7 +3,7 @@
 
 #if defined(ZZ_PLATFORM_WINDOWS)
 
-#include "platform/application/application_windows.h"
+#include "platform/core/application/application_windows.h"
 
 f64 platform_time_get()
 {

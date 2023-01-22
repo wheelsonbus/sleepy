@@ -1,6 +1,6 @@
 #include "console.h"
 
-#include "platform/console/console.h"
+#include "platform/core/console/console.h"
 
 void console_write(const char* message, u8 color)
 {
