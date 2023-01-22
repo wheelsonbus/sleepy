@@ -13,7 +13,7 @@ static struct backend_vulkan_context backend_vulkan_context;
 
 b8 backend_initialize(const char* application_name, struct platform_application* platform_application)
 {
-    // TODO: Custom allocator
+    // TODO Custom allocator
     backend_vulkan_context.allocator = 0;
 
     VkApplicationInfo applicationInfo = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
@@ -88,13 +88,13 @@ b8 backend_initialize(const char* application_name, struct platform_application*
 #elif defined(ZZ_RELEASE)
 #endif
 
-    if (!platform_backend_vulkan_create_surface(platform_application, &backend_vulkan_context))
+    if (!platform_backend_vulkan_context_create_surface(platform_application, &backend_vulkan_context))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan surface.");
         return FALSE;
     }
 
-    if (!backend_vulkan_create_device(&backend_vulkan_context))
+    if (!backend_vulkan_context_create_device(&backend_vulkan_context))
     {
         ZZ_LOG_FATAL("Failed to create vulkan_device.");
         return FALSE;
@@ -285,7 +285,7 @@ b8 backend_vulkan_physical_device_meets_requirements(VkPhysicalDevice physicalDe
     return TRUE;
 }
 
-b8 backend_vulkan_select_physical_device(struct backend_vulkan_context* context)
+b8 backend_vulkan_context_select_physical_device(struct backend_vulkan_context* context)
 {
     u32 physical_device_count = 0;
     ZZ_BACKEND_VULKAN_ASSERT(vkEnumeratePhysicalDevices(context->instance, &physical_device_count, 0));
@@ -308,12 +308,13 @@ b8 backend_vulkan_select_physical_device(struct backend_vulkan_context* context)
         VkPhysicalDeviceMemoryProperties memoryProperties;
         vkGetPhysicalDeviceMemoryProperties(physicalDevices[i], &memoryProperties);
 
+        // TODO Abstract hardcoded requirements
         struct backend_vulkan_physical_device_requirements requirements = {};
         requirements.graphics = TRUE;
         requirements.present = TRUE;
         //requirements.compute = TRUE;
         requirements.transfer = TRUE;
-        requirements.sampler_anisotropy = TRUE;
+        //requirements.sampler_anisotropy = TRUE;
         requirements.discrete_gpu = TRUE;
         requirements.extension_names = dynamic_array_create(const char*);
         dynamic_array_push(requirements.extension_names, &VK_KHR_SWAPCHAIN_EXTENSION_NAME);
@@ -353,19 +354,115 @@ b8 backend_vulkan_select_physical_device(struct backend_vulkan_context* context)
     return TRUE;
 }
 
-b8 backend_vulkan_create_device(struct backend_vulkan_context* context)
+b8 backend_vulkan_context_create_device(struct backend_vulkan_context* context)
 {
-    if (!backend_vulkan_select_physical_device(context))
+    if (!backend_vulkan_context_select_physical_device(context))
     {
         return FALSE;
     }
 
+    // TODO Abstract hardcoded requirements
+    b8 graphics_queue_family_shares_present = context->device.queue_family_info.graphics_index == context->device.queue_family_info.present_index;
+    b8 graphics_queue_family_shares_compute = context->device.queue_family_info.graphics_index == context->device.queue_family_info.compute_index;
+    b8 graphics_queue_family_shares_transfer = context->device.queue_family_info.graphics_index == context->device.queue_family_info.transfer_index;
+    b8 present_queue_family_shares_compute = context->device.queue_family_info.present_index == context->device.queue_family_info.compute_index;
+    b8 present_queue_family_shares_transfer = context->device.queue_family_info.present_index == context->device.queue_family_info.transfer_index;
+    b8 compute_queue_family_shares_transfer = context->device.queue_family_info.compute_index == context->device.queue_family_info.transfer_index;
+    u32 queue_family_count = 1;
+    if (!graphics_queue_family_shares_present)
+    {
+        queue_family_count += 1;
+    }
+    if (!graphics_queue_family_shares_compute && !present_queue_family_shares_compute)
+    {
+        queue_family_count += 1;
+    }
+    if (!graphics_queue_family_shares_transfer && !present_queue_family_shares_transfer && !compute_queue_family_shares_transfer)
+    {
+        queue_family_count += 1;
+    }
+    u32 queue_family_indices[queue_family_count];
+    u8 index = 0;
+    queue_family_indices[index++] = context->device.queue_family_info.graphics_index;
+    if (!graphics_queue_family_shares_present)
+    {
+        queue_family_indices[index++] = context->device.queue_family_info.present_index;
+    }
+    if (!graphics_queue_family_shares_compute && !present_queue_family_shares_compute)
+    {
+        queue_family_indices[index++] = context->device.queue_family_info.compute_index;
+    }
+    if (!graphics_queue_family_shares_transfer && !present_queue_family_shares_transfer && !compute_queue_family_shares_transfer)
+    {
+        queue_family_indices[index++] = context->device.queue_family_info.transfer_index;
+    }
+
+    VkDeviceQueueCreateInfo deviceQueueCreateInfos[queue_family_count];
+    for (u32 i = 0; i < queue_family_count; i += 1)
+    {
+        deviceQueueCreateInfos[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        deviceQueueCreateInfos[i].queueFamilyIndex = queue_family_indices[i];
+        deviceQueueCreateInfos[i].queueCount = 1;
+        deviceQueueCreateInfos[i].flags = 0;
+        deviceQueueCreateInfos[i].pNext = 0;
+        f32 queue_priority = 1.0f;
+        deviceQueueCreateInfos[i].pQueuePriorities = &queue_priority;
+    }
+
+    VkPhysicalDeviceFeatures physicalDeviceFeatures = {};
+    //physicalDeviceFeatures.samplerAnisotropy = VK_TRUE;
+
+    // TODO Abstract hardcoded device creation
+    VkDeviceCreateInfo deviceCreateInfo = {VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
+    deviceCreateInfo.queueCreateInfoCount = queue_family_count;
+    deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos;
+    deviceCreateInfo.pEnabledFeatures = &physicalDeviceFeatures;
+    deviceCreateInfo.enabledExtensionCount = 1;
+    const char* extension_names[1] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    deviceCreateInfo.ppEnabledExtensionNames = extension_names;
+    deviceCreateInfo.enabledLayerCount = 0;
+    deviceCreateInfo.ppEnabledLayerNames = 0;
+
+    ZZ_BACKEND_VULKAN_ASSERT(vkCreateDevice(context->device.physicalDevice, &deviceCreateInfo, context->allocator, &context->device.logicalDevice));
+
+    vkGetDeviceQueue(context->device.logicalDevice, context->device.queue_family_info.graphics_index, 0, &context->device.graphicsQueue);
+    vkGetDeviceQueue(context->device.logicalDevice, context->device.queue_family_info.present_index, 0, &context->device.presentQueue);
+    vkGetDeviceQueue(context->device.logicalDevice, context->device.queue_family_info.compute_index, 0, &context->device.computeQueue);
+    vkGetDeviceQueue(context->device.logicalDevice, context->device.queue_family_info.transfer_index, 0, &context->device.transferQueue);
+
     return TRUE;
 }
 
-void backend_vulkan_destroy_device(struct backend_vulkan_context* context)
+void backend_vulkan_context_destroy_device(struct backend_vulkan_context* context)
 {
+    context->device.graphicsQueue = 0;
+    context->device.presentQueue = 0;
+    context->device.computeQueue = 0;
+    context->device.transferQueue = 0;
 
+    if (context->device.logicalDevice)
+    {
+        vkDestroyDevice(context->device.logicalDevice, context->allocator);
+        context->device.logicalDevice = 0;
+    }
+
+    memory_zero(&context->device.swapchain_support_info.capabilities, sizeof(context->device.swapchain_support_info.capabilities));
+
+    if (context->device.swapchain_support_info.surfaceFormats)
+    {
+        memory_deallocate(context->device.swapchain_support_info.surfaceFormats, sizeof(VkSurfaceFormatKHR) * context->device.swapchain_support_info.surface_format_count, ZZ_MEMORY_TAG_RENDER);
+        context->device.swapchain_support_info.surfaceFormats = 0;
+        context->device.swapchain_support_info.surface_format_count = 0;
+    }
+
+    if (context->device.swapchain_support_info.surfacePresentModes)
+    {
+        memory_deallocate(context->device.swapchain_support_info.surfacePresentModes, sizeof(VkPresentModeKHR) * context->device.swapchain_support_info.surface_present_mode_count, ZZ_MEMORY_TAG_RENDER);
+        context->device.swapchain_support_info.surfacePresentModes = 0;
+        context->device.swapchain_support_info.surface_present_mode_count = 0;
+    }
+
+    context->device.physicalDevice = 0;
 }
 
 #if defined(ZZ_DEBUG)
@@ -375,10 +472,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL backend_vulkan_debug_callback(VkDebugUtilsMessage
     {
         default:
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-            ZZ_LOG_FATAL(callbackData->pMessage);
+            ZZ_LOG_ERROR(callbackData->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-            ZZ_LOG_ERROR(callbackData->pMessage);
+            ZZ_LOG_WARNING(callbackData->pMessage);
             break;
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
             ZZ_LOG_INFO(callbackData->pMessage);

@@ -16,7 +16,7 @@ void platform_backend_vulkan_dynamic_array_push_required_extension_names(const c
     dynamic_array_push(*dynamic_array, &"VK_KHR_win32_surface");
 }
 
-b8 platform_backend_vulkan_create_surface(struct platform_application* application, struct backend_vulkan_context* context)
+b8 platform_backend_vulkan_context_create_surface(struct platform_application* application, struct backend_vulkan_context* context)
 {
     struct platform_application_windows_state* state = (struct platform_application_windows_state*)application->state;
 

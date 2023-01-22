@@ -112,14 +112,14 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
         case WM_ERASEBKGND:
             return 1;
         case WM_CLOSE:
-            // TODO: Fire quit event
+            // TODO Fire quit event
             return 0;
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
         case WM_SIZE:
             {
-                // TODO: Fire resize event
+                // TODO Fire resize event
             }  
             break;
         case WM_KEYDOWN:

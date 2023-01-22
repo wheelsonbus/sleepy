@@ -37,7 +37,7 @@ void* memory_allocate(u64 size, enum memory_tag tag)
         ZZ_LOG_WARNING("memory_allocate called with tag ZZ_MEMORY_TAG_UNKNOWN");
     }
 
-    // TODO: Memory alignment
+    // TODO Memory alignment
     void* block = platform_memory_allocate(size, FALSE);
     platform_memory_zero(block, size);
 
@@ -54,7 +54,7 @@ void memory_deallocate(void* block, u64 size, enum memory_tag tag)
         ZZ_LOG_WARNING("memory_deallocate called with tag ZZ_MEMORY_TAG_UNKNOWN");
     }
 
-    // TODO: Memory alignment
+    // TODO Memory alignment
     platform_memory_deallocate(block, FALSE);
 
     memory_statistics.total_bytes_allocated -= size;
