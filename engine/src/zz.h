@@ -24,6 +24,9 @@ typedef int b32;
 #define TRUE 1
 #define FALSE 0
 
+// Utility macros
+#define ZZ_UTILITY_CLAMP(value, min, max) (value <= min) ? min : ((value >= max) ? max : value)
+
 // Static assertion macro
 #if defined(__clang__) || defined(__gcc__)
 #define STATIC_ASSERT _Static_assert

@@ -96,15 +96,35 @@ b8 backend_initialize(const char* application_name, struct platform_application*
 
     if (!backend_vulkan_context_create_device(&backend_vulkan_context))
     {
-        ZZ_LOG_FATAL("Failed to create vulkan_device.");
+        ZZ_LOG_FATAL("Failed to create backend_vulkan_device.");
         return FALSE;
     }
+
+    if (!backend_vulkan_swapchain_create(&backend_vulkan_context, backend_vulkan_context.framebuffer_width, backend_vulkan_context.framebuffer_height, &backend_vulkan_context.swapchain))
+    {
+        ZZ_LOG_FATAL("Failed to create backend_vulkan_swapchain.");
+        return FALSE;
+    }
+
+    if (!backend_vulkan_render_pass_create(&backend_vulkan_context, &backend_vulkan_context.main_render_pass, 0, 0, backend_vulkan_context.framebuffer_width, backend_vulkan_context.framebuffer_height, 0.0f, 0.0f, 0.2f, 1.0f, 1.0f, 0))
+    {
+        ZZ_LOG_FATAL("Failed to create backend_vulkan_render_pass.");
+        return FALSE;
+    }
+    
+    backend_vulkan_context_fill_command_buffers(&backend_vulkan_context);
 
     return TRUE;
 }
 
 void backend_deinitialize()
 {
+    backend_vulkan_render_pass_destroy(&backend_vulkan_context, &backend_vulkan_context.main_render_pass);
+    backend_vulkan_swapchain_destroy(&backend_vulkan_context, &backend_vulkan_context.swapchain);
+    backend_vulkan_context_destroy_device(&backend_vulkan_context);
+    vkDestroySurfaceKHR(backend_vulkan_context.instance, backend_vulkan_context.surface, backend_vulkan_context.allocator);
+    backend_vulkan_context.surface = 0;
+
 #if defined(ZZ_DEBUG)
     if (backend_vulkan_context.debugUtilsMessenger)
     {
@@ -114,8 +134,6 @@ void backend_deinitialize()
 #elif defined(ZZ_RELEASE)
 #endif
 
-    backend_vulkan_context_destroy_device(&backend_vulkan_context);
-    vkDestroySurfaceKHR(backend_vulkan_context.instance, backend_vulkan_context.surface, backend_vulkan_context.allocator);
     vkDestroyInstance(backend_vulkan_context.instance, backend_vulkan_context.allocator);
 }
 
@@ -148,14 +166,14 @@ void backend_vulkan_physical_device_query_swapchain_support(VkPhysicalDevice phy
         ZZ_BACKEND_VULKAN_ASSERT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &swapchain_support_info->surface_format_count, swapchain_support_info->surfaceFormats));
     }
 
-    ZZ_BACKEND_VULKAN_ASSERT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &swapchain_support_info->surface_present_mode_count, 0));
+    ZZ_BACKEND_VULKAN_ASSERT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &swapchain_support_info->present_mode_count, 0));
     if (swapchain_support_info->surface_format_count != 0)
     {
-        if (!swapchain_support_info->surfacePresentModes)
+        if (!swapchain_support_info->presentModes)
         {
-            swapchain_support_info->surfacePresentModes = memory_allocate(sizeof(VkPresentModeKHR) * swapchain_support_info->surface_present_mode_count, ZZ_MEMORY_TAG_RENDER);
+            swapchain_support_info->presentModes = memory_allocate(sizeof(VkPresentModeKHR) * swapchain_support_info->present_mode_count, ZZ_MEMORY_TAG_RENDER);
         }
-        ZZ_BACKEND_VULKAN_ASSERT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &swapchain_support_info->surface_present_mode_count, swapchain_support_info->surfacePresentModes));
+        ZZ_BACKEND_VULKAN_ASSERT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &swapchain_support_info->present_mode_count, swapchain_support_info->presentModes));
     }
 }
 
@@ -213,9 +231,6 @@ b8 backend_vulkan_physical_device_meets_requirements(VkPhysicalDevice physicalDe
         }
     }
 
-    ZZ_LOG_INFO("GRAPHICS | PRESENT | COMPUTE | TRANSFER | NAME");
-    ZZ_LOG_INFO("     %3u |     %3u |     %3u |      %3u | %s", queue_family_info->graphics_index, queue_family_info->present_index, queue_family_info->compute_index, queue_family_info->transfer_index, properties->deviceName);
-
     if (requirements->graphics && queue_family_info->graphics_index == -1)
     {
         return FALSE;
@@ -239,15 +254,15 @@ b8 backend_vulkan_physical_device_meets_requirements(VkPhysicalDevice physicalDe
     }
 
     backend_vulkan_physical_device_query_swapchain_support(physicalDevice, surface, swapchain_support_info);
-    if (swapchain_support_info->surface_format_count == 0 || swapchain_support_info->surface_present_mode_count == 0)
+    if (swapchain_support_info->surface_format_count == 0 || swapchain_support_info->present_mode_count == 0)
     {
         if (swapchain_support_info->surfaceFormats)
         {
             memory_deallocate(swapchain_support_info->surfaceFormats, sizeof(VkSurfaceFormatKHR) * swapchain_support_info->surface_format_count, ZZ_MEMORY_TAG_RENDER);
         }
-        if (swapchain_support_info->surfacePresentModes)
+        if (swapchain_support_info->presentModes)
         {
-            memory_deallocate(swapchain_support_info->surfacePresentModes, sizeof(VkPresentModeKHR) * swapchain_support_info->surface_present_mode_count, ZZ_MEMORY_TAG_RENDER);
+            memory_deallocate(swapchain_support_info->presentModes, sizeof(VkPresentModeKHR) * swapchain_support_info->present_mode_count, ZZ_MEMORY_TAG_RENDER);
         }
         return FALSE;
     }
@@ -424,13 +439,17 @@ b8 backend_vulkan_context_create_device(struct backend_vulkan_context* context)
     deviceCreateInfo.ppEnabledExtensionNames = extension_names;
     deviceCreateInfo.enabledLayerCount = 0;
     deviceCreateInfo.ppEnabledLayerNames = 0;
-
     ZZ_BACKEND_VULKAN_ASSERT(vkCreateDevice(context->device.physicalDevice, &deviceCreateInfo, context->allocator, &context->device.logicalDevice));
 
     vkGetDeviceQueue(context->device.logicalDevice, context->device.queue_family_info.graphics_index, 0, &context->device.graphicsQueue);
     vkGetDeviceQueue(context->device.logicalDevice, context->device.queue_family_info.present_index, 0, &context->device.presentQueue);
     vkGetDeviceQueue(context->device.logicalDevice, context->device.queue_family_info.compute_index, 0, &context->device.computeQueue);
     vkGetDeviceQueue(context->device.logicalDevice, context->device.queue_family_info.transfer_index, 0, &context->device.transferQueue);
+    
+    VkCommandPoolCreateInfo commandPoolCreateInfo = {VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
+    commandPoolCreateInfo.queueFamilyIndex = context->device.queue_family_info.graphics_index;
+    commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    ZZ_BACKEND_VULKAN_ASSERT(vkCreateCommandPool(context->device.logicalDevice, &commandPoolCreateInfo, context->allocator, &context->device.graphicsCommandPool));
 
     return TRUE;
 }
@@ -441,6 +460,17 @@ void backend_vulkan_context_destroy_device(struct backend_vulkan_context* contex
     context->device.presentQueue = 0;
     context->device.computeQueue = 0;
     context->device.transferQueue = 0;
+
+    context->device.queue_family_info.graphics_index = -1;
+    context->device.queue_family_info.present_index = -1;
+    context->device.queue_family_info.compute_index = -1;
+    context->device.queue_family_info.transfer_index = -1;
+
+    if (context->device.graphicsCommandPool)
+    {
+        vkDestroyCommandPool(context->device.logicalDevice, context->device.graphicsCommandPool, context->allocator);
+        context->device.graphicsCommandPool = 0;
+    }
 
     if (context->device.logicalDevice)
     {
@@ -457,14 +487,519 @@ void backend_vulkan_context_destroy_device(struct backend_vulkan_context* contex
         context->device.swapchain_support_info.surface_format_count = 0;
     }
 
-    if (context->device.swapchain_support_info.surfacePresentModes)
+    if (context->device.swapchain_support_info.presentModes)
     {
-        memory_deallocate(context->device.swapchain_support_info.surfacePresentModes, sizeof(VkPresentModeKHR) * context->device.swapchain_support_info.surface_present_mode_count, ZZ_MEMORY_TAG_RENDER);
-        context->device.swapchain_support_info.surfacePresentModes = 0;
-        context->device.swapchain_support_info.surface_present_mode_count = 0;
+        memory_deallocate(context->device.swapchain_support_info.presentModes, sizeof(VkPresentModeKHR) * context->device.swapchain_support_info.present_mode_count, ZZ_MEMORY_TAG_RENDER);
+        context->device.swapchain_support_info.presentModes = 0;
+        context->device.swapchain_support_info.present_mode_count = 0;
     }
 
     context->device.physicalDevice = 0;
+}
+
+b8 backend_vulkan_device_detect_depth_format(struct backend_vulkan_device* device)
+{
+    const u64 format_candidate_count = 3;
+    VkFormat formatCandidates[3] = {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
+
+    u32 flags = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    for (u64 i = 0; i < format_candidate_count; i += 1)
+    {
+        VkFormatProperties formatProperties;
+        vkGetPhysicalDeviceFormatProperties(device->physicalDevice, formatCandidates[i], &formatProperties);
+
+        if ((formatProperties.linearTilingFeatures & flags) == flags || (formatProperties.optimalTilingFeatures & flags) == flags)
+        {
+            device->depthFormat = formatCandidates[i];
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+void backend_vulkan_image_create(struct backend_vulkan_context* context, VkImageType imageType, u32 width, u32 height, VkFormat format, VkImageTiling imageTiling, VkImageUsageFlags imageUsageFlags, VkMemoryPropertyFlags memoryPropertyFlags, b32 create_view, VkImageAspectFlags imageAspectFlags, struct backend_vulkan_image* image)
+{
+    image->width = width;
+    image->height = height;
+
+    VkImageCreateInfo imageCreateInfo = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+    imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageCreateInfo.extent.width = width;
+    imageCreateInfo.extent.height = height;
+    imageCreateInfo.extent.depth = 1;
+    imageCreateInfo.mipLevels = 4;
+    imageCreateInfo.arrayLayers = 1;
+    imageCreateInfo.format = format;
+    imageCreateInfo.tiling = imageTiling;
+    imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageCreateInfo.usage = imageUsageFlags;
+    imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    ZZ_BACKEND_VULKAN_ASSERT(vkCreateImage(context->device.logicalDevice, &imageCreateInfo, context->allocator, &image->handle));
+
+    VkMemoryRequirements memoryRequirements;
+    vkGetImageMemoryRequirements(context->device.logicalDevice, image->handle, &memoryRequirements);
+
+    i32 memory_type_index = backend_vulkan_context_get_memory_index(context, memoryRequirements.memoryTypeBits, memoryPropertyFlags);
+    if (memory_type_index == -1)
+    {
+        ZZ_LOG_ERROR("Required memory type not found.");
+    }
+
+    VkMemoryAllocateInfo memoryAllocateInfo = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+    memoryAllocateInfo.allocationSize = memoryRequirements.size;
+    memoryAllocateInfo.memoryTypeIndex = memory_type_index;
+    ZZ_BACKEND_VULKAN_ASSERT(vkAllocateMemory(context->device.logicalDevice, &memoryAllocateInfo, context->allocator, &image->memory));
+    ZZ_BACKEND_VULKAN_ASSERT(vkBindImageMemory(context->device.logicalDevice, image->handle, image->memory, 0));
+
+    if (create_view)
+    {
+        image->view = 0;
+        backend_vulkan_image_view_create(context, format, image, imageAspectFlags);
+    }
+}
+
+void backend_vulkan_image_view_create(struct backend_vulkan_context* context, VkFormat format, struct backend_vulkan_image* image, VkImageAspectFlags imageAspectFlags)
+{
+    VkImageViewCreateInfo imageViewCreateInfo = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+    imageViewCreateInfo.image = image->handle;
+    imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    imageViewCreateInfo.format = format;
+    imageViewCreateInfo.subresourceRange.aspectMask = imageAspectFlags;
+    imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+    imageViewCreateInfo.subresourceRange.levelCount = 1;
+    imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+    imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+    ZZ_BACKEND_VULKAN_ASSERT(vkCreateImageView(context->device.logicalDevice, &imageViewCreateInfo, context->allocator, &image->view));
+}
+
+void backend_vulkan_image_destroy(struct backend_vulkan_context* context, struct backend_vulkan_image* image)
+{
+    if (image->view)
+    {
+        vkDestroyImageView(context->device.logicalDevice, image->view, context->allocator);
+        image->view = 0;
+    }
+
+    if (image->memory)
+    {
+        vkFreeMemory(context->device.logicalDevice, image->memory, context->allocator);
+        image->memory = 0;
+    }
+
+    if (image->handle)
+    {
+        vkDestroyImage(context->device.logicalDevice, image->handle, context->allocator);
+        image->handle = 0;
+    }
+}
+
+b8 backend_vulkan_render_pass_create(struct backend_vulkan_context* context, struct backend_vulkan_render_pass* render_pass, f32 x, f32 y, f32 w, f32 h, f32 r, f32 g, f32 b, f32 a, f32 depth, u32 stencil)
+{
+    VkSubpassDescription subpassDescription = {};
+    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    
+    u32 attachment_description_count = 2;
+    VkAttachmentDescription attachmentDescriptions[attachment_description_count];
+
+    VkAttachmentDescription colorAttachmentDescription = {};
+    colorAttachmentDescription.format = context->swapchain.imageSurfaceFormat.format;
+    colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    colorAttachmentDescription.flags = 0;
+
+    attachmentDescriptions[0] = colorAttachmentDescription;
+
+    VkAttachmentReference colorAttachmentReference;
+    colorAttachmentReference.attachment = 0;
+    colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    subpassDescription.colorAttachmentCount = 1;
+    subpassDescription.pColorAttachments = &colorAttachmentReference;
+
+    VkAttachmentDescription depthStencilAttachmentDescription = {};
+    depthStencilAttachmentDescription.format = context->device.depthFormat;
+    depthStencilAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthStencilAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthStencilAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    depthStencilAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthStencilAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthStencilAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthStencilAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    attachmentDescriptions[1] = depthStencilAttachmentDescription;
+
+    VkAttachmentReference depthStencilAttachmentReference;
+    depthStencilAttachmentReference.attachment = 1;
+    depthStencilAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    subpassDescription.pDepthStencilAttachment = &depthStencilAttachmentReference;
+
+    subpassDescription.inputAttachmentCount = 0;
+    subpassDescription.pInputAttachments = 0;
+
+    subpassDescription.pResolveAttachments = 0;
+
+    subpassDescription.preserveAttachmentCount = 0;
+    subpassDescription.pPreserveAttachments = 0;
+
+    VkSubpassDependency subpassDependency = {};
+    subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    subpassDependency.dstSubpass = 0;
+    subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpassDependency.srcAccessMask = 0;
+    subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    subpassDependency.dependencyFlags = 0;
+
+    VkRenderPassCreateInfo renderPassCreateInfo = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
+    renderPassCreateInfo.attachmentCount = attachment_description_count;
+    renderPassCreateInfo.pAttachments = attachmentDescriptions;
+    renderPassCreateInfo.subpassCount = 1;
+    renderPassCreateInfo.pSubpasses = &subpassDescription;
+    renderPassCreateInfo.dependencyCount = 1;
+    renderPassCreateInfo.pDependencies = &subpassDependency;
+    renderPassCreateInfo.pNext = 0;
+    renderPassCreateInfo.flags = 0;
+
+    ZZ_BACKEND_VULKAN_ASSERT(vkCreateRenderPass(context->device.logicalDevice, &renderPassCreateInfo, context->allocator, &render_pass->handle));
+    return TRUE;
+}
+
+void backend_vulkan_render_pass_destroy(struct backend_vulkan_context* context, struct backend_vulkan_render_pass* render_pass)
+{
+    if (render_pass && render_pass->handle)
+    {
+        vkDestroyRenderPass(context->device.logicalDevice, render_pass->handle, context->allocator);
+        render_pass->handle = 0;
+    }
+}
+
+void backend_vulkan_render_pass_begin(struct backend_vulkan_render_pass* render_pass, struct backend_vulkan_command_buffer* command_buffer, VkFramebuffer framebuffer)
+{
+    VkClearValue clearValues[2];
+    memory_zero(clearValues, sizeof(VkClearValue) * 2);
+    clearValues[0].color.float32[0] = render_pass->r;
+    clearValues[0].color.float32[1] = render_pass->g;
+    clearValues[0].color.float32[2] = render_pass->b;
+    clearValues[0].color.float32[3] = render_pass->a;
+    clearValues[1].depthStencil.depth = render_pass->depth;
+    clearValues[1].depthStencil.stencil = render_pass->stencil;
+
+    VkRenderPassBeginInfo renderPassBeginInfo = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+    renderPassBeginInfo.renderPass = render_pass->handle;
+    renderPassBeginInfo.framebuffer = framebuffer;
+    renderPassBeginInfo.renderArea.offset.x = render_pass->x;
+    renderPassBeginInfo.renderArea.offset.y = render_pass->x;
+    renderPassBeginInfo.renderArea.extent.width = render_pass->w;
+    renderPassBeginInfo.renderArea.extent.height = render_pass->h;
+    renderPassBeginInfo.clearValueCount = 2;
+    renderPassBeginInfo.pClearValues = clearValues;
+
+    vkCmdBeginRenderPass(command_buffer->handle, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    command_buffer->state = ZZ_BACKEND_VULKAN_COMMAND_BUFFER_STATE_IN_RENDER_PASS;
+}
+
+void backend_vulkan_render_pass_end(struct backend_vulkan_render_pass* render_pass, struct backend_vulkan_command_buffer* command_buffer)
+{
+    vkCmdEndRenderPass(command_buffer->handle);
+    command_buffer->state = ZZ_BACKEND_VULKAN_COMMAND_BUFFER_STATE_RECORDING;
+}
+
+b8 backend_vulkan_swapchain_create(struct backend_vulkan_context* context, u32 width, u32 height, struct backend_vulkan_swapchain* swapchain)
+{
+    VkExtent2D swapchainExtent = {width, height};
+    swapchain->max_frames_in_flight = 2;
+
+    b8 preferenceAvailable = FALSE;
+    for (u32 i = 0; i < context->device.swapchain_support_info.surface_format_count; i += 1)
+    {
+        VkSurfaceFormatKHR surfaceFormat = context->device.swapchain_support_info.surfaceFormats[i];
+
+        if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_UNORM && surfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        {
+            swapchain->imageSurfaceFormat = surfaceFormat;
+            preferenceAvailable = TRUE;
+            break;
+        }
+    }
+    if (!preferenceAvailable)
+    {
+        swapchain->imageSurfaceFormat = context->device.swapchain_support_info.surfaceFormats[0];
+    }
+
+    VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    for (u32 i = 0; i < context->device.swapchain_support_info.present_mode_count; i += 1)
+    {
+        VkPresentModeKHR mode = context->device.swapchain_support_info.presentModes[i];
+        if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
+        {
+            presentMode = mode;
+            break;
+        }
+    }
+
+    backend_vulkan_physical_device_query_swapchain_support(context->device.physicalDevice, context->surface, &context->device.swapchain_support_info);
+    if (context->device.swapchain_support_info.capabilities.currentExtent.width != (uint32_t)-1)
+    {
+        swapchainExtent = context->device.swapchain_support_info.capabilities.currentExtent;
+    }
+
+    VkExtent2D minExtent = context->device.swapchain_support_info.capabilities.minImageExtent;
+    VkExtent2D maxExtent = context->device.swapchain_support_info.capabilities.maxImageExtent;
+    swapchainExtent.width = ZZ_UTILITY_CLAMP(swapchainExtent.width, minExtent.width, maxExtent.width);
+    swapchainExtent.height = ZZ_UTILITY_CLAMP(swapchainExtent.height, minExtent.height, maxExtent.height);
+
+    u32 swapchain_image_count = context->device.swapchain_support_info.capabilities.minImageCount + 1;
+    if (context->device.swapchain_support_info.capabilities.maxImageCount > 0 && swapchain_image_count > context->device.swapchain_support_info.capabilities.maxImageCount)
+    {
+        swapchain_image_count = context->device.swapchain_support_info.capabilities.maxImageCount;
+    }
+
+    VkSwapchainCreateInfoKHR swapchainCreateInfo = {VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR};
+    swapchainCreateInfo.surface = context->surface;
+    swapchainCreateInfo.minImageCount = swapchain_image_count;
+    swapchainCreateInfo.imageFormat = swapchain->imageSurfaceFormat.format;
+    swapchainCreateInfo.imageColorSpace = swapchain->imageSurfaceFormat.colorSpace;
+    swapchainCreateInfo.imageExtent = swapchainExtent;
+    swapchainCreateInfo.imageArrayLayers = 1;
+    swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    if (context->device.queue_family_info.graphics_index != context->device.queue_family_info.present_index)
+    {
+        u32 queue_family_indices[] = {(u32)context->device.queue_family_info.graphics_index, (u32)context->device.queue_family_info.present_index};
+        swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+        swapchainCreateInfo.queueFamilyIndexCount = 2;
+        swapchainCreateInfo.pQueueFamilyIndices = queue_family_indices;
+    }
+    else
+    {
+        swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        swapchainCreateInfo.queueFamilyIndexCount = 0;
+        swapchainCreateInfo.pQueueFamilyIndices = 0;
+    }
+    swapchainCreateInfo.preTransform = context->device.swapchain_support_info.capabilities.currentTransform;
+    swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swapchainCreateInfo.presentMode = presentMode;
+    swapchainCreateInfo.clipped = VK_TRUE;
+    swapchainCreateInfo.oldSwapchain = 0;
+
+    ZZ_BACKEND_VULKAN_ASSERT(vkCreateSwapchainKHR(context->device.logicalDevice, &swapchainCreateInfo, context->allocator, &swapchain->handle));
+
+    context->current_frame = 0;
+
+    swapchain->image_count = 0;
+    ZZ_BACKEND_VULKAN_ASSERT(vkGetSwapchainImagesKHR(context->device.logicalDevice, swapchain->handle, &swapchain->image_count, 0));
+    if (!swapchain->images)
+    {
+        swapchain->images = (VkImage*)memory_allocate(sizeof(VkImage) * swapchain->image_count, ZZ_MEMORY_TAG_RENDER);
+    }
+    if (!swapchain->imageViews)
+    {
+        swapchain->imageViews = (VkImageView*)memory_allocate(sizeof(VkImageView) * swapchain->image_count, ZZ_MEMORY_TAG_RENDER);
+    }
+    ZZ_BACKEND_VULKAN_ASSERT(vkGetSwapchainImagesKHR(context->device.logicalDevice, swapchain->handle, &swapchain->image_count, swapchain->images));
+
+    for (u32 i = 0; i < swapchain->image_count; i += 1)
+    {
+        VkImageViewCreateInfo imageViewCreateInfo = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+        imageViewCreateInfo.image = swapchain->images[i];
+        imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        imageViewCreateInfo.format = swapchain->imageSurfaceFormat.format;
+        imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+        imageViewCreateInfo.subresourceRange.levelCount = 1;
+        imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+        imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+        ZZ_BACKEND_VULKAN_ASSERT(vkCreateImageView(context->device.logicalDevice, &imageViewCreateInfo, context->allocator, &swapchain->imageViews[i]));
+    }
+    
+    if (!backend_vulkan_device_detect_depth_format(&context->device))
+    {
+        context->device.depthFormat = VK_FORMAT_UNDEFINED;
+        ZZ_LOG_FATAL("Failed to find a depth format.");
+        return FALSE;
+    }
+
+    backend_vulkan_image_create(context, VK_IMAGE_TYPE_2D, swapchainExtent.width, swapchainExtent.height, context->device.depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, TRUE, VK_IMAGE_ASPECT_DEPTH_BIT, &swapchain->depth_image);
+
+    return TRUE;
+}
+
+b8 backend_vulkan_swapchain_recreate(struct backend_vulkan_context* context, u32 width, u32 height, struct backend_vulkan_swapchain* swapchain)
+{
+    backend_vulkan_swapchain_destroy(context, swapchain);
+    return backend_vulkan_swapchain_create(context, width, height, swapchain);
+}
+
+void backend_vulkan_swapchain_destroy(struct backend_vulkan_context* context, struct backend_vulkan_swapchain* swapchain)
+{
+    backend_vulkan_image_destroy(context, &swapchain->depth_image);
+
+    for (u32 i = 0; i < swapchain->image_count; i += 1)
+    {
+        vkDestroyImageView(context->device.logicalDevice, swapchain->imageViews[i], context->allocator);
+    }
+
+    vkDestroySwapchainKHR(context->device.logicalDevice, swapchain->handle, context->allocator);
+}
+
+b8 backend_vulkan_swapchain_acquire_next_image_index(struct backend_vulkan_context* context, struct backend_vulkan_swapchain* swapchain, u64 timeout_nanoseconds, VkSemaphore imageAvailableSemaphore, VkFence fence, u32* image_index)
+{
+    VkResult result = vkAcquireNextImageKHR(context->device.logicalDevice, swapchain->handle, timeout_nanoseconds, imageAvailableSemaphore, fence, image_index);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        backend_vulkan_swapchain_recreate(context, context->framebuffer_width, context->framebuffer_height, swapchain);
+        return FALSE;
+    }
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    {
+        ZZ_LOG_FATAL("Failed to acquire swapchain image.");
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+void backend_vulkan_swapchain_present(struct backend_vulkan_context* context, struct backend_vulkan_swapchain* swapchain, VkQueue graphicsQueue, VkQueue presentQueue, VkSemaphore renderCompleteSemaphore, u32 present_image_index)
+{
+    VkPresentInfoKHR presentInfo = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &renderCompleteSemaphore;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = &swapchain->handle;
+    presentInfo.pImageIndices = &present_image_index;
+    presentInfo.pResults = 0;
+
+    VkResult result = vkQueuePresentKHR(context->device.presentQueue, &presentInfo);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+    {
+        backend_vulkan_swapchain_recreate(context, context->framebuffer_width, context->framebuffer_height, swapchain);
+    }
+    else if (result != VK_SUCCESS)
+    {
+        ZZ_LOG_FATAL("Failed to present swapchain image.");
+    }
+}
+
+b8 backend_vulkan_command_buffer_allocate(struct backend_vulkan_context* context, struct backend_vulkan_command_buffer* command_buffer, VkCommandPool commandPool, b8 primary)
+{
+    memory_zero(command_buffer, sizeof(command_buffer));
+    command_buffer->state = ZZ_BACKEND_VULKAN_COMMAND_BUFFER_STATE_UNALLOCATED;
+
+    VkCommandBufferAllocateInfo commandBufferAllocateInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
+    commandBufferAllocateInfo.commandPool = commandPool;
+    commandBufferAllocateInfo.level = primary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+    commandBufferAllocateInfo.commandBufferCount = 1;
+    commandBufferAllocateInfo.pNext = 0;
+
+    ZZ_BACKEND_VULKAN_ASSERT(vkAllocateCommandBuffers(context->device.logicalDevice, &commandBufferAllocateInfo, &command_buffer->handle));
+    command_buffer->state = ZZ_BACKEND_VULKAN_COMMAND_BUFFER_STATE_READY;
+    return TRUE;
+}
+
+void backend_vulkan_command_buffer_deallocate(struct backend_vulkan_context* context, struct backend_vulkan_command_buffer* command_buffer, VkCommandPool commandPool)
+{
+    vkFreeCommandBuffers(context->device.logicalDevice, commandPool, 1, &command_buffer->handle);
+    command_buffer->handle = 0;
+    command_buffer->state = ZZ_BACKEND_VULKAN_COMMAND_BUFFER_STATE_UNALLOCATED;
+}
+
+void backend_vulkan_command_buffer_begin(struct backend_vulkan_command_buffer* command_buffer, b8 single_use, b8 render_pass_continue, b8 simultaneous_use)
+{
+    VkCommandBufferBeginInfo commandBufferBeginInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+    commandBufferBeginInfo.flags = 0;
+    if (single_use)
+    {
+        commandBufferBeginInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    }
+    if (render_pass_continue)
+    {
+        commandBufferBeginInfo.flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+    }
+    if (simultaneous_use)
+    {
+        commandBufferBeginInfo.flags |= VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+    }
+
+    ZZ_BACKEND_VULKAN_ASSERT(vkBeginCommandBuffer(command_buffer->handle, &commandBufferBeginInfo));
+    command_buffer->state = ZZ_BACKEND_VULKAN_COMMAND_BUFFER_STATE_RECORDING;
+}
+
+void backend_vulkan_command_buffer_end(struct backend_vulkan_command_buffer* command_buffer)
+{
+    ZZ_BACKEND_VULKAN_ASSERT(vkEndCommandBuffer(command_buffer->handle));
+    command_buffer->state = ZZ_BACKEND_VULKAN_COMMAND_BUFFER_STATE_FINISHED;
+}
+
+void backend_vulkan_command_buffer_reset(struct backend_vulkan_command_buffer* command_buffer)
+{
+    command_buffer->state = ZZ_BACKEND_VULKAN_COMMAND_BUFFER_STATE_READY;
+}
+
+void backend_vulkan_command_buffer_allocate_and_begin_for_single_use(struct backend_vulkan_context* context, struct backend_vulkan_command_buffer* command_buffer, VkCommandPool commandPool)
+{
+    backend_vulkan_command_buffer_allocate(context, command_buffer, commandPool, TRUE);
+    backend_vulkan_command_buffer_begin(command_buffer, TRUE, FALSE, FALSE);
+}
+
+void backend_vulkan_command_buffer_end_and_submit_for_single_use(struct backend_vulkan_context* context, struct backend_vulkan_command_buffer* command_buffer, VkCommandPool commandPool, VkQueue queue)
+{
+    backend_vulkan_command_buffer_end(command_buffer);
+
+    VkSubmitInfo submitInfo = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &command_buffer->handle;
+    ZZ_BACKEND_VULKAN_ASSERT(vkQueueSubmit(queue, 1, &submitInfo, 0));
+
+    ZZ_BACKEND_VULKAN_ASSERT(vkQueueWaitIdle(queue));
+
+    backend_vulkan_command_buffer_deallocate(context, command_buffer, commandPool);
+}
+
+void backend_vulkan_context_fill_command_buffers(struct backend_vulkan_context* context)
+{
+    if (!context->graphics_command_buffers)
+    {
+        context->graphics_command_buffers = dynamic_array_create_and_reserve(struct backend_vulkan_command_buffer, context->swapchain.image_count);
+        for (u32 i = 0; i < context->swapchain.image_count; i += 1)
+        {
+            memory_zero(&context->graphics_command_buffers[i], sizeof(struct backend_vulkan_command_buffer));
+        }
+    }
+
+    for (u32 i = 0; i < context->swapchain.image_count; i += 1)
+    {
+        if (context->graphics_command_buffers[i].handle)
+        {
+            backend_vulkan_command_buffer_deallocate(context, &context->graphics_command_buffers[i], context->device.graphicsCommandPool);
+        }
+        memory_zero(&context->graphics_command_buffers[i], sizeof(struct backend_vulkan_command_buffer));
+        backend_vulkan_command_buffer_allocate(context, &context->graphics_command_buffers[i], context->device.graphicsCommandPool, TRUE);
+    }
+}
+
+i32 backend_vulkan_context_get_memory_index(struct backend_vulkan_context* context, u32 type_filter, u32 property_flags)
+{
+    VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(context->device.physicalDevice, &physicalDeviceMemoryProperties);
+
+    for (u32 i = 0; i < physicalDeviceMemoryProperties.memoryTypeCount; i += 1)
+    {
+        if (type_filter & (1 << i) && (physicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & property_flags) == property_flags)
+        {
+            return i;
+        }
+    }
+
+    return -1;
 }
 
 #if defined(ZZ_DEBUG)

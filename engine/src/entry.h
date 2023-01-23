@@ -59,6 +59,7 @@ int main()
         ZZ_LOG_FATAL("Application did not close gracefully.");
         return 2;
     }
+    application_deinitialize();
 
     input_deinitialize();
     event_deinitialize();

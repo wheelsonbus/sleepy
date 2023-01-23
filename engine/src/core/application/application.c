@@ -69,7 +69,7 @@ b8 application_initialize(struct program* program)
     return TRUE;
 }
 
-void application_deinitialize(struct program* program)
+void application_deinitialize()
 {
     application_initialized = FALSE;
 }

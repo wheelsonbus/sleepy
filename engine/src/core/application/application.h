@@ -12,6 +12,6 @@ struct application_config
 };
 
 ZZ_API b8 application_initialize(struct program* program);
-void application_deinitialize(struct program* program);
+ZZ_API void application_deinitialize();
 
 ZZ_API b8 application_run();
