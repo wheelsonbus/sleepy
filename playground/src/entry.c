@@ -17,7 +17,7 @@ b8 entry(struct program* program)
 
     program->resize = playground_resize;
 
-    program->state = memory_allocate(sizeof(struct playground_state), ZZ_MEMORY_TAG_GAME);
+    program->state = memory_allocate(sizeof(struct playground_state), ZZ_MEMORY_TAG_PROGRAM);
 
     return TRUE;
 }

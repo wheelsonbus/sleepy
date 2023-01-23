@@ -144,3 +144,9 @@ b8 application_run()
 
     return TRUE;
 }
+
+void application_get_size(u32* width, u32* height)
+{
+    *width = application.width;
+    *height = application.height;
+}

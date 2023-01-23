@@ -93,6 +93,14 @@ struct backend_vulkan_render_pass
     enum backend_vulkan_render_pass_state state;
 };
 
+struct backend_vulkan_framebuffer
+{
+    VkFramebuffer handle;
+    u32 attachment_image_view_count;
+    VkImageView* attachmentImageViews;
+    struct backend_vulkan_render_pass* render_pass;
+};
+
 struct backend_vulkan_swapchain
 {
     VkSwapchainKHR handle;
@@ -103,6 +111,8 @@ struct backend_vulkan_swapchain
     VkImageView* imageViews;
 
     struct backend_vulkan_image depth_image;
+
+    struct backend_vulkan_framebuffer* framebuffers;
 };
 
 enum backend_vulkan_command_buffer_state
@@ -121,24 +131,39 @@ struct backend_vulkan_command_buffer
     enum backend_vulkan_command_buffer_state state;
 };
 
+struct backend_vulkan_fence
+{
+    VkFence handle;
+    b8 signaled;
+};
+
 struct backend_vulkan_context
 {
     VkInstance instance;
     VkAllocationCallbacks* allocator;
+
     VkSurfaceKHR surface;
 
     struct backend_vulkan_device device;
 
     struct backend_vulkan_swapchain swapchain;
-    u32 image_index;
-    u32 current_frame;
-    b8 recreating_swapchain;
 
     struct backend_vulkan_render_pass main_render_pass;
 
     struct backend_vulkan_command_buffer* graphics_command_buffers;
 
+    VkSemaphore* imageAvailableSemaphores;
+    VkSemaphore* queueCompleteSemaphores;
+
+    u32 in_flight_fence_count;
+    struct backend_vulkan_fence* in_flight_fences;
+
+    struct backend_vulkan_fence** images_fences_in_flight;
+
     u32 framebuffer_width, framebuffer_height;
+    u32 image_index;
+    u32 current_frame;
+    b8 recreating_swapchain;
 
 #if defined(ZZ_DEBUG)
     VkDebugUtilsMessengerEXT debugUtilsMessenger;
@@ -164,6 +189,9 @@ void backend_vulkan_render_pass_destroy(struct backend_vulkan_context* context, 
 void backend_vulkan_render_pass_begin(struct backend_vulkan_render_pass* render_pass, struct backend_vulkan_command_buffer* command_buffer, VkFramebuffer framebuffer);
 void backend_vulkan_render_pass_end(struct backend_vulkan_render_pass* render_pass, struct backend_vulkan_command_buffer* command_buffer);
 
+b8 backend_vulkan_framebuffer_create(struct backend_vulkan_context* context, struct backend_vulkan_framebuffer* framebuffer, struct backend_vulkan_render_pass* render_pass, u32 width, u32 height, u32 attachment_image_view_count, VkImageView* attachmentImageViews);
+void backend_vulkan_framebuffer_destroy(struct backend_vulkan_context* context, struct backend_vulkan_framebuffer* framebuffer);
+
 b8 backend_vulkan_swapchain_create(struct backend_vulkan_context* context, u32 width, u32 height, struct backend_vulkan_swapchain* swapchain);
 b8 backend_vulkan_swapchain_recreate(struct backend_vulkan_context* context, u32 width, u32 height, struct backend_vulkan_swapchain* swapchain);
 void backend_vulkan_swapchain_destroy(struct backend_vulkan_context* context, struct backend_vulkan_swapchain* swapchain);
@@ -178,7 +206,13 @@ void backend_vulkan_command_buffer_reset(struct backend_vulkan_command_buffer* c
 void backend_vulkan_command_buffer_allocate_and_begin_for_single_use(struct backend_vulkan_context* context, struct backend_vulkan_command_buffer* command_buffer, VkCommandPool commandPool);
 void backend_vulkan_command_buffer_end_and_submit_for_single_use(struct backend_vulkan_context* context, struct backend_vulkan_command_buffer* command_buffer, VkCommandPool commandPool, VkQueue queue);
 
-void backend_vulkan_context_fill_command_buffers(struct backend_vulkan_context* context);
+b8 backend_vulkan_fence_create(struct backend_vulkan_context* context, struct backend_vulkan_fence* fence, b8 signaled);
+void backend_vulkan_fence_destroy(struct backend_vulkan_context* context, struct backend_vulkan_fence* fence);
+b8 backend_vulkan_fence_wait(struct backend_vulkan_context* context, struct backend_vulkan_fence* fence, u64 timeout_nanoseconds);
+void backend_vulkan_fence_reset(struct backend_vulkan_context* context, struct backend_vulkan_fence* fence);
+
+void backend_vulkan_context_generate_command_buffers(struct backend_vulkan_context* context);
+void backend_vulkan_context_generate_framebuffers(struct backend_vulkan_context* context);
 
 i32 backend_vulkan_context_get_memory_index(struct backend_vulkan_context* context, u32 type_filter, u32 property_flags);
 

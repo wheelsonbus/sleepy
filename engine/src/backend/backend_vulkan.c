@@ -7,14 +7,23 @@
 #include "core/string/string.h"
 #include "core/log/log.h"
 #include "core/memory/memory.h"
+#include "core/render/render.h"
 #include "platform/backend/backend_vulkan.h"
 
 static struct backend_vulkan_context backend_vulkan_context;
+static u32 cached_framebuffer_width = 0;
+static u32 cached_framebuffer_height = 0;
 
 b8 backend_initialize(const char* application_name, struct platform_application* platform_application)
 {
     // TODO Custom allocator
     backend_vulkan_context.allocator = 0;
+
+    render_get_size(&cached_framebuffer_width, &cached_framebuffer_height);
+    backend_vulkan_context.framebuffer_width = (cached_framebuffer_width != 0) ? cached_framebuffer_width : 800;
+    backend_vulkan_context.framebuffer_height = (cached_framebuffer_height != 0) ? cached_framebuffer_height : 600;
+    cached_framebuffer_width = 0;
+    cached_framebuffer_height = 0;
 
     VkApplicationInfo applicationInfo = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
     applicationInfo.apiVersion = VK_API_VERSION_1_3;
@@ -111,14 +120,60 @@ b8 backend_initialize(const char* application_name, struct platform_application*
         ZZ_LOG_FATAL("Failed to create backend_vulkan_render_pass.");
         return FALSE;
     }
+
+    backend_vulkan_context_generate_framebuffers(&backend_vulkan_context);
+
+    backend_vulkan_context_generate_command_buffers(&backend_vulkan_context);
+
+    backend_vulkan_context.imageAvailableSemaphores = dynamic_array_create_and_reserve(VkSemaphore, backend_vulkan_context.swapchain.max_frames_in_flight);
+    backend_vulkan_context.queueCompleteSemaphores = dynamic_array_create_and_reserve(VkSemaphore, backend_vulkan_context.swapchain.max_frames_in_flight);
+    backend_vulkan_context.in_flight_fences = dynamic_array_create_and_reserve(struct backend_vulkan_fence, backend_vulkan_context.swapchain.max_frames_in_flight);
+    for (u32 i = 0; i < backend_vulkan_context.swapchain.max_frames_in_flight; i += 1)
+    {
+        VkSemaphoreCreateInfo semaphoreCreateInfo = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+        ZZ_BACKEND_VULKAN_ASSERT(vkCreateSemaphore(backend_vulkan_context.device.logicalDevice, &semaphoreCreateInfo, backend_vulkan_context.allocator, &backend_vulkan_context.imageAvailableSemaphores[i]));
+        ZZ_BACKEND_VULKAN_ASSERT(vkCreateSemaphore(backend_vulkan_context.device.logicalDevice, &semaphoreCreateInfo, backend_vulkan_context.allocator, &backend_vulkan_context.queueCompleteSemaphores[i]));
     
-    backend_vulkan_context_fill_command_buffers(&backend_vulkan_context);
+        if (!backend_vulkan_fence_create(&backend_vulkan_context, &backend_vulkan_context.in_flight_fences[i], TRUE))
+        {
+            ZZ_LOG_FATAL("Failed to create backend_vulkan_fence.");
+            return FALSE;
+        }
+    }
+    backend_vulkan_context.images_fences_in_flight = dynamic_array_create_and_reserve(struct backend_vulkan_fence*, backend_vulkan_context.swapchain.image_count);
+    for (u32 i = 0; i < backend_vulkan_context.swapchain.image_count; i += 1)
+    {
+        backend_vulkan_context.images_fences_in_flight = 0;
+    }
 
     return TRUE;
 }
 
 void backend_deinitialize()
 {
+    vkDeviceWaitIdle(backend_vulkan_context.device.logicalDevice);
+
+    for (u32 i = 0; i < backend_vulkan_context.swapchain.max_frames_in_flight; i += 1)
+    {
+        if (backend_vulkan_context.imageAvailableSemaphores[i])
+        {
+            vkDestroySemaphore(backend_vulkan_context.device.logicalDevice, backend_vulkan_context.imageAvailableSemaphores[i], backend_vulkan_context.allocator);
+            backend_vulkan_context.imageAvailableSemaphores[i] = 0;
+        }
+        if (backend_vulkan_context.queueCompleteSemaphores[i])
+        {
+            vkDestroySemaphore(backend_vulkan_context.device.logicalDevice, backend_vulkan_context.queueCompleteSemaphores[i], backend_vulkan_context.allocator);
+            backend_vulkan_context.queueCompleteSemaphores[i] = 0;
+        }
+        backend_vulkan_fence_destroy(&backend_vulkan_context, &backend_vulkan_context.in_flight_fences[i]);
+    }
+    dynamic_array_destroy(backend_vulkan_context.imageAvailableSemaphores);
+    backend_vulkan_context.imageAvailableSemaphores = 0;
+    dynamic_array_destroy(backend_vulkan_context.queueCompleteSemaphores);
+    backend_vulkan_context.queueCompleteSemaphores = 0;
+    dynamic_array_destroy(backend_vulkan_context.in_flight_fences);
+    backend_vulkan_context.in_flight_fences = 0;
+
     backend_vulkan_render_pass_destroy(&backend_vulkan_context, &backend_vulkan_context.main_render_pass);
     backend_vulkan_swapchain_destroy(&backend_vulkan_context, &backend_vulkan_context.swapchain);
     backend_vulkan_context_destroy_device(&backend_vulkan_context);
@@ -713,6 +768,44 @@ void backend_vulkan_render_pass_end(struct backend_vulkan_render_pass* render_pa
     command_buffer->state = ZZ_BACKEND_VULKAN_COMMAND_BUFFER_STATE_RECORDING;
 }
 
+b8 backend_vulkan_framebuffer_create(struct backend_vulkan_context* context, struct backend_vulkan_framebuffer* framebuffer, struct backend_vulkan_render_pass* render_pass, u32 width, u32 height, u32 attachment_image_view_count, VkImageView* attachmentImageViews)
+{
+    framebuffer->attachment_image_view_count = attachment_image_view_count;
+    framebuffer->attachmentImageViews = memory_allocate(sizeof(VkImageView) * attachment_image_view_count, ZZ_MEMORY_TAG_RENDER);
+    for (u32 i = 0; i < attachment_image_view_count; i += 1)
+    {
+        framebuffer->attachmentImageViews[i] = attachmentImageViews[i];
+    }
+
+    framebuffer->render_pass = render_pass;
+
+    VkFramebufferCreateInfo framebufferCreateInfo = {VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO};
+    framebufferCreateInfo.renderPass = render_pass->handle;
+    framebufferCreateInfo.attachmentCount = attachment_image_view_count;
+    framebufferCreateInfo.pAttachments = framebuffer->attachmentImageViews;
+    framebufferCreateInfo.width = width;
+    framebufferCreateInfo.height = height;
+    framebufferCreateInfo.layers = 1;
+    ZZ_BACKEND_VULKAN_ASSERT(vkCreateFramebuffer(context->device.logicalDevice, &framebufferCreateInfo, context->allocator, &framebuffer->handle));
+
+    return TRUE;
+}
+
+void backend_vulkan_framebuffer_destroy(struct backend_vulkan_context* context, struct backend_vulkan_framebuffer* framebuffer)
+{
+    vkDestroyFramebuffer(context->device.logicalDevice, framebuffer->handle, context->allocator);
+    framebuffer->handle = 0;
+
+    if (framebuffer->attachmentImageViews)
+    {
+        memory_deallocate(framebuffer->attachmentImageViews, sizeof(VkImageView) * framebuffer->attachment_image_view_count, ZZ_MEMORY_TAG_RENDER);
+        framebuffer->attachmentImageViews = 0;
+    }
+
+    framebuffer->attachment_image_view_count = 0;
+    framebuffer->render_pass = 0;
+}
+
 b8 backend_vulkan_swapchain_create(struct backend_vulkan_context* context, u32 width, u32 height, struct backend_vulkan_swapchain* swapchain)
 {
     VkExtent2D swapchainExtent = {width, height};
@@ -830,6 +923,8 @@ b8 backend_vulkan_swapchain_create(struct backend_vulkan_context* context, u32 w
 
     backend_vulkan_image_create(context, VK_IMAGE_TYPE_2D, swapchainExtent.width, swapchainExtent.height, context->device.depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, TRUE, VK_IMAGE_ASPECT_DEPTH_BIT, &swapchain->depth_image);
 
+    swapchain->framebuffers = dynamic_array_create_and_reserve(struct backend_vulkan_framebuffer, backend_vulkan_context.swapchain.image_count);
+
     return TRUE;
 }
 
@@ -841,12 +936,13 @@ b8 backend_vulkan_swapchain_recreate(struct backend_vulkan_context* context, u32
 
 void backend_vulkan_swapchain_destroy(struct backend_vulkan_context* context, struct backend_vulkan_swapchain* swapchain)
 {
-    backend_vulkan_image_destroy(context, &swapchain->depth_image);
-
     for (u32 i = 0; i < swapchain->image_count; i += 1)
     {
+        backend_vulkan_framebuffer_destroy(context, &swapchain->framebuffers[i]);
         vkDestroyImageView(context->device.logicalDevice, swapchain->imageViews[i], context->allocator);
     }
+
+    backend_vulkan_image_destroy(context, &swapchain->depth_image);
 
     vkDestroySwapchainKHR(context->device.logicalDevice, swapchain->handle, context->allocator);
 }
@@ -887,6 +983,8 @@ void backend_vulkan_swapchain_present(struct backend_vulkan_context* context, st
     {
         ZZ_LOG_FATAL("Failed to present swapchain image.");
     }
+
+    context->current_frame = (context->current_frame + 1) % swapchain->max_frames_in_flight;
 }
 
 b8 backend_vulkan_command_buffer_allocate(struct backend_vulkan_context* context, struct backend_vulkan_command_buffer* command_buffer, VkCommandPool commandPool, b8 primary)
@@ -964,7 +1062,80 @@ void backend_vulkan_command_buffer_end_and_submit_for_single_use(struct backend_
     backend_vulkan_command_buffer_deallocate(context, command_buffer, commandPool);
 }
 
-void backend_vulkan_context_fill_command_buffers(struct backend_vulkan_context* context)
+b8 backend_vulkan_fence_create(struct backend_vulkan_context* context, struct backend_vulkan_fence* fence, b8 signaled)
+{
+    fence->signaled = signaled;
+
+    VkFenceCreateInfo fenceCreateInfo = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+    fenceCreateInfo.flags = fence->signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0;
+    ZZ_BACKEND_VULKAN_ASSERT(vkCreateFence(context->device.logicalDevice, &fenceCreateInfo, context->allocator, &fence->handle));
+
+    return TRUE;
+}
+
+void backend_vulkan_fence_destroy(struct backend_vulkan_context* context, struct backend_vulkan_fence* fence)
+{
+    vkDestroyFence(context->device.logicalDevice, fence->handle, context->allocator);
+    fence->handle = 0;
+    fence->signaled = FALSE;
+}
+
+b8 backend_vulkan_fence_wait(struct backend_vulkan_context* context, struct backend_vulkan_fence* fence, u64 timeout_nanoseconds)
+{
+    if (!fence->signaled)
+    {
+        VkResult result = vkWaitForFences(context->device.logicalDevice, 1, &fence->handle, TRUE, timeout_nanoseconds);
+        switch(result)
+        {
+            case VK_SUCCESS:
+                fence->signaled = TRUE;
+                return TRUE;
+            case VK_TIMEOUT:
+                ZZ_LOG_WARNING("vkWaitForFences timed out.");
+                break;
+            case VK_ERROR_DEVICE_LOST:
+                ZZ_LOG_ERROR("vkWaitForFences returned VK_ERROR_DEVICE_LOST.");
+                break;
+            case VK_ERROR_OUT_OF_HOST_MEMORY:
+                ZZ_LOG_ERROR("vkWaitForFences returned VK_ERROR_OUT_OF_HOST_MEMORY.");
+                break;
+            case VK_ERROR_OUT_OF_DEVICE_MEMORY:
+                ZZ_LOG_ERROR("vkWaitForFences returned VK_ERROR_OUT_OF_DEVICE_MEMORY.");
+                break;
+            default:
+                ZZ_LOG_ERROR("vkWaitForFences returned an unknown error.");
+                break;
+        }
+    }
+    else
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+void backend_vulkan_fence_reset(struct backend_vulkan_context* context, struct backend_vulkan_fence* fence)
+{
+    if (fence->signaled)
+    {
+        ZZ_BACKEND_VULKAN_ASSERT(vkResetFences(context->device.logicalDevice, 1, &fence->handle));
+        fence->signaled = FALSE;
+    }
+}
+
+void backend_vulkan_context_generate_framebuffers(struct backend_vulkan_context* context)
+{
+    for (u32 i = 0; i < context->swapchain.image_count; i += 1)
+    {
+        u32 attachment_image_view_count = 2;
+        VkImageView attachmentImageViews[] = {context->swapchain.imageViews[i], context->swapchain.depth_image.view};
+
+        backend_vulkan_framebuffer_create(context, &context->swapchain.framebuffers[i], &context->main_render_pass, context->framebuffer_width, context->framebuffer_height, attachment_image_view_count, attachmentImageViews);
+    }
+}
+
+void backend_vulkan_context_generate_command_buffers(struct backend_vulkan_context* context)
 {
     if (!context->graphics_command_buffers)
     {

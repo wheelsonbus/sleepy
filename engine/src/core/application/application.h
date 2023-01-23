@@ -15,3 +15,5 @@ ZZ_API b8 application_initialize(struct program* program);
 ZZ_API void application_deinitialize();
 
 ZZ_API b8 application_run();
+
+void application_get_size(u32* width, u32* height);

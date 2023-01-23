@@ -2,6 +2,7 @@
 
 #include "core/log/log.h"
 #include "core/memory/memory.h"
+#include "core/application/application.h"
 #include "backend/backend.h"
 
 b8 render_initialize(const char* application_name, struct platform_application* platform_application)
@@ -37,4 +38,9 @@ b8 render_draw_frame(struct render_packet* packet)
     }
 
     return TRUE;
+}
+
+void render_get_size(u32* width, u32* height)
+{
+    application_get_size(width, height);
 }

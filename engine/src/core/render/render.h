@@ -15,3 +15,5 @@ void render_deinitialize();
 void render_resize(u16 width, u16 height);
 
 b8 render_draw_frame(struct render_packet* packet);
+
+void render_get_size(u32* width, u32* height);
