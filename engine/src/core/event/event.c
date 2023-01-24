@@ -35,6 +35,7 @@ b8 event_initialize()
     memory_zero(&event_system, sizeof(event_system));
 
     initialized = TRUE;
+    ZZ_LOG_INFO("Event module initialized.");
     return TRUE;
 }
 
@@ -48,6 +49,9 @@ void event_deinitialize()
             event_system.registries[i].registrations = 0;
         }
     }
+
+    initialized = FALSE;
+    ZZ_LOG_INFO("Event module deinitialized.");
 }
 
 b8 event_register_receiver(u16 code, void* receiver, event_callback_t callback)

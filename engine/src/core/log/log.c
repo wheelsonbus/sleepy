@@ -7,11 +7,12 @@
 #include "core/console/console.h"
 
 b8 log_initialize() {
+    ZZ_LOG_INFO("Log module initialized.");
     return TRUE;
 }
 
 void log_deinitialize() {
-
+    ZZ_LOG_INFO("Log module deinitialized.");
 }
 
 void _log(int level, const char* message, ...)

@@ -22,12 +22,13 @@ static const char* memory_tag_strings[ZZ_MEMORY_TAG_MAX] = {
 b8 memory_initialize()
 {
     platform_memory_zero(&memory_statistics, sizeof(memory_statistics));
+    ZZ_LOG_INFO("Memory module initialized.");
     return TRUE;
 }
 
 void memory_deinitialize()
 {
-
+    ZZ_LOG_INFO("Memory module deinitialized.");
 }
 
 void* memory_allocate(u64 size, enum memory_tag tag)

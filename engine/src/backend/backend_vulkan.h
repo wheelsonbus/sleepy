@@ -158,9 +158,11 @@ struct backend_vulkan_context
     u32 in_flight_fence_count;
     struct backend_vulkan_fence* in_flight_fences;
 
-    struct backend_vulkan_fence** images_fences_in_flight;
+    struct backend_vulkan_fence** in_flight_image_fences;
 
     u32 framebuffer_width, framebuffer_height;
+    u64 framebuffer_size_generation;
+    u64 framebuffer_size_last_generation;
     u32 image_index;
     u32 current_frame;
     b8 recreating_swapchain;
@@ -215,6 +217,8 @@ void backend_vulkan_context_generate_command_buffers(struct backend_vulkan_conte
 void backend_vulkan_context_generate_framebuffers(struct backend_vulkan_context* context);
 
 i32 backend_vulkan_context_get_memory_index(struct backend_vulkan_context* context, u32 type_filter, u32 property_flags);
+
+b8 backend_vulkan_result_is_error(VkResult result);
 
 #if defined(ZZ_DEBUG)
 VKAPI_ATTR VkBool32 VKAPI_CALL backend_vulkan_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* callbackData, void* userData);

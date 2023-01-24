@@ -120,7 +120,15 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
             return 0;
         case WM_SIZE:
             {
-                // TODO Fire resize event
+                RECT rect;
+                GetClientRect(hWnd, &rect);
+                u32 width = rect.right - rect.left;
+                u32 height = rect.bottom - rect.top;
+
+                union event_data event_data;
+                event_data.u16[0] = (u16)width;
+                event_data.u16[1] = (u16)height;
+                event_send(ZZ_EVENT_CODE_RESIZE, 0, event_data);
             }  
             break;
         case WM_KEYDOWN:

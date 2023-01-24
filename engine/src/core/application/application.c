@@ -32,6 +32,39 @@ b8 application_on_quit(void* sender, void* receiver, union event_data data)
     return TRUE;
 }
 
+b8 application_on_resize(void* sender, void* receiver, union event_data data)
+{
+    u16 width = data.u16[0];
+    u16 height = data.u16[1];
+
+    if (width != application.width || height != application.height)
+    {
+        application.width = width;
+        application.height = height;
+
+        ZZ_LOG_DEBUG("Resize event received: (%i, %i)", width, height);
+
+        if (width == 0 || height == 0)
+        {
+            ZZ_LOG_INFO("Window minimized. Suspending applicaiton.");
+            application.suspended = TRUE;
+            return TRUE;
+        }
+        else
+        {
+            if (application.suspended)
+            {
+                ZZ_LOG_INFO("Window restored. Resuming application.");
+                application.suspended = FALSE;
+            }
+            application.program->resize(application.program, width, height);
+            render_resize(width, height);
+        }
+    }
+
+    return FALSE;
+}
+
 b8 application_initialize(struct program* program)
 {
     if (application_initialized)
@@ -58,20 +91,27 @@ b8 application_initialize(struct program* program)
 
     if (!application.program->initialize(application.program))
     {
-        ZZ_LOG_FATAL("Failed to initialize game.");
+        ZZ_LOG_FATAL("Failed to initialize program.");
         return FALSE;
     }
-    application.program->resize(application.program, application.width, application.height);
 
     event_register_receiver(ZZ_EVENT_CODE_QUIT, 0, application_on_quit);
+    event_register_receiver(ZZ_EVENT_CODE_RESIZE, 0, application_on_resize);
+    
+    union event_data event_data;
+    event_data.u16[0] = (u16)config->width;
+    event_data.u16[1] = (u16)config->height;
+    event_send(ZZ_EVENT_CODE_RESIZE, 0, event_data);
 
     application_initialized = TRUE;
+    ZZ_LOG_INFO("Application initialized.");
     return TRUE;
 }
 
 void application_deinitialize()
 {
     application_initialized = FALSE;
+    ZZ_LOG_INFO("Application deinitialized.");
 }
 
 b8 application_run()
@@ -138,6 +178,7 @@ b8 application_run()
     application.running = FALSE;
 
     event_unregister_receiver(ZZ_EVENT_CODE_QUIT, 0, application_on_quit);
+    event_unregister_receiver(ZZ_EVENT_CODE_RESIZE, 0, application_on_resize);
 
     render_deinitialize();
     platform_application_deinitialize(&application.platform_application);

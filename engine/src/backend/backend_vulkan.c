@@ -42,7 +42,6 @@ b8 backend_initialize(const char* application_name, struct platform_application*
     const char** required_layer_names = dynamic_array_create(const char*);
     dynamic_array_push(required_layer_names, &"VK_LAYER_KHRONOS_validation");
     u32 required_layer_count = dynamic_array_get_length(required_layer_names);
-    ZZ_LOG_DEBUG("Required Vulkan layers:");
 
     u32 available_layer_count = 0;
     ZZ_BACKEND_VULKAN_ASSERT(vkEnumerateInstanceLayerProperties(&available_layer_count, 0));
@@ -115,7 +114,7 @@ b8 backend_initialize(const char* application_name, struct platform_application*
         return FALSE;
     }
 
-    if (!backend_vulkan_render_pass_create(&backend_vulkan_context, &backend_vulkan_context.main_render_pass, 0, 0, backend_vulkan_context.framebuffer_width, backend_vulkan_context.framebuffer_height, 0.0f, 0.0f, 0.2f, 1.0f, 1.0f, 0))
+    if (!backend_vulkan_render_pass_create(&backend_vulkan_context, &backend_vulkan_context.main_render_pass, 0, 0, backend_vulkan_context.framebuffer_width, backend_vulkan_context.framebuffer_height, 0.1f, 0.0f, 0.1f, 1.0f, 1.0f, 0))
     {
         ZZ_LOG_FATAL("Failed to create backend_vulkan_render_pass.");
         return FALSE;
@@ -140,10 +139,10 @@ b8 backend_initialize(const char* application_name, struct platform_application*
             return FALSE;
         }
     }
-    backend_vulkan_context.images_fences_in_flight = dynamic_array_create_and_reserve(struct backend_vulkan_fence*, backend_vulkan_context.swapchain.image_count);
+    backend_vulkan_context.in_flight_image_fences = dynamic_array_create_and_reserve(struct backend_vulkan_fence*, backend_vulkan_context.swapchain.image_count);
     for (u32 i = 0; i < backend_vulkan_context.swapchain.image_count; i += 1)
     {
-        backend_vulkan_context.images_fences_in_flight = 0;
+        backend_vulkan_context.in_flight_image_fences[i] = 0;
     }
 
     return TRUE;
@@ -194,16 +193,166 @@ void backend_deinitialize()
 
 void backend_resize(u16 width, u16 height)
 {
-
+    cached_framebuffer_width = width;
+    cached_framebuffer_height = height;
+    backend_vulkan_context.framebuffer_size_generation += 1;
 }
 
 b8 backend_begin_frame(f32 delta_time)
 {
+    if (backend_vulkan_context.recreating_swapchain)
+    {
+        VkResult result = vkDeviceWaitIdle(backend_vulkan_context.device.logicalDevice);
+        if (backend_vulkan_result_is_error(result))
+        {
+            ZZ_LOG_ERROR("backend_begin_frame vkDeviceWaitIdle failed.");
+            return FALSE;
+        }
+        return FALSE;
+    }
+
+    if (backend_vulkan_context.framebuffer_size_generation != backend_vulkan_context.framebuffer_size_last_generation)
+    {
+        VkResult result = vkDeviceWaitIdle(backend_vulkan_context.device.logicalDevice);
+        if (backend_vulkan_result_is_error(result))
+        {
+            ZZ_LOG_ERROR("backend_begin_frame vkDeviceWaitIdle failed.");
+            return FALSE;
+        }
+
+        if (backend_vulkan_context.recreating_swapchain)
+        {
+            return FALSE;
+        }
+        if (backend_vulkan_context.framebuffer_width == 0)
+        {
+            ZZ_LOG_DEBUG("Tried to recreate swapchain with framebuffer width of 0");
+            return FALSE;
+        }
+        if (backend_vulkan_context.framebuffer_height == 0)
+        {
+            ZZ_LOG_DEBUG("Tried to recreate swapchain with framebuffer height of 0");
+            return FALSE;
+        }
+
+        backend_vulkan_context.recreating_swapchain = TRUE;
+        vkDeviceWaitIdle(backend_vulkan_context.device.logicalDevice);
+        for (u32 i = 0; i < backend_vulkan_context.swapchain.image_count; i += 1)
+        {
+            backend_vulkan_context.in_flight_image_fences[i] = 0;
+        }
+        backend_vulkan_physical_device_query_swapchain_support(backend_vulkan_context.device.physicalDevice, backend_vulkan_context.surface, &backend_vulkan_context.device.swapchain_support_info);
+        backend_vulkan_device_detect_depth_format(&backend_vulkan_context.device);
+        if (!backend_vulkan_swapchain_recreate(&backend_vulkan_context, cached_framebuffer_width, cached_framebuffer_height, &backend_vulkan_context.swapchain))
+        {
+            ZZ_LOG_ERROR("Failed to recreate swapchain.");
+            return FALSE;
+        }
+
+        backend_vulkan_context.framebuffer_width = cached_framebuffer_width;
+        backend_vulkan_context.framebuffer_height = cached_framebuffer_height;
+        backend_vulkan_context.main_render_pass.w = backend_vulkan_context.framebuffer_width;
+        backend_vulkan_context.main_render_pass.h = backend_vulkan_context.framebuffer_height;
+        cached_framebuffer_width = 0;
+        cached_framebuffer_height = 0;
+        backend_vulkan_context.framebuffer_size_last_generation = backend_vulkan_context.framebuffer_size_generation;
+
+        for (u32 i = 0; i < backend_vulkan_context.swapchain.image_count; i += 1)
+        {
+            backend_vulkan_command_buffer_deallocate(&backend_vulkan_context, &backend_vulkan_context.graphics_command_buffers[i], backend_vulkan_context.device.graphicsCommandPool);
+        }
+        for (u32 i = 0; i < backend_vulkan_context.swapchain.image_count; i += 1)
+        {
+            backend_vulkan_framebuffer_destroy(&backend_vulkan_context, &backend_vulkan_context.swapchain.framebuffers[i]);
+        }
+
+        backend_vulkan_context.main_render_pass.x = 0;
+        backend_vulkan_context.main_render_pass.y = 0;
+        backend_vulkan_context.main_render_pass.w = backend_vulkan_context.framebuffer_width;
+        backend_vulkan_context.main_render_pass.h = backend_vulkan_context.framebuffer_height;
+
+        backend_vulkan_context_generate_framebuffers(&backend_vulkan_context);
+        backend_vulkan_context_generate_command_buffers(&backend_vulkan_context);
+
+        backend_vulkan_context.recreating_swapchain = FALSE;
+
+        return FALSE;
+    }
+
+    if (!backend_vulkan_fence_wait(&backend_vulkan_context, &backend_vulkan_context.in_flight_fences[backend_vulkan_context.current_frame], (u64)-1))
+    {
+        ZZ_LOG_WARNING("Failed to wait for in-flight fence.");
+        return FALSE;
+    }
+
+    if (!backend_vulkan_swapchain_acquire_next_image_index(&backend_vulkan_context, &backend_vulkan_context.swapchain, (u64)-1, backend_vulkan_context.imageAvailableSemaphores[backend_vulkan_context.current_frame], 0, &backend_vulkan_context.image_index))
+    {
+        ZZ_LOG_ERROR("Failed to acquire next image index.");
+        return FALSE;
+    }
+
+    struct backend_vulkan_command_buffer* command_buffer = &backend_vulkan_context.graphics_command_buffers[backend_vulkan_context.image_index];
+    backend_vulkan_command_buffer_reset(command_buffer);
+    backend_vulkan_command_buffer_begin(command_buffer, FALSE, FALSE, FALSE);
+
+    VkViewport viewport = {};
+    viewport.x = 0.0f;
+    viewport.y = (f32)backend_vulkan_context.framebuffer_height;
+    viewport.width = (f32)backend_vulkan_context.framebuffer_width;
+    viewport.height = -(f32)backend_vulkan_context.framebuffer_height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(command_buffer->handle, 0, 1, &viewport);
+    
+    VkRect2D scissor;
+    scissor.offset.x = 0;
+    scissor.offset.y = 0;
+    scissor.extent.width = backend_vulkan_context.framebuffer_width;
+    scissor.extent.height = backend_vulkan_context.framebuffer_height;
+    vkCmdSetScissor(command_buffer->handle, 0, 1, &scissor);
+
+    backend_vulkan_context.main_render_pass.w = backend_vulkan_context.framebuffer_width;
+    backend_vulkan_context.main_render_pass.h = backend_vulkan_context.framebuffer_height;
+
+    backend_vulkan_render_pass_begin(&backend_vulkan_context.main_render_pass, command_buffer, backend_vulkan_context.swapchain.framebuffers[backend_vulkan_context.image_index].handle);
+
     return TRUE;
 }
 
 b8 backend_end_frame(f32 delta_time)
 {
+    struct backend_vulkan_command_buffer* command_buffer = &backend_vulkan_context.graphics_command_buffers[backend_vulkan_context.image_index];
+    backend_vulkan_render_pass_end(&backend_vulkan_context.main_render_pass, command_buffer);
+    backend_vulkan_command_buffer_end(command_buffer);
+
+    if (backend_vulkan_context.in_flight_image_fences[backend_vulkan_context.image_index] != VK_NULL_HANDLE)
+    {
+        backend_vulkan_fence_wait(&backend_vulkan_context, backend_vulkan_context.in_flight_image_fences[backend_vulkan_context.image_index], (u64)-1);
+    }
+
+    backend_vulkan_context.in_flight_image_fences[backend_vulkan_context.image_index] = &backend_vulkan_context.in_flight_fences[backend_vulkan_context.current_frame];
+    backend_vulkan_fence_reset(&backend_vulkan_context, &backend_vulkan_context.in_flight_fences[backend_vulkan_context.current_frame]);
+
+    VkSubmitInfo submitInfo = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &command_buffer->handle;
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &backend_vulkan_context.queueCompleteSemaphores[backend_vulkan_context.current_frame];
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = &backend_vulkan_context.imageAvailableSemaphores[backend_vulkan_context.current_frame];
+    VkPipelineStageFlags pipelineStageFlags[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.pWaitDstStageMask = pipelineStageFlags;
+    
+    VkResult result = vkQueueSubmit(backend_vulkan_context.device.graphicsQueue, 1, &submitInfo, backend_vulkan_context.in_flight_fences[backend_vulkan_context.current_frame].handle);
+    if (result != VK_SUCCESS)
+    {
+        ZZ_LOG_ERROR("vkQueueSubmit failed.");
+        return FALSE;
+    }
+    command_buffer->state = ZZ_BACKEND_VULKAN_COMMAND_BUFFER_STATE_SUBMITTED;
+
+    backend_vulkan_swapchain_present(&backend_vulkan_context, &backend_vulkan_context.swapchain, backend_vulkan_context.device.graphicsQueue, backend_vulkan_context.device.presentQueue, backend_vulkan_context.queueCompleteSemaphores[backend_vulkan_context.current_frame], backend_vulkan_context.image_index);
+
     return TRUE;
 }
 
@@ -396,14 +545,14 @@ b8 backend_vulkan_context_select_physical_device(struct backend_vulkan_context* 
         
         if (meets_requirements)
         {
-            for (u32 j = 0; j < memoryProperties.memoryHeapCount; j += 1) {
+            /*for (u32 j = 0; j < memoryProperties.memoryHeapCount; j += 1) {
                 f32 memory_size_gib = (((f32)memoryProperties.memoryHeaps[j].size) / 1024.0f / 1024.0f / 1024.0f);
                 if (memoryProperties.memoryHeaps[j].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
                     ZZ_LOG_INFO("Local GPU memory: %.2f GiB", memory_size_gib);
                 } else {
                     ZZ_LOG_INFO("Shared System memory: %.2f GiB", memory_size_gib);
                 }
-            }
+            }*/
             
             context->device.physicalDevice = physicalDevices[i];
             context->device.physicalDeviceProperties = properties;
@@ -653,6 +802,17 @@ void backend_vulkan_image_destroy(struct backend_vulkan_context* context, struct
 
 b8 backend_vulkan_render_pass_create(struct backend_vulkan_context* context, struct backend_vulkan_render_pass* render_pass, f32 x, f32 y, f32 w, f32 h, f32 r, f32 g, f32 b, f32 a, f32 depth, u32 stencil)
 {
+    render_pass->x = x;
+    render_pass->y = y;
+    render_pass->w = w;
+    render_pass->h = h;
+    render_pass->r = r;
+    render_pass->g = g;
+    render_pass->b = b;
+    render_pass->a = a;
+    render_pass->depth = depth;
+    render_pass->stencil = stencil;
+    
     VkSubpassDescription subpassDescription = {};
     subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     
@@ -936,6 +1096,8 @@ b8 backend_vulkan_swapchain_recreate(struct backend_vulkan_context* context, u32
 
 void backend_vulkan_swapchain_destroy(struct backend_vulkan_context* context, struct backend_vulkan_swapchain* swapchain)
 {
+    vkDeviceWaitIdle(context->device.logicalDevice);
+
     for (u32 i = 0; i < swapchain->image_count; i += 1)
     {
         backend_vulkan_framebuffer_destroy(context, &swapchain->framebuffers[i]);
@@ -1171,6 +1333,52 @@ i32 backend_vulkan_context_get_memory_index(struct backend_vulkan_context* conte
     }
 
     return -1;
+}
+
+b8 backend_vulkan_result_is_error(VkResult result)
+{
+    switch (result)
+    {
+        default:
+        case VK_SUCCESS:
+        case VK_NOT_READY:
+        case VK_TIMEOUT:
+        case VK_EVENT_SET:
+        case VK_EVENT_RESET:
+        case VK_INCOMPLETE:
+        case VK_SUBOPTIMAL_KHR:
+        case VK_THREAD_IDLE_KHR:
+        case VK_THREAD_DONE_KHR:
+        case VK_OPERATION_DEFERRED_KHR:
+        case VK_OPERATION_NOT_DEFERRED_KHR:
+        case VK_PIPELINE_COMPILE_REQUIRED_EXT:
+            return FALSE;
+        case VK_ERROR_OUT_OF_HOST_MEMORY:
+        case VK_ERROR_OUT_OF_DEVICE_MEMORY:
+        case VK_ERROR_INITIALIZATION_FAILED:
+        case VK_ERROR_DEVICE_LOST:
+        case VK_ERROR_MEMORY_MAP_FAILED:
+        case VK_ERROR_LAYER_NOT_PRESENT:
+        case VK_ERROR_EXTENSION_NOT_PRESENT:
+        case VK_ERROR_FEATURE_NOT_PRESENT:
+        case VK_ERROR_INCOMPATIBLE_DRIVER:
+        case VK_ERROR_TOO_MANY_OBJECTS:
+        case VK_ERROR_FORMAT_NOT_SUPPORTED:
+        case VK_ERROR_FRAGMENTED_POOL:
+        case VK_ERROR_SURFACE_LOST_KHR:
+        case VK_ERROR_NATIVE_WINDOW_IN_USE_KHR:
+        case VK_ERROR_OUT_OF_DATE_KHR:
+        case VK_ERROR_INCOMPATIBLE_DISPLAY_KHR:
+        case VK_ERROR_INVALID_SHADER_NV:
+        case VK_ERROR_OUT_OF_POOL_MEMORY:
+        case VK_ERROR_INVALID_EXTERNAL_HANDLE:
+        case VK_ERROR_FRAGMENTATION:
+        case VK_ERROR_INVALID_DEVICE_ADDRESS_EXT:
+        //case VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS:
+        case VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT:
+        case VK_ERROR_UNKNOWN:
+            return TRUE;
+    }
 }
 
 #if defined(ZZ_DEBUG)

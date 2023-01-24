@@ -13,17 +13,19 @@ b8 render_initialize(const char* application_name, struct platform_application* 
         return FALSE;
     }
 
+    ZZ_LOG_INFO("Render module initialized.");
     return TRUE;
 }
 
 void render_deinitialize()
 {
     backend_deinitialize();
+    ZZ_LOG_INFO("Render module deinitialized.");
 }
 
 void render_resize(u16 width, u16 height)
 {
-
+    backend_resize(width, height);
 }
 
 b8 render_draw_frame(struct render_packet* packet)

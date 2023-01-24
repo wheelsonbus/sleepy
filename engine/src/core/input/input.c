@@ -20,12 +20,14 @@ b8 input_initialize()
     memory_zero(&input_state, sizeof(input_state));
     memory_zero(&previous_input_state, sizeof(input_state));
     initialized = TRUE;
+    ZZ_LOG_INFO("Input module initialized.");
     return TRUE;
 }
 
 void input_deinitialize()
 {
     initialized = FALSE;
+    ZZ_LOG_INFO("Input module deinitialized.");
 }
 
 void input_update(f64 delta_time)
