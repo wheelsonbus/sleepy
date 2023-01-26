@@ -11,9 +11,9 @@ rem echo "Source files:" %sourceFiles%
 
 set target=playground
 set compilerFlags=-g
-set includeFlags=-Isrc -I../engine/src
-set linkerFlags=-L../bin/ -lengine.lib
+set includeFlags=-Isrc -I../zz/include
+set linkerFlags=-L../bin/ -lzz.lib
 set definitions=-DZZ_PLATFORM_WINDOWS -DZZ_BACKEND_VULKAN -DZZ_DEBUG -DZZ_IMPORT
 
 echo "Building %target%%..."
-clang %sourceFiles% %compilerFlags% -o ../bin/%target%.exe %definitions% %includeFlags% %linkerFlags%
+clang %sourceFiles% %compilerFlags% -o ../bin/%target%.exe %includeFlags% %linkerFlags% %definitions%

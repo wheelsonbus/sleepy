@@ -1,7 +1,7 @@
 @echo off
 rem Top-level build script
 
-pushd engine
+pushd zz
 call build.bat
 popd
 if %ERRORLEVEL% neq 0 (echo "Error:"%ERRORLEVEL% && exit)

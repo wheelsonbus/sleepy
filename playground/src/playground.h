@@ -1,8 +1,8 @@
 #pragma once
 
-#include <zz.h>
-#include <program.h>
-#include <core/log/log.h>
+#include <zz/zz.h>
+#include <zz/program.h>
+#include <zz/log.h>
 
 struct playground_state
 {

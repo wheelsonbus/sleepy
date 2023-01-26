@@ -1,5 +1,5 @@
-#include <entry.h>
-#include <core/memory/memory.h>
+#include <zz/entry.h>
+#include <zz/memory.h>
 
 #include "playground.h"
 
