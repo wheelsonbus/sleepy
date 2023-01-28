@@ -3,21 +3,16 @@
 
 #include "playground.h"
 
-b8 entry(struct program* program)
+void entry(struct program_config* program_config)
 {
-    program->application_config.x = 100;
-    program->application_config.y = 100;
-    program->application_config.width = 1280;
-    program->application_config.height = 720;
-    program->application_config.name = "Sleepy Engine Playground";
-
-    program->initialize = playground_initialize;
-    program->update = playground_update;
-    program->render = playground_render;
-
-    program->resize = playground_resize;
-
-    program->state = memory_allocate(sizeof(struct playground_state), ZZ_MEMORY_TAG_PROGRAM);
-
-    return TRUE;
+    program_config->name = "Sleepy Engine Playground";
+    program_config->x = 100;
+    program_config->y = 100;
+    program_config->width = 1280;
+    program_config->height = 720;
+    program_config->initialize = playground_initialize;
+    program_config->deinitialize = playground_deinitialize;
+    program_config->update = playground_update;
+    program_config->render = playground_render;
+    program_config->resize = playground_resize;
 }

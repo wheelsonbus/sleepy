@@ -2,6 +2,9 @@
 
 #include "zz.h"
 
+#include "memory.h"
+#include "event.h"
+
 enum input_mouse_button_code
 {
     ZZ_INPUT_MOUSE_BUTTON_CODE_LEFT,
@@ -122,21 +125,45 @@ enum input_key_code
     ZZ_INPUT_KEY_CODE_MAX
 };
 
-ZZ_API b8 input_initialize();
-ZZ_API void input_deinitialize();
+struct input_state
+{
+    b8 key_states[ZZ_INPUT_KEY_CODE_MAX];
+    b8 mouse_button_states[ZZ_INPUT_MOUSE_BUTTON_CODE_MAX];
+    i16 mouse_x, mouse_y;
+};
 
-void input_update(f64 delta_time);
+struct input
+{
+    struct program* program;
+    struct memory* memory;
+    struct event* event;
 
-ZZ_API b8 input_get_key_state(enum input_key_code code);
-ZZ_API b8 input_get_previous_key_state(enum input_key_code code);
-void input_set_key_state(enum input_key_code code, b8 down);
+    struct input_state state;
+    struct input_state previous_state;
+};
 
-ZZ_API b8 input_get_mouse_button_state(enum input_mouse_button_code code);
-ZZ_API b8 input_get_mouse_button_state(enum input_mouse_button_code code);
-void input_set_mouse_button_state(enum input_mouse_button_code code, b8 down);
+struct input_config
+{
+    struct program* program;
+    struct memory* memory;
+    struct event* event;
+};
 
-ZZ_API void input_get_mouse_position(i32* x, i32* y);
-ZZ_API void input_get_previous_mouse_position(i32* x, i32* y);
-void input_set_mouse_position(i16 x, i16 y);
+ZZ_API b8 input_create(struct input* input, struct input_config* config);
+ZZ_API void input_destroy(struct input* input);
 
-void input_move_mouse_wheel(i8 delta);
+void input_update(struct input* input, f64 delta_time);
+
+ZZ_API b8 input_get_key_state(struct input* input, enum input_key_code code);
+ZZ_API b8 input_get_previous_key_state(struct input* input, enum input_key_code code);
+void input_set_key_state(struct input* input, enum input_key_code code, b8 down);
+
+ZZ_API b8 input_get_mouse_button_state(struct input* input, enum input_mouse_button_code code);
+ZZ_API b8 input_get_mouse_button_state(struct input* input, enum input_mouse_button_code code);
+void input_set_mouse_button_state(struct input* input, enum input_mouse_button_code code, b8 down);
+
+ZZ_API void input_get_mouse_position(struct input* input, i32* x, i32* y);
+ZZ_API void input_get_previous_mouse_position(struct input* input, i32* x, i32* y);
+void input_set_mouse_position(struct input* input, i16 x, i16 y);
+
+void input_move_mouse_wheel(struct input* input, i8 delta);

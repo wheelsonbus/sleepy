@@ -1,21 +1,26 @@
 #include "playground.h"
 
-b8 playground_initialize(struct program* program)
+b8 playground_initialize()
 {
     return TRUE;
 }
 
-b8 playground_update(struct program* program, f32 delta_time)
+b8 playground_deinitialize()
 {
     return TRUE;
 }
 
-b8 playground_render(struct program* program, f32 delta_time)
+b8 playground_update(f64 delta_time)
 {
     return TRUE;
 }
 
-void playground_resize(struct program* program, u32 width, u32 height)
+b8 playground_render(f64 delta_time)
+{
+    return TRUE;
+}
+
+void playground_resize(u32 width, u32 height)
 {
     
 }

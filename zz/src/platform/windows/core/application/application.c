@@ -6,14 +6,18 @@
 #include <stdlib.h>
 
 #include "zz/log.h"
-#include "zz/event.h"
-#include "zz/input.h"
 
 static f64 platform_application_windows_clock_frequency;
 static LARGE_INTEGER platform_application_windows_start_time;
 
-b8 platform_application_initialize(struct platform_application* application, const char* name, i32 x, i32 y, i32 width, i32 height)
+static struct event* platform_event;
+static struct input* platform_input;
+
+b8 platform_application_initialize(struct platform_application* application, const char* name, u32 x, u32 y, u32 width, u32 height, struct event* event, struct input* input)
 {
+    platform_event = event;
+    platform_input = input;
+
     application->state = malloc(sizeof(struct platform_application_windows_state));
     struct platform_application_windows_state* state = (struct platform_application_windows_state*)application->state;
 
@@ -106,6 +110,18 @@ b8 platform_application_pump_messages(struct platform_application* application)
     return TRUE;
 }
 
+u64 platform_application_get_time(struct platform_application* application)
+{
+    LARGE_INTEGER currentTime;
+    QueryPerformanceCounter(&currentTime);
+    return (f64)currentTime.QuadPart * platform_application_windows_clock_frequency;
+}
+
+void platform_application_sleep(struct platform_application* application, u64 milliseconds)
+{
+    Sleep(milliseconds);
+}
+
 LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
@@ -113,7 +129,7 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
         case WM_ERASEBKGND:
             return 1;
         case WM_CLOSE:
-            event_send_null(ZZ_EVENT_CODE_QUIT, 0);
+            event_send_null(platform_event, ZZ_EVENT_CODE_QUIT, 0);
             return 0;
         case WM_DESTROY:
             PostQuitMessage(0);
@@ -128,7 +144,7 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
                 union event_data event_data;
                 event_data.u16[0] = (u16)width;
                 event_data.u16[1] = (u16)height;
-                event_send(ZZ_EVENT_CODE_RESIZE, 0, event_data);
+                event_send(platform_event, ZZ_EVENT_CODE_RESIZE, 0, event_data);
             }  
             break;
         case WM_KEYDOWN:
@@ -137,14 +153,14 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
         case WM_SYSKEYUP:
             {
                 b8 down = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
-                input_set_key_state((u16)wParam, down);
+                input_set_key_state(platform_input, (u16)wParam, down);
             }
             break;
         case WM_MOUSEMOVE:
             {
                 i32 x = GET_X_LPARAM(lParam);
                 i32 y = GET_Y_LPARAM(lParam);
-                input_set_mouse_position(x, y);
+                input_set_mouse_position(platform_input, x, y);
             }
             break;
         case WM_MOUSEWHEEL:
@@ -152,11 +168,11 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
                 i32 delta = GET_WHEEL_DELTA_WPARAM(wParam);
                 if (delta < 0)
                 {
-                    input_move_mouse_wheel(-1);
+                    input_move_mouse_wheel(platform_input, -1);
                 }
                 else if (delta > 0)
                 {
-                    input_move_mouse_wheel(1);
+                    input_move_mouse_wheel(platform_input, 1);
                 }
             }
             break;
@@ -186,20 +202,13 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
                 }
                 if (code != ZZ_INPUT_MOUSE_BUTTON_CODE_MAX)
                 {
-                    input_set_mouse_button_state(code, down);
+                    input_set_mouse_button_state(platform_input, code, down);
                 }
             }
             break;
     }
 
     return DefWindowProcA(hWnd, msg, wParam, lParam);
-}
-
-f64 platform_application_windows_time_get()
-{
-    LARGE_INTEGER currentTime;
-    QueryPerformanceCounter(&currentTime);
-    return (f64)currentTime.QuadPart * platform_application_windows_clock_frequency;
 }
 
 #endif

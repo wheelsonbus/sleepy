@@ -1,17 +1,42 @@
 #pragma once
 
+#include "memory.h"
+#include "event.h"
+#include "input.h"
 #include "application.h"
+#include "render.h"
 
 struct program
 {
-    struct application_config application_config;
+    struct memory memory;
+    struct event event;
+    struct input input;
+    struct application application;
+    struct render render;
 
-    b8 (*initialize)(struct program* program);
-    b8 (*deinitialize)(struct program* program);
-    b8 (*update)(struct program* program, f32 delta_time);
-    b8 (*render)(struct program* program, f32 delta_time);
+    u16 width, height;
+    b8 running, suspended;
 
-    void (*resize)(struct program* program, u32 width, u32 height);
-
-    void* state;
+    b8 (*initialize)();
+    b8 (*deinitialize)();
 };
+
+struct program_config
+{
+    char* name;
+    u16 x, y;
+    u16 width, height;
+
+    b8 (*initialize)();
+    b8 (*deinitialize)();
+    
+    b8 (*update)(f64 delta_time);
+    b8 (*render)(f64 delta_time);
+
+    void (*resize)(u32 width, u32 height);
+};
+
+ZZ_API b8 program_create(struct program* program, struct program_config* config);
+ZZ_API void program_destroy(struct program* program);
+
+ZZ_API b8 program_loop(struct program* program);
