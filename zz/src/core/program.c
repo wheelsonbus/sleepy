@@ -41,6 +41,19 @@ b8 program_on_resize(void* sender, void* receiver, union event_data data)
     return FALSE;
 }
 
+b8 program_on_key_press(void* sender, void* receiver, union event_data data)
+{
+    struct program* program = (struct program*)receiver;
+    u16 code = data.u16[0];
+    ZZ_LOG_DEBUG("%c", code);
+    if (code == ZZ_INPUT_KEY_CODE_ESCAPE)
+    {
+        event_send_null(&program->event, ZZ_EVENT_CODE_QUIT, 0);
+    }
+
+    return FALSE;
+}
+
 b8 program_create(struct program* program, struct program_config* config)
 {
     program->initialize = config->initialize;
@@ -99,6 +112,7 @@ b8 program_create(struct program* program, struct program_config* config)
 
     event_register_receiver(&program->event, ZZ_EVENT_CODE_QUIT, program, program_on_quit);
     event_register_receiver(&program->event, ZZ_EVENT_CODE_RESIZE, program, program_on_resize);
+    event_register_receiver(&program->event, ZZ_EVENT_CODE_KEY_PRESS, program, program_on_key_press);
 
     union event_data event_data;
     event_data.u16[0] = config->width;
@@ -112,6 +126,7 @@ void program_destroy(struct program* program)
 {
     event_unregister_receiver(&program->event, ZZ_EVENT_CODE_QUIT, program, program_on_quit);
     event_unregister_receiver(&program->event, ZZ_EVENT_CODE_RESIZE, program, program_on_resize);
+    event_unregister_receiver(&program->event, ZZ_EVENT_CODE_KEY_PRESS, program, program_on_key_press);
 
     render_destroy(&program->render);
     application_destroy(&program->application);
@@ -126,9 +141,10 @@ b8 program_loop(struct program* program)
     {
         if (!program->suspended)
         {
-            platform_application_pump_messages(&program->application.platform_application);
+            input_update(&program->input);
             application_sleep(&program->application, 10);
         }
+        platform_application_pump_messages(&program->application.platform_application);
     }
 
     return TRUE;

@@ -19,7 +19,7 @@ void input_destroy(struct input* input)
     ZZ_LOG_INFO("Input module destroyed.");
 }
 
-void input_update(struct input* input, f64 delta_time)
+void input_update(struct input* input)
 {
     memory_copy(input->memory, &input->previous_state, &input->state, sizeof(input->previous_state));
 }

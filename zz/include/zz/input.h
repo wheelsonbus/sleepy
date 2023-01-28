@@ -152,7 +152,7 @@ struct input_config
 ZZ_API b8 input_create(struct input* input, struct input_config* config);
 ZZ_API void input_destroy(struct input* input);
 
-void input_update(struct input* input, f64 delta_time);
+void input_update(struct input* input);
 
 ZZ_API b8 input_get_key_state(struct input* input, enum input_key_code code);
 ZZ_API b8 input_get_previous_key_state(struct input* input, enum input_key_code code);
