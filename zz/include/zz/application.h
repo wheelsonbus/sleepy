@@ -20,7 +20,7 @@ struct application_config
     struct event* event;
     struct input* input;
 
-    const char* name;
+    char* name;
     u16 x, y;
     u16 width, height;
 };

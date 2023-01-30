@@ -21,6 +21,7 @@ int main()
     if (!program_loop(&program))
     {
         ZZ_LOG_ERROR("program_loop returned FALSE.");
+        return 2;
     }
 
     program_destroy(&program);

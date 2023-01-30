@@ -10,7 +10,15 @@ b8 application_create(struct application* application, struct application_config
     application->event = config->event;
     application->input = config->input;
 
-    if (!platform_application_initialize(&application->platform_application, config->name, config->x, config->y, config->width, config->height, application->event, application->input))
+    struct platform_application_config platform_application_config;
+    platform_application_config.event = config->event;
+    platform_application_config.input = config->input;
+    platform_application_config.name = config->name;
+    platform_application_config.x = config->x;
+    platform_application_config.y = config->y;
+    platform_application_config.width = config->width;
+    platform_application_config.height = config->height;
+    if (!platform_application_create(&application->platform_application, &platform_application_config))
     {
         return FALSE;
     }
@@ -21,6 +29,7 @@ b8 application_create(struct application* application, struct application_config
 
 void application_destroy(struct application* application)
 {
+    platform_application_destroy(&application->platform_application);
     ZZ_LOG_INFO("Application module destroyed.");
 }
 

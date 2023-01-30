@@ -1,5 +1,9 @@
 #pragma once
 
+#define ZZ_VERSION_MAJOR 1
+#define ZZ_VERSION_MINOR 0
+#define ZZ_VERSION_PATCH 0
+
 // Unsigned integer types
 typedef unsigned char u8;
 typedef unsigned short u16;

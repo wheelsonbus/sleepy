@@ -11,7 +11,7 @@ rem echo "Source files:" %sourceFiles%
 
 set target=playground
 set compilerFlags=-g
-set includeFlags=-Isrc -I../zz/include -I../zz/src
+set includeFlags=-Isrc -I../zz/include -I../zz/src -I%VULKAN_SDK%/Include
 set linkerFlags=-L../bin/ -lzz.lib
 set definitions=-DZZ_PLATFORM_WINDOWS -DZZ_BACKEND_VULKAN -DZZ_DEBUG -DZZ_IMPORT
 

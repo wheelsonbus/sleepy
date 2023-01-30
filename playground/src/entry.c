@@ -6,8 +6,8 @@
 void entry(struct program_config* program_config)
 {
     program_config->name = "Sleepy Engine Playground";
-    program_config->x = 100;
-    program_config->y = 100;
+    program_config->x = 560;
+    program_config->y = 80;
     program_config->width = 1280;
     program_config->height = 720;
     program_config->initialize = playground_initialize;

@@ -26,11 +26,13 @@ b8 render_create(struct render* render, struct render_config* config)
     render->event = config->event;
     render->application = config->application;
 
-    /*if (!backend_initialize("PLACEHOLDER", &(config->application->platform_application)))
+    struct backend_render_config backend_render_config;
+    backend_render_config.application = config->application;
+    if (!backend_render_create(&render->backend_render, &backend_render_config))
     {
-        ZZ_LOG_FATAL("Failed to initialize backend.");
+        ZZ_LOG_FATAL("Failed to create backend render module.");
         return FALSE;
-    }*/
+    }
 
     event_register_receiver(render->event, ZZ_EVENT_CODE_RESIZE, render, render_on_resize);
 
@@ -40,7 +42,10 @@ b8 render_create(struct render* render, struct render_config* config)
 
 void render_destroy(struct render* render)
 {
-    //backend_deinitialize();
+    event_unregister_receiver(render->event, ZZ_EVENT_CODE_RESIZE, render, render_on_resize);
+
+    backend_render_destroy(&render->backend_render);
+
     ZZ_LOG_INFO("Render module destroyed.");
 }
 

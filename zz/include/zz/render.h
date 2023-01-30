@@ -2,6 +2,8 @@
 
 #include "zz.h"
 
+#include "backend/render.h"
+
 struct program;
 struct application;
 
@@ -11,6 +13,8 @@ struct render
     struct memory* memory;
     struct event* event;
     struct application* application;
+
+    struct backend_render backend_render;
 };
 
 struct render_config
