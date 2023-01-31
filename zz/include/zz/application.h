@@ -28,5 +28,7 @@ struct application_config
 ZZ_API b8 application_create(struct application* application, struct application_config* config);
 ZZ_API void application_destroy(struct application* application);
 
+ZZ_API void application_get_size(struct application* application, u16* width, u16* height);
+
 ZZ_API u64 application_get_time(struct application* application);
 ZZ_API void application_sleep(struct application* application, u64 milliseconds);

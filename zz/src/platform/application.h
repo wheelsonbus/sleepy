@@ -24,5 +24,7 @@ void platform_application_destroy(struct platform_application* platform_applicat
 
 b8 platform_application_pump_messages(struct platform_application* platform_application);
 
+void platform_application_get_size(struct platform_application* platform_application, u16* width, u16* height);
+
 u64 platform_application_get_time(struct platform_application* platform_application);
 void platform_application_sleep(struct platform_application* platform_application, u64 milliseconds);

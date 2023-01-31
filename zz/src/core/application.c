@@ -33,6 +33,11 @@ void application_destroy(struct application* application)
     ZZ_LOG_INFO("Application module destroyed.");
 }
 
+void application_get_size(struct application* application, u16* width, u16* height)
+{
+    platform_application_get_size(&application->platform_application, width, height);
+}
+
 u64 application_get_time(struct application* application)
 {
     return platform_application_get_time(&application->platform_application);

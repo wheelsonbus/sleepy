@@ -7,13 +7,13 @@
 
 b8 render_on_resize(void* sender, void* receiver, union event_data data)
 {
-    //struct render* render = (struct render*)receiver;
+    struct render* render = (struct render*)receiver;
     u16 width = data.u16[0];
     u16 height = data.u16[1];
 
     if (width != 0 && height != 0)
     {
-        ZZ_LOG_DEBUG("%u %u", width, height);
+        backend_render_resize(&render->backend_render);
     }
 
     return FALSE;
@@ -27,6 +27,7 @@ b8 render_create(struct render* render, struct render_config* config)
     render->application = config->application;
 
     struct backend_render_config backend_render_config;
+    backend_render_config.memory = config->memory;
     backend_render_config.application = config->application;
     if (!backend_render_create(&render->backend_render, &backend_render_config))
     {
@@ -51,14 +52,10 @@ void render_destroy(struct render* render)
 
 b8 render_draw_frame(struct render* render, struct render_packet* packet)
 {
-    /*if (backend_begin_frame(packet->delta_time))
+    if (!backend_render_draw_frame(&render->backend_render))
     {
-        if (!backend_end_frame(packet->delta_time))
-        {
-            ZZ_LOG_ERROR("backend_end_frame failed.");
-            return FALSE;
-        }
-    }*/
+        return FALSE;
+    }
 
     return TRUE;
 }

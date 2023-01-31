@@ -142,7 +142,8 @@ b8 program_loop(struct program* program)
         if (!program->suspended)
         {
             input_update(&program->input);
-            application_sleep(&program->application, 10);
+            struct render_packet packet;
+            render_draw_frame(&program->render, &packet);
         }
         platform_application_pump_messages(&program->application.platform_application);
     }

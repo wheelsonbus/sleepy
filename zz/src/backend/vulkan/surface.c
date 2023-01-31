@@ -7,18 +7,19 @@
 #elif defined(ZZ_PLATFORM_LINUX)
 #endif
 
-b8 backend_vulkan_create_surface(VkSurfaceKHR* surface, VkInstance instance, struct application* application)
+b8 backend_vulkan_surface_create(struct backend_vulkan_surface* surface, const struct backend_vulkan_surface_config* config)
 {
+    surface->instance = config->instance;
     
 #if defined(ZZ_PLATFORM_WINDOWS)
     VkWin32SurfaceCreateInfoKHR surfaceCreateInfo;
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
     surfaceCreateInfo.pNext = NULL;
     surfaceCreateInfo.flags = 0;
-    surfaceCreateInfo.hinstance = application->platform_application.hInstance;
-    surfaceCreateInfo.hwnd = application->platform_application.hWnd;
+    surfaceCreateInfo.hinstance = config->application->platform_application.hInstance;
+    surfaceCreateInfo.hwnd = config->application->platform_application.hWnd;
 
-    if (vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, NULL, surface) != VK_SUCCESS)
+    if (vkCreateWin32SurfaceKHR(surface->instance->instance, &surfaceCreateInfo, NULL, &surface->surface) != VK_SUCCESS)
     {
         return FALSE;
     }
@@ -28,10 +29,10 @@ b8 backend_vulkan_create_surface(VkSurfaceKHR* surface, VkInstance instance, str
     return TRUE;
 }
 
-void backend_vulkan_destroy_surface(VkSurfaceKHR* surface, VkInstance instance)
+void backend_vulkan_surface_destroy(struct backend_vulkan_surface* surface)
 {
-    vkDestroySurfaceKHR(instance, *surface, NULL);
-    *surface = NULL;
+    vkDestroySurfaceKHR(surface->instance->instance, surface->surface, NULL);
+    surface->surface = NULL;
 }
 
 #endif

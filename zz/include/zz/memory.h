@@ -42,7 +42,7 @@ ZZ_API char* memory_get_usage_string(struct memory* memory);
 
 #define _memory_array_unpack(array) (void**)&(array)->data, &(array)->length, &(array)->capacity, sizeof(*(array)->data)
 
-#define memory_array_t(type) struct {type *data; u16 length, capacity;}
+#define memory_array_t(type) struct {type* data; u16 length, capacity;}
 
 #define memory_array_create(memory, array) _memory_array_create(memory, _memory_array_unpack(array));
 #define memory_array_create_and_reserve(memory, array, capacity) _memory_array_create(memory, _memory_array_unpack(array)); _memory_array_reserve(memory, _memory_array_unpack(array), capacity);

@@ -105,6 +105,14 @@ b8 platform_application_pump_messages(struct platform_application* platform_appl
     return TRUE;
 }
 
+void platform_application_get_size(struct platform_application* platform_application, u16* width, u16* height)
+{
+    RECT rect;
+    GetClientRect(platform_application->hWnd, &rect);
+    *width = rect.right - rect.left;
+    *height = rect.bottom - rect.top;
+}
+
 u64 platform_application_get_time(struct platform_application* platform_application)
 {
     LARGE_INTEGER currentTime;

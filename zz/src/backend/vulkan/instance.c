@@ -4,12 +4,12 @@
 
 #include "zz/log.h"
 
-b8 backend_vulkan_create_instance(VkInstance* instance)
+b8 backend_vulkan_instance_create(struct backend_vulkan_instance* instance, const struct backend_vulkan_instance_config* config)
 {
     VkApplicationInfo applicationInfo;
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.pNext = NULL;
-    applicationInfo.pApplicationName = "PLACEHOLDER";
+    applicationInfo.pApplicationName = "PLACEHOLDER"; // PLACEHOLDER
     applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0); // PLACEHOLDER
     applicationInfo.pEngineName = "Sleepy Engine";
     applicationInfo.engineVersion = VK_MAKE_VERSION(ZZ_VERSION_MAJOR, ZZ_VERSION_MINOR, ZZ_VERSION_PATCH);
@@ -41,18 +41,71 @@ b8 backend_vulkan_create_instance(VkInstance* instance)
 #endif
 #endif
     
-    if (vkCreateInstance(&instanceCreateInfo, NULL, instance) != VK_SUCCESS)
+    if (vkCreateInstance(&instanceCreateInfo, NULL, &instance->instance) != VK_SUCCESS)
     {
         return FALSE;
     }
 
+    
+#if defined(ZZ_DEBUG)
+    VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo;
+    debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    debugUtilsMessengerCreateInfo.pNext = NULL;
+    debugUtilsMessengerCreateInfo.flags = 0;
+    debugUtilsMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    debugUtilsMessengerCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    debugUtilsMessengerCreateInfo.pfnUserCallback = backend_vulkan_instance_debug_callback;
+    debugUtilsMessengerCreateInfo.pUserData = NULL;
+
+    PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance->instance, "vkCreateDebugUtilsMessengerEXT");
+    if (vkCreateDebugUtilsMessengerEXT == NULL)
+    {
+        return FALSE;
+    }
+    if (vkCreateDebugUtilsMessengerEXT(instance->instance, &debugUtilsMessengerCreateInfo, NULL, &instance->debugUtilsMessenger) != VK_SUCCESS)
+    {
+        return FALSE;
+    }
+#elif defined(ZZ_RELEASE)
+#endif
+
     return TRUE;
 }
 
-void backend_vulkan_destroy_instance(VkInstance* instance)
+void backend_vulkan_instance_destroy(struct backend_vulkan_instance* instance)
 {
-    vkDestroyInstance(*instance, NULL);
-    *instance = VK_NULL_HANDLE;
+    PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance->instance, "vkDestroyDebugUtilsMessengerEXT");
+    vkDestroyDebugUtilsMessengerEXT(instance->instance, instance->debugUtilsMessenger, NULL);
+    instance->debugUtilsMessenger = VK_NULL_HANDLE;
+
+    vkDestroyInstance(instance->instance, NULL);
+    instance->instance = VK_NULL_HANDLE;
 }
+
+#if defined(ZZ_DEBUG)
+VKAPI_ATTR VkBool32 VKAPI_CALL backend_vulkan_instance_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+{
+    switch(messageSeverity)
+    {
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+            ZZ_LOG_ERROR(pCallbackData->pMessage);
+            break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+            ZZ_LOG_WARNING(pCallbackData->pMessage);
+            break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+            ZZ_LOG_INFO(pCallbackData->pMessage);
+            break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+            ZZ_LOG_TRACE(pCallbackData->pMessage);
+            break;
+        default:
+            break;
+    }
+
+    return VK_FALSE;
+}
+#elif defined(ZZ_RELEASE)
+#endif
 
 #endif
