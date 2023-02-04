@@ -60,12 +60,12 @@ b8 playground_on_deinitialize(struct program* program)
     return TRUE;
 }
 
-b8 playground_on_tick(struct program* program, f64 delta_time)
+b8 playground_on_tick(struct program* program, u64 delta_time)
 {
     return TRUE;
 }
 
-b8 playground_on_frame(struct program* program, f64 delta_time)
+b8 playground_on_frame(struct program* program, u64 delta_time)
 {
     for (u16 i = 0; i < boxes.length; i += 1)
     {

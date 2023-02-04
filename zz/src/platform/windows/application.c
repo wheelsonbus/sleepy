@@ -7,7 +7,7 @@
 
 #include "zz/log.h"
 
-static f64 platform_application_windows_clock_frequency;
+static LARGE_INTEGER platform_application_windows_clock_frequency;
 static LARGE_INTEGER platform_application_windows_start_time;
 
 static struct event* platform_event;
@@ -76,10 +76,8 @@ b8 platform_application_create(struct platform_application* platform_application
     i32 show_window_flags = should_activate ? SW_SHOW : SW_SHOWNOACTIVATE;
     ShowWindow(platform_application->hWnd, show_window_flags);
 
-    LARGE_INTEGER frequency;
-    QueryPerformanceFrequency(&frequency);
-    platform_application_windows_clock_frequency = 1.0f / (f64)frequency.QuadPart;
-    QueryPerformanceCounter(&(platform_application_windows_start_time));
+    QueryPerformanceFrequency(&platform_application_windows_clock_frequency);
+    QueryPerformanceCounter(&platform_application_windows_start_time);
 
     return TRUE;
 }
@@ -115,9 +113,9 @@ void platform_application_get_size(struct platform_application* platform_applica
 
 u64 platform_application_get_time(struct platform_application* platform_application)
 {
-    LARGE_INTEGER currentTime;
-    QueryPerformanceCounter(&currentTime);
-    return (f64)currentTime.QuadPart * platform_application_windows_clock_frequency;
+    LARGE_INTEGER now;
+    QueryPerformanceCounter(&now);
+    return ((u64)1000 * (now.QuadPart - platform_application_windows_start_time.QuadPart)) / platform_application_windows_clock_frequency.QuadPart;
 }
 
 void platform_application_sleep(struct platform_application* platform_application, u64 milliseconds)

@@ -17,11 +17,15 @@ struct program
     u16 width, height;
     b8 running, suspended;
 
+    u64 accumulated_tick_time;
+    u64 accumulated_frame_time;
+    u64 last_frame_time;
+
     b8 (*on_initialize)(struct program* program);
     b8 (*on_deinitialize)(struct program* program);
 
-    b8 (*on_tick)(struct program* program, f64 delta_time);
-    b8 (*on_frame)(struct program* program, f64 delta_time);
+    b8 (*on_tick)(struct program* program, u64 delta_time);
+    b8 (*on_frame)(struct program* program, u64 delta_time);
 };
 
 struct program_config
@@ -33,8 +37,8 @@ struct program_config
     b8 (*on_initialize)(struct program* program);
     b8 (*on_deinitialize)(struct program* program);
     
-    b8 (*on_tick)(struct program* program, f64 delta_time);
-    b8 (*on_frame)(struct program* program, f64 delta_time);
+    b8 (*on_tick)(struct program* program, u64 delta_time);
+    b8 (*on_frame)(struct program* program, u64 delta_time);
 };
 
 ZZ_API b8 program_create(struct program* program, struct program_config* config);

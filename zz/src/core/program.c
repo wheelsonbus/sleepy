@@ -4,6 +4,9 @@
 
 #include "zz/math.h"
 
+#define ZZ_TICK_MILLISECONDS 10
+#define ZZ_FRAME_MILLISECONDS 0
+
 b8 program_on_quit(void* sender, void* receiver, union event_data data)
 {
     struct program* program = (struct program*)receiver;
@@ -150,14 +153,33 @@ void program_destroy(struct program* program)
 
 b8 program_loop(struct program* program)
 {
+    program->last_frame_time = application_get_time(&program->application);
+    program->accumulated_tick_time = 0;
+    program->accumulated_frame_time = 0;
+
     while (program->running)
     {
-        if (!program->suspended)
+        if (program->suspended)
         {
-            input_update(&program->input);
-            program->on_tick(program, 0.1f);
+            application_sleep(&program->application, ZZ_TICK_MILLISECONDS);
+            program->last_frame_time = application_get_time(&program->application);
+        }
+        else
+        {
+            u64 delta_time = application_get_time(&program->application) - program->last_frame_time;
+            program->last_frame_time += delta_time;
+            program->accumulated_tick_time += delta_time;
+            program->accumulated_frame_time += delta_time;
 
-            program->on_frame(program, 0.1f);
+            while (program->accumulated_tick_time >= ZZ_TICK_MILLISECONDS)
+            {
+                input_update(&program->input);
+                program->on_tick(program, ZZ_TICK_MILLISECONDS);
+                program->accumulated_tick_time -= ZZ_TICK_MILLISECONDS;
+            }
+
+            program->on_frame(program, program->accumulated_frame_time);
+            program->accumulated_frame_time = 0;
             render_draw_frame(&program->render);
         }
         platform_application_pump_messages(&program->application.platform_application);
