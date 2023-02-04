@@ -15,9 +15,9 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
     pipeline->uniform_buffers = config->uniform_buffers;
     
     VkShaderModule vertexShaderModule;
-    backend_vulkan_create_shader_module(&vertexShaderModule, pipeline->device->device, "../playground/shaders/shader.vert.spv");
+    backend_vulkan_create_shader_module(&vertexShaderModule, pipeline->device->device, "vertex.spv");
     VkShaderModule fragmentShaderModule;
-    backend_vulkan_create_shader_module(&fragmentShaderModule, pipeline->device->device, "../playground/shaders/shader.frag.spv");
+    backend_vulkan_create_shader_module(&fragmentShaderModule, pipeline->device->device, "fragment.spv");
 
     VkDescriptorPoolSize descriptorPoolSize;
     descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

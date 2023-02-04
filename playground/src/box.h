@@ -2,7 +2,7 @@
 
 #include <zz/zz.h>
 #include <zz/math.h>
-
+#include <zz/program.h>
 #include <zz/sprite.h>
 
 struct box
@@ -11,3 +11,5 @@ struct box
     struct sprite sprite;
 };
 typedef struct {struct box* data; u16 length, capacity;} memory_array_box_t;
+
+void box_draw(struct box* box, struct program* program);

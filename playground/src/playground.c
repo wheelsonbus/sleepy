@@ -44,9 +44,9 @@ b8 playground_on_initialize(struct program* program)
     program_bind_camera(program, &camera);
 
     memory_array_create_and_reserve(&program->memory, &boxes, 2);
-    memory_array_push(&program->memory, &boxes, ((struct box){(vec3){-1.0f, -1.0f, 0.5f}, (struct sprite){(vec2){2.0f, 2.0f}}}));
+    memory_array_push(&program->memory, &boxes, ((struct box){(vec3){-2.0f, 1.0f, 0.5f}, (struct sprite){(vec2){2.0f, 2.0f}}}));
     memory_array_push(&program->memory, &boxes, ((struct box){(vec3){-1.0f, -1.0f, 0.0f}, (struct sprite){(vec2){2.0f, 2.0f}}}));
-    memory_array_push(&program->memory, &boxes, ((struct box){(vec3){1.0f, 1.0f, -1.0f}, (struct sprite){(vec2){2.0f, 2.0f}}}));
+    memory_array_push(&program->memory, &boxes, ((struct box){(vec3){0.0f, 0.0f, -1.0f}, (struct sprite){(vec2){2.0f, 2.0f}}}));
 
     event_register_receiver(&program->event, ZZ_EVENT_CODE_KEY_PRESS, NULL, playground_on_key_press);
 
@@ -69,7 +69,7 @@ b8 playground_on_frame(struct program* program, f64 delta_time)
 {
     for (u16 i = 0; i < boxes.length; i += 1)
     {
-        program_draw_sprite(program, &boxes.data[i].sprite, boxes.data[i].position);
+        box_draw(&boxes.data[i], program);
     }
 
     return TRUE;
