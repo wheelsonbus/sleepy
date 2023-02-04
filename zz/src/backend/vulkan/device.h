@@ -46,4 +46,5 @@ void backend_vulkan_device_destroy(struct backend_vulkan_device* device);
 
 b8 backend_vulkan_device_select_physical_device(struct backend_vulkan_device* device);
 
+b8 backend_vulkan_device_select_memory_type_index(struct backend_vulkan_device* device, uint32_t* memoryTypeIndex, uint32_t memoryTypeIndexFilter, VkMemoryPropertyFlags memoryPropertyFlags);
 #endif

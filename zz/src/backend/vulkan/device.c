@@ -85,6 +85,9 @@ b8 backend_vulkan_device_select_physical_device(struct backend_vulkan_device* de
         VkPhysicalDeviceFeatures features;
         vkGetPhysicalDeviceFeatures(physicalDevices[i], &features);
 
+        VkPhysicalDeviceMemoryProperties memoryProperties;
+        vkGetPhysicalDeviceMemoryProperties(physicalDevices[i], &memoryProperties);
+
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices[i], &queueFamilyCount, NULL);
         VkQueueFamilyProperties queueFamilies[queueFamilyCount];
@@ -167,6 +170,23 @@ b8 backend_vulkan_device_select_physical_device(struct backend_vulkan_device* de
         return FALSE;
     }
     return TRUE;
+}
+
+b8 backend_vulkan_device_select_memory_type_index(struct backend_vulkan_device* device, uint32_t* memoryTypeIndex, uint32_t memoryTypeIndexFilter, VkMemoryPropertyFlags memoryPropertyFlags)
+{
+    VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
+    vkGetPhysicalDeviceMemoryProperties(device->physicalDevice, &physicalDeviceMemoryProperties);
+
+    for (uint32_t i = 0; i < physicalDeviceMemoryProperties.memoryTypeCount; i += 1)
+    {
+        if (memoryTypeIndexFilter & (1 << i) && (memoryPropertyFlags & physicalDeviceMemoryProperties.memoryTypes[i].propertyFlags) == memoryPropertyFlags)
+        {
+            *memoryTypeIndex = i;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }
 
 #endif

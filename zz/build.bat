@@ -10,7 +10,7 @@ for /r %%f in (*.c) do (
 rem echo "Source files:" %sourceFiles%
 
 set target=zz
-set compilerFlags=-g -shared -Wvarargs -Wall -Werror
+set compilerFlags=-g -shared -Wvarargs -Wall -Werror -Wno-missing-braces
 set includeFlags=-Iinclude -Isrc -I%VULKAN_SDK%/Include
 set linkerFlags=-luser32 -lvulkan-1 -L%VULKAN_SDK%/Lib
 set definitions=-DZZ_PLATFORM_WINDOWS -DZZ_BACKEND_VULKAN -DZZ_DEBUG -DZZ_EXPORT -D_CRT_SECURE_NO_WARNINGS

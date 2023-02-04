@@ -176,8 +176,13 @@ void _memory_array_expand_at(struct memory* memory, void** data, u16* length, u1
     *length += 1;
 }
 
-void _memory_array_remove_at(struct memory* memory, void ** data, u16* length, u16* capacity, u16 stride, u16 index)
+void _memory_array_remove_at(struct memory* memory, void** data, u16* length, u16* capacity, u16 stride, u16 index)
 {
     memory_copy(memory, (u8*)*data + (index * stride), (u8*)*data + ((index + 1) * stride), (*length - index) * stride);
     *length -= 1;
+}
+
+void _memory_array_clear(struct memory* memory, void** data, u16* length, u16* capacity, u16 stride)
+{
+    *length = 0;
 }

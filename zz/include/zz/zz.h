@@ -65,3 +65,12 @@ STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 #define ZZ_API
 #endif
 #endif
+
+// Inlining
+#ifdef _MSC_VER
+#define ZZ_INLINE __forceinline
+#define ZZ_NOINLINE __declspec(noinline)
+#else
+#define ZZ_INLINE static inline
+#define ZZ_NOINLINE
+#endif

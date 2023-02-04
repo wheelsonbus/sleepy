@@ -8,14 +8,97 @@
 
 b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, struct backend_vulkan_pipeline_config* config)
 {
+    pipeline->memory = config->memory;
     pipeline->device = config->device;
     pipeline->render_pass = config->render_pass;
     pipeline->swapchain = config->swapchain;
-
+    pipeline->uniform_buffers = config->uniform_buffers;
+    
     VkShaderModule vertexShaderModule;
     backend_vulkan_create_shader_module(&vertexShaderModule, pipeline->device->device, "../playground/shaders/shader.vert.spv");
     VkShaderModule fragmentShaderModule;
     backend_vulkan_create_shader_module(&fragmentShaderModule, pipeline->device->device, "../playground/shaders/shader.frag.spv");
+
+    VkDescriptorPoolSize descriptorPoolSize;
+    descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorPoolSize.descriptorCount = pipeline->uniform_buffers->length;
+
+    VkDescriptorPoolCreateInfo descriptorPoolCreateInfo;
+    descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descriptorPoolCreateInfo.pNext = NULL;
+    descriptorPoolCreateInfo.flags = 0;
+    descriptorPoolCreateInfo.maxSets = pipeline->uniform_buffers->length;
+    descriptorPoolCreateInfo.poolSizeCount = 1;
+    descriptorPoolCreateInfo.pPoolSizes = &descriptorPoolSize;
+
+    if (vkCreateDescriptorPool(pipeline->device->device, &descriptorPoolCreateInfo, NULL, &pipeline->descriptorPool) != VK_SUCCESS)
+    {
+        return FALSE;
+    }
+
+    VkDescriptorSetLayoutBinding uboDescriptorSetLayoutBinding;
+    uboDescriptorSetLayoutBinding.binding = 0;
+    uboDescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboDescriptorSetLayoutBinding.descriptorCount = 1;
+    uboDescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    uboDescriptorSetLayoutBinding.pImmutableSamplers = NULL;
+
+    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+    descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptorSetLayoutCreateInfo.pNext = NULL;
+    descriptorSetLayoutCreateInfo.flags = 0;
+    descriptorSetLayoutCreateInfo.bindingCount = 1;
+    descriptorSetLayoutCreateInfo.pBindings = &uboDescriptorSetLayoutBinding;
+
+    if (vkCreateDescriptorSetLayout(pipeline->device->device, &descriptorSetLayoutCreateInfo, NULL, &pipeline->descriptorSetLayout) != VK_SUCCESS)
+    {
+        return FALSE;
+    }
+
+    memory_array_t(VkDescriptorSetLayout) descriptorSetLayouts;
+    memory_array_create_and_reserve(pipeline->memory, &descriptorSetLayouts, pipeline->uniform_buffers->length);
+    for (u16 i = 0; i < descriptorSetLayouts.capacity; i += 1)
+    {
+        memory_array_push(pipeline->memory, &descriptorSetLayouts, pipeline->descriptorSetLayout);
+    }
+
+    VkDescriptorSetAllocateInfo descriptorSetAllocateInfo;
+    descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    descriptorSetAllocateInfo.pNext = NULL;
+    descriptorSetAllocateInfo.descriptorPool = pipeline->descriptorPool;
+    descriptorSetAllocateInfo.descriptorSetCount = descriptorSetLayouts.length;
+    descriptorSetAllocateInfo.pSetLayouts = descriptorSetLayouts.data;
+
+    memory_array_create_and_reserve(pipeline->memory, &pipeline->descriptorSets, pipeline->uniform_buffers->length);
+    if (vkAllocateDescriptorSets(pipeline->device->device, &descriptorSetAllocateInfo, pipeline->descriptorSets.data) != VK_SUCCESS)
+    {
+        memory_array_destroy(pipeline->memory, &descriptorSetLayouts);
+        return FALSE;
+    }
+
+    for (u16 i = 0; i < descriptorSetLayouts.length; i += 1)
+    {
+        VkDescriptorBufferInfo descriptorBufferInfo;
+        descriptorBufferInfo.buffer = pipeline->uniform_buffers->data[i].buffer;
+        descriptorBufferInfo.offset = 0;
+        descriptorBufferInfo.range = VK_WHOLE_SIZE;
+
+        VkWriteDescriptorSet writeDescriptorSet;
+        writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeDescriptorSet.pNext = NULL;
+        writeDescriptorSet.dstSet = pipeline->descriptorSets.data[i];
+        writeDescriptorSet.dstBinding = 0;
+        writeDescriptorSet.dstArrayElement = 0;
+        writeDescriptorSet.descriptorCount = 1;
+        writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        writeDescriptorSet.pImageInfo = NULL;
+        writeDescriptorSet.pBufferInfo = &descriptorBufferInfo;
+        writeDescriptorSet.pTexelBufferView = NULL;
+
+        vkUpdateDescriptorSets(pipeline->device->device, 1, &writeDescriptorSet, 0, NULL);
+    }
+    
+    memory_array_destroy(pipeline->memory, &descriptorSetLayouts)
 
     VkPipelineShaderStageCreateInfo vertexPipelineShaderStageCreateInfo;
     vertexPipelineShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -35,6 +118,7 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
     fragmentPipelineShaderStageCreateInfo.pName = "main";
     fragmentPipelineShaderStageCreateInfo.pSpecializationInfo = NULL;
 
+    uint32_t pipelineShaderStageCreateInfoCount = 2;
     VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfos[2] = {vertexPipelineShaderStageCreateInfo, fragmentPipelineShaderStageCreateInfo};
 
     VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo;
@@ -45,14 +129,28 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
     VkDynamicState dynamicStates[2] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
     pipelineDynamicStateCreateInfo.pDynamicStates = dynamicStates;
 
+    VkVertexInputBindingDescription vertexInputBindingDescription;
+    vertexInputBindingDescription.binding = 0;
+    vertexInputBindingDescription.stride = sizeof(struct backend_vulkan_vertex);
+    vertexInputBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    VkVertexInputAttributeDescription positionVertexInputAttributeDescription;
+    positionVertexInputAttributeDescription.location = 0;
+    positionVertexInputAttributeDescription.binding = 0;
+    positionVertexInputAttributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
+    positionVertexInputAttributeDescription.offset = offsetof(struct backend_vulkan_vertex, position);
+
+    uint32_t vertexInputAttributeDescriptionCount = 1;
+    VkVertexInputAttributeDescription vertexInputAttributeDescriptions[1] = {positionVertexInputAttributeDescription};
+
     VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo;
     pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     pipelineVertexInputStateCreateInfo.pNext = NULL;
     pipelineVertexInputStateCreateInfo.flags = 0;
-    pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 0;
-    pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = NULL;
-    pipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = 0;
-    pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = NULL;
+    pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
+    pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = &vertexInputBindingDescription;
+    pipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = vertexInputAttributeDescriptionCount;
+    pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexInputAttributeDescriptions;
 
     VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo;
     pipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -112,9 +210,9 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
     // TODO Depth and stencil pipeline states?
 
     VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState;
-    pipelineColorBlendAttachmentState.blendEnable = VK_FALSE; // TODO Color blending?
-    pipelineColorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-    pipelineColorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+    pipelineColorBlendAttachmentState.blendEnable = VK_TRUE; // TODO Color blending?
+    pipelineColorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    pipelineColorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     pipelineColorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
     pipelineColorBlendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
     pipelineColorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
@@ -138,8 +236,8 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
     pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutCreateInfo.pNext = NULL;
     pipelineLayoutCreateInfo.flags = 0;
-    pipelineLayoutCreateInfo.setLayoutCount = 0;
-    pipelineLayoutCreateInfo.pSetLayouts = NULL;
+    pipelineLayoutCreateInfo.setLayoutCount = 1;
+    pipelineLayoutCreateInfo.pSetLayouts = &pipeline->descriptorSetLayout;
     pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
     pipelineLayoutCreateInfo.pPushConstantRanges = NULL;
 
@@ -152,7 +250,7 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
     graphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     graphicsPipelineCreateInfo.pNext = NULL;
     graphicsPipelineCreateInfo.flags = 0;
-    graphicsPipelineCreateInfo.stageCount = 2;
+    graphicsPipelineCreateInfo.stageCount = pipelineShaderStageCreateInfoCount;
     graphicsPipelineCreateInfo.pStages = pipelineShaderStageCreateInfos;
     graphicsPipelineCreateInfo.pVertexInputState = &pipelineVertexInputStateCreateInfo;
     graphicsPipelineCreateInfo.pInputAssemblyState = &pipelineInputAssemblyStateCreateInfo;
@@ -186,6 +284,11 @@ void backend_vulkan_pipeline_destroy(struct backend_vulkan_pipeline* pipeline)
     pipeline->pipeline = VK_NULL_HANDLE;
     vkDestroyPipelineLayout(pipeline->device->device, pipeline->pipelineLayout, NULL);
     pipeline->pipelineLayout = VK_NULL_HANDLE;
+    memory_array_destroy(pipeline->memory, &pipeline->descriptorSets);
+    vkDestroyDescriptorPool(pipeline->device->device, pipeline->descriptorPool, NULL);
+    pipeline->descriptorPool = VK_NULL_HANDLE;
+    vkDestroyDescriptorSetLayout(pipeline->device->device, pipeline->descriptorSetLayout, NULL);
+    pipeline->descriptorSetLayout = VK_NULL_HANDLE;
 }
 
 b8 backend_vulkan_create_shader_module(VkShaderModule* shaderModule, VkDevice device, const char* filename)
@@ -201,9 +304,9 @@ b8 backend_vulkan_create_shader_module(VkShaderModule* shaderModule, VkDevice de
     u64 bytecode_size = ftell(file);
     fclose(file);
 
-    u8 bytecode[bytecode_size];
+    char bytecode[bytecode_size];
     file = fopen(filename, "rb");
-    fread(bytecode, sizeof(u8), bytecode_size - 1, file);
+    fread(bytecode, sizeof(char), bytecode_size, file);
     fclose(file);
 
     VkShaderModuleCreateInfo shaderModuleCreateInfo;

@@ -52,6 +52,7 @@ ZZ_API char* memory_get_usage_string(struct memory* memory);
 #define memory_array_pop(memory, array) (array)->data[--(array)->length]
 #define memory_array_push_at(memory, array, index, value) _memory_array_expand_at(memory, _memory_array_unpack(array), index); (array)->data[index] = (value)
 #define memory_array_pop_at(memory, array, index) (array)->data[index]; _memory_array_remove_at(memory, _memory_array_unpack(array), index)
+#define memory_array_clear(memory, array) _memory_array_clear(memory, _memory_array_unpack(array));
 
 ZZ_API void _memory_array_create(struct memory* memory, void** data, u16* length, u16* capacity, u16 stride);
 ZZ_API void _memory_array_destroy(struct memory* memory, void** data, u16* length, u16* capacity, u16 stride);
@@ -60,4 +61,5 @@ ZZ_API void _memory_array_expand(struct memory* memory, void** data, u16* length
 ZZ_API void _memory_array_contract(struct memory* memory, void** data, u16* length, u16* capacity, u16 stride);
 ZZ_API void _memory_array_reserve(struct memory* memory, void** data, u16* length, u16* capacity, u16 stride, u16 n);
 ZZ_API void _memory_array_expand_at(struct memory* memory, void** data, u16* length, u16* capacity, u16 stride, u16 index);
-ZZ_API void _memory_array_remove_at(struct memory* memory, void ** data, u16* length, u16* capacity, u16 stride, u16 index);
+ZZ_API void _memory_array_remove_at(struct memory* memory, void** data, u16* length, u16* capacity, u16 stride, u16 index);
+ZZ_API void _memory_array_clear(struct memory* memory, void** data, u16* length, u16* capacity, u16 stride);

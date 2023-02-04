@@ -4,6 +4,9 @@
 
 #include "backend/render.h"
 
+#include "camera.h"
+#include "sprite.h"
+
 struct program;
 struct application;
 
@@ -33,4 +36,7 @@ struct render_packet
 b8 render_create(struct render* render, struct render_config* config);
 void render_destroy(struct render* render);
 
-b8 render_draw_frame(struct render* render, struct render_packet* packet);
+b8 render_draw_frame(struct render* render);
+
+void render_bind_camera(struct render* render, struct camera* camera);
+void render_draw_sprite(struct render* render, struct sprite* sprite, vec3 position);

@@ -2,6 +2,8 @@
 
 #include "zz/log.h"
 
+#include "zz/math.h"
+
 b8 program_on_quit(void* sender, void* receiver, union event_data data)
 {
     struct program* program = (struct program*)receiver;
@@ -56,8 +58,10 @@ b8 program_on_key_press(void* sender, void* receiver, union event_data data)
 
 b8 program_create(struct program* program, struct program_config* config)
 {
-    program->initialize = config->initialize;
-    program->deinitialize = config->deinitialize;
+    program->on_initialize = config->on_initialize;
+    program->on_deinitialize = config->on_deinitialize;
+    program->on_tick = config->on_tick;
+    program->on_frame = config->on_frame;
     program->width = config->width;
     program->height = config->height;
     
@@ -69,7 +73,6 @@ b8 program_create(struct program* program, struct program_config* config)
     {
         ZZ_LOG_FATAL("Failed to create memory module.");
     }
-    
 
     struct event_config event_config;
     event_config.memory = &program->memory;
@@ -114,6 +117,11 @@ b8 program_create(struct program* program, struct program_config* config)
     event_register_receiver(&program->event, ZZ_EVENT_CODE_RESIZE, program, program_on_resize);
     event_register_receiver(&program->event, ZZ_EVENT_CODE_KEY_PRESS, program, program_on_key_press);
 
+    if (!program->on_initialize(program))
+    {
+        return FALSE;
+    }
+
     union event_data event_data;
     event_data.u16[0] = config->width;
     event_data.u16[1] = config->height;
@@ -124,6 +132,11 @@ b8 program_create(struct program* program, struct program_config* config)
 
 void program_destroy(struct program* program)
 {
+    if (!program->on_deinitialize(program))
+    {
+        ZZ_LOG_ERROR("Program deinitialize method returned FALSE.");
+    }
+
     event_unregister_receiver(&program->event, ZZ_EVENT_CODE_QUIT, program, program_on_quit);
     event_unregister_receiver(&program->event, ZZ_EVENT_CODE_RESIZE, program, program_on_resize);
     event_unregister_receiver(&program->event, ZZ_EVENT_CODE_KEY_PRESS, program, program_on_key_press);
@@ -142,11 +155,23 @@ b8 program_loop(struct program* program)
         if (!program->suspended)
         {
             input_update(&program->input);
-            struct render_packet packet;
-            render_draw_frame(&program->render, &packet);
+            program->on_tick(program, 0.1f);
+
+            program->on_frame(program, 0.1f);
+            render_draw_frame(&program->render);
         }
         platform_application_pump_messages(&program->application.platform_application);
     }
 
     return TRUE;
+}
+
+void program_bind_camera(struct program* program, struct camera* camera)
+{
+    render_bind_camera(&program->render, camera);
+}
+
+void program_draw_sprite(struct program* program, struct sprite* sprite, vec3 position)
+{
+    render_draw_sprite(&program->render, sprite, position);
 }

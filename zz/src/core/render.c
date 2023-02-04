@@ -50,12 +50,21 @@ void render_destroy(struct render* render)
     ZZ_LOG_INFO("Render module destroyed.");
 }
 
-b8 render_draw_frame(struct render* render, struct render_packet* packet)
+b8 render_draw_frame(struct render* render)
 {
     if (!backend_render_draw_frame(&render->backend_render))
     {
         return FALSE;
     }
-
     return TRUE;
+}
+
+void render_bind_camera(struct render* render, struct camera* camera)
+{
+    backend_render_bind_camera(&render->backend_render, camera);
+}
+
+void render_draw_sprite(struct render* render, struct sprite* sprite, vec3 position)
+{
+    backend_render_draw_sprite(&render->backend_render, sprite, position);
 }
