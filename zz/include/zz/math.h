@@ -178,12 +178,12 @@ ZZ_INLINE b8 vec4_compare(vec4 v0, vec4 v1, f32 epsilon) {return (f32_abs(v0.x -
 ZZ_INLINE mat4 mat4_identity() {return (mat4){.x = {1.0f, 0.0f, 0.0f, 0.0f}, .y = {0.0f, 1.0f, 0.0f, 0.0f}, .z = {0.0f, 0.0f, 1.0f, 0.0f}, .w = {0.0f, 0.0f, 0.0f, 1.0f}};}
 
 ZZ_INLINE mat4 mat4_orthographic(f32 clip_left, f32 clip_right, f32 clip_top, f32 clip_bottom, f32 clip_near, f32 clip_far) {
-    vec3 multiplier = vec3_fill(1.0f / (clip_right - clip_left), 1.0f / (clip_bottom - clip_top), 1.0f / (clip_far - clip_near));
+    vec3 multiplier = vec3_fill(1.0f / (clip_right - clip_left), 1.0f / (clip_bottom - clip_top), 1.0f / (clip_near - clip_far));
     return (mat4)
     {
         .x = {2.0f * multiplier.x, 0.0f, 0.0f, 0.0f},
         .y = {0.0f, 2.0f * multiplier.y, 0.0f, 0.0f},
-        .z = {0.0f, 0.0f, 1.0f * multiplier.z, 0.0f},
-        .w = {-(clip_left + clip_right) * multiplier.x, -(clip_top + clip_bottom) * multiplier.y, clip_far * multiplier.z, 1.0f}
+        .z = {0.0f, 0.0f, -multiplier.z, 0.0f},
+        .w = {-(clip_left + clip_right) * multiplier.x, -(clip_top + clip_bottom) * multiplier.y, clip_near * multiplier.z, 1.0f}
     };
 }

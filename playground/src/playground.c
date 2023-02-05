@@ -10,7 +10,7 @@ b8 playground_on_key_press(void* sender, void* receiver, union event_data data)
 {
     u16 code = data.u16[0];
 
-    if (code == ZZ_INPUT_KEY_CODE_LEFT)
+    /*if (code == ZZ_INPUT_KEY_CODE_LEFT)
     {
         camera.position.x -= 0.5f;
     }
@@ -25,7 +25,7 @@ b8 playground_on_key_press(void* sender, void* receiver, union event_data data)
     else if (code == ZZ_INPUT_KEY_CODE_DOWN)
     {
         camera.position.y += 0.5f;
-    }
+    }*/
 
     return FALSE;
 }
@@ -62,6 +62,12 @@ b8 playground_on_deinitialize(struct program* program)
 
 b8 playground_on_tick(struct program* program, u64 delta_time)
 {
+    f64 m = (float)delta_time * 0.001f * 2.0f;
+    camera.position.x -= m * input_get_key_state(&program->input, ZZ_INPUT_KEY_CODE_LEFT);
+    camera.position.x += m * input_get_key_state(&program->input, ZZ_INPUT_KEY_CODE_RIGHT);
+    camera.position.y -= m * input_get_key_state(&program->input, ZZ_INPUT_KEY_CODE_UP);
+    camera.position.y += m * input_get_key_state(&program->input, ZZ_INPUT_KEY_CODE_DOWN);
+
     return TRUE;
 }
 
