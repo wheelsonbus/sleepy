@@ -183,7 +183,7 @@ ZZ_INLINE mat4 mat4_orthographic(f32 clip_left, f32 clip_right, f32 clip_top, f3
     {
         .x = {2.0f * multiplier.x, 0.0f, 0.0f, 0.0f},
         .y = {0.0f, 2.0f * multiplier.y, 0.0f, 0.0f},
-        .z = {0.0f, 0.0f, -multiplier.z, 0.0f},
+        .z = {0.0f, 0.0f, -1.0f * multiplier.z, 0.0f},
         .w = {-(clip_left + clip_right) * multiplier.x, -(clip_top + clip_bottom) * multiplier.y, clip_near * multiplier.z, 1.0f}
     };
 }

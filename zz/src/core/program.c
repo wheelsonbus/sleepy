@@ -188,9 +188,20 @@ b8 program_loop(struct program* program)
     return TRUE;
 }
 
-void program_bind_camera(struct program* program, struct camera* camera)
+
+void program_set_model_matrix(struct program* program, mat4 matrix)
 {
-    render_bind_camera(&program->render, camera);
+    render_set_model_matrix(&program->render, matrix);
+}
+
+void program_set_view_matrix(struct program* program, mat4 matrix)
+{
+    render_set_view_matrix(&program->render, matrix);
+}
+
+void program_set_projection_matrix(struct program* program, mat4 matrix)
+{
+    render_set_projection_matrix(&program->render, matrix);
 }
 
 void program_draw_sprite(struct program* program, struct sprite* sprite, vec3 position)

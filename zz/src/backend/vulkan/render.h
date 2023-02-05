@@ -5,7 +5,6 @@
 #include <vulkan/vulkan.h>
 
 #include "zz/zz.h"
-#include "zz/camera.h"
 #include "zz/sprite.h"
 
 #include "instance.h"
@@ -38,12 +37,11 @@ struct backend_render
     struct backend_vulkan_buffer vertex_staging_buffer;
     struct backend_vulkan_buffer index_buffer;
     struct backend_vulkan_buffer index_staging_buffer;
-    memory_array_backend_vulkan_buffer_t uniform_buffers;
-
     memory_array_backend_vulkan_vertex_t vertices;
     memory_array_u16_t indices;
 
-    struct camera* camera;
+    memory_array_backend_vulkan_buffer_t uniform_buffers;
+    struct backend_vulkan_uniform_buffer_object uniform_buffer_object;
 
     b8 framebuffer_resized;
 

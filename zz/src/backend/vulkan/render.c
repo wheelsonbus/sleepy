@@ -14,7 +14,9 @@ b8 backend_render_create(struct backend_render* backend_render, struct backend_r
     backend_render->memory = config->memory;
     backend_render->application = config->application;
 
-    backend_render->camera = NULL;
+    backend_render->uniform_buffer_object.model = mat4_identity();
+    backend_render->uniform_buffer_object.view = mat4_identity();
+    backend_render->uniform_buffer_object.projection = mat4_identity();
 
     memory_array_create_and_reserve(backend_render->memory, &backend_render->vertices, 1024);
     memory_array_create_and_reserve(backend_render->memory, &backend_render->indices, 1024);
@@ -210,12 +212,6 @@ b8 backend_render_draw_frame(struct backend_render* backend_render)
         return FALSE; 
     }
 
-    if (backend_render->camera == NULL || backend_render->camera->position.z == 1.0f)
-    {
-        ZZ_LOG_INFO("Camera invalid.");
-        return FALSE;
-    }
-
     vkWaitForFences(backend_render->device.device, 1, &backend_render->sync.inFlightFences.data[backend_render->current_frame], VK_TRUE, (uint64_t)-1);
 
     uint32_t imageIndex;
@@ -239,11 +235,7 @@ b8 backend_render_draw_frame(struct backend_render* backend_render)
     backend_vulkan_buffer_load(&backend_render->index_staging_buffer, backend_render->indices.data, 0, sizeof(backend_render->indices.data[0]) * backend_render->indices.length, 0);
     backend_vulkan_command_pool_copy_buffer(&backend_render->command_pool, &backend_render->index_buffer, &backend_render->index_staging_buffer, sizeof(backend_render->indices.data[0]) * backend_render->indices.length);
 
-    struct backend_vulkan_uniform_buffer_object uniform_buffer_object;
-    uniform_buffer_object.model = mat4_identity();
-    uniform_buffer_object.view = camera_get_view_matrix(backend_render->camera);
-    uniform_buffer_object.projection = camera_get_projection_matrix(backend_render->camera);
-    backend_vulkan_buffer_load(&backend_render->uniform_buffers.data[backend_render->current_frame], &uniform_buffer_object, 0, sizeof(uniform_buffer_object), 0);
+    backend_vulkan_buffer_load(&backend_render->uniform_buffers.data[backend_render->current_frame], &backend_render->uniform_buffer_object, 0, sizeof(backend_render->uniform_buffer_object), 0);
 
     vkResetCommandBuffer(backend_render->command_pool.commandBuffers.data[backend_render->current_frame], 0);
     backend_vulkan_record_command_buffer(&backend_render->vertex_buffer, &backend_render->index_buffer, backend_render->indices.length, &backend_render->pipeline, backend_render->current_frame, backend_render->command_pool.commandBuffers.data[backend_render->current_frame], backend_render->render_pass.renderPass, backend_render->pipeline.pipeline, &backend_render->swapchain.framebuffers, &backend_render->swapchain.extent, imageIndex);
@@ -289,9 +281,19 @@ b8 backend_render_draw_frame(struct backend_render* backend_render)
     return TRUE;
 }
 
-void backend_render_bind_camera(struct backend_render* backend_render, struct camera* camera)
+void backend_render_set_model_matrix(struct backend_render* backend_render, mat4 matrix)
 {
-    backend_render->camera = camera;
+    backend_render->uniform_buffer_object.model = matrix;
+}
+
+void backend_render_set_view_matrix(struct backend_render* backend_render, mat4 matrix)
+{
+    backend_render->uniform_buffer_object.view = matrix;
+}
+
+void backend_render_set_projection_matrix(struct backend_render* backend_render, mat4 matrix)
+{
+    backend_render->uniform_buffer_object.projection = matrix;
 }
 
 void backend_render_draw_sprite(struct backend_render* backend_render, struct sprite* sprite, vec3 position)

@@ -1,4 +1,4 @@
-#include "zz/camera.h"
+#include "camera.h"
 
 mat4 camera_get_view_matrix(struct camera* camera)
 {

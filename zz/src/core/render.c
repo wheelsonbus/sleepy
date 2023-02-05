@@ -59,9 +59,19 @@ b8 render_draw_frame(struct render* render)
     return TRUE;
 }
 
-void render_bind_camera(struct render* render, struct camera* camera)
+void render_set_model_matrix(struct render* render, mat4 matrix)
 {
-    backend_render_bind_camera(&render->backend_render, camera);
+    backend_render_set_model_matrix(&render->backend_render, matrix);
+}
+
+void render_set_view_matrix(struct render* render, mat4 matrix)
+{
+    backend_render_set_view_matrix(&render->backend_render, matrix);
+}
+
+void render_set_projection_matrix(struct render* render, mat4 matrix)
+{
+    backend_render_set_projection_matrix(&render->backend_render, matrix);
 }
 
 void render_draw_sprite(struct render* render, struct sprite* sprite, vec3 position)

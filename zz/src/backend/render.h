@@ -22,5 +22,7 @@ void backend_render_resize(struct backend_render* backend_render);
 
 b8 backend_render_draw_frame(struct backend_render* backend_render);
 
-void backend_render_bind_camera(struct backend_render* backend_render, struct camera* camera);
+void backend_render_set_model_matrix(struct backend_render* backend_render, mat4 matrix);
+void backend_render_set_view_matrix(struct backend_render* backend_render, mat4 matrix);
+void backend_render_set_projection_matrix(struct backend_render* backend_render, mat4 matrix);
 void backend_render_draw_sprite(struct backend_render* backend_render, struct sprite* sprite, vec3 position);

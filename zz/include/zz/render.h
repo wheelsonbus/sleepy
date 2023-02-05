@@ -4,7 +4,6 @@
 
 #include "backend/render.h"
 
-#include "camera.h"
 #include "sprite.h"
 
 struct program;
@@ -38,5 +37,7 @@ void render_destroy(struct render* render);
 
 b8 render_draw_frame(struct render* render);
 
-void render_bind_camera(struct render* render, struct camera* camera);
+void render_set_model_matrix(struct render* render, mat4 matrix);
+void render_set_view_matrix(struct render* render, mat4 matrix);
+void render_set_projection_matrix(struct render* render, mat4 matrix);
 void render_draw_sprite(struct render* render, struct sprite* sprite, vec3 position);
