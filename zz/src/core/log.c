@@ -6,7 +6,7 @@
 
 #include "zz/console.h"
 
-b8 log_initialize() {
+b8 log_initialize(struct log_config* config) {
     ZZ_LOG_INFO("Log module initialized.");
     return ZZ_TRUE;
 }

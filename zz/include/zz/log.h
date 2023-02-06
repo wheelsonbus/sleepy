@@ -2,7 +2,17 @@
 
 #include "zz.h"
 
-ZZ_API b8 log_initialize();
+struct log
+{
+
+};
+
+struct log_config
+{
+
+};
+
+ZZ_API b8 log_initialize(struct log_config* config);
 ZZ_API void log_deinitialize();
 
 ZZ_API void _log(int level, const char* message, ...);

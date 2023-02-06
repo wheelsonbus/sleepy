@@ -69,22 +69,32 @@ b8 program_initialize(struct program_config* config)
     program.running = ZZ_TRUE;
     program.suspended = ZZ_FALSE;
 
+    struct log_config log_config;
+    if (!log_initialize(&log_config))
+    {
+        ZZ_LOG_FATAL("Failed to initialize log module.");
+        return ZZ_FALSE;
+    }
+
     struct memory_config memory_config;
     if (!memory_initialize(&memory_config))
     {
-        ZZ_LOG_FATAL("Failed to create memory module.");
+        ZZ_LOG_FATAL("Failed to initialize memory module.");
+        return ZZ_FALSE;
     }
 
     struct event_config event_config;
     if (!event_initialize(&event_config))
     {
-        ZZ_LOG_FATAL("Failed to create event module.");
+        ZZ_LOG_FATAL("Failed to initialize event module.");
+        return ZZ_FALSE;
     }
 
     struct input_config input_config;
     if (!input_initialize(&input_config))
     {
-        ZZ_LOG_FATAL("Failed to create input module.");
+        ZZ_LOG_FATAL("Failed to initialize input module.");
+        return ZZ_FALSE;
     }
 
     struct application_config application_config;
@@ -95,13 +105,14 @@ b8 program_initialize(struct program_config* config)
     application_config.height = config->height;
     if (!application_initialize(&application_config))
     {
-        ZZ_LOG_FATAL("Failed to create application module.");
+        ZZ_LOG_FATAL("Failed to initialize application module.");
+        return ZZ_FALSE;
     }
 
     struct render_config render_config;
     if (!render_initialize(&render_config))
     {
-        ZZ_LOG_FATAL("Failed to create render module.");
+        ZZ_LOG_FATAL("Failed to initialize render module.");
         return ZZ_FALSE;
     }
 

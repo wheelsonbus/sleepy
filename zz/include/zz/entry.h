@@ -1,14 +1,12 @@
 #pragma once
 
-#include "log.h"
 #include "program.h"
+#include "log.h"
 
 extern void entry(struct program_config* program_config);
 
 int main()
 {
-    if (!log_initialize()) { return -1; }
-
     struct program_config program_config;
     entry(&program_config);
     if (!program_initialize(&program_config))
@@ -24,8 +22,6 @@ int main()
     }
 
     program_deinitialize();
-
-    log_deinitialize();
 
     return 0;
 }
