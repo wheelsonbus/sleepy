@@ -4,14 +4,12 @@
 
 b8 backend_vulkan_swapchain_create(struct backend_vulkan_swapchain* swapchain, const struct backend_vulkan_swapchain_config* config)
 {
-    swapchain->memory = config->memory;
-    swapchain->application = config->application;
     swapchain->surface = config->surface;
     swapchain->device = config->device;
     swapchain->render_pass = config->render_pass;
 
     u16 width, height;
-    application_get_size(swapchain->application, &width, &height);
+    application_get_size(&width, &height);
     if (width == 0 || height == 0)
     {
         swapchain->extent = swapchain->device->swapchain_support_details.surfaceCapabilities.currentExtent; // TODO Handle currentExtent.width/height == UINT32_MAX?
@@ -30,7 +28,7 @@ b8 backend_vulkan_swapchain_create(struct backend_vulkan_swapchain* swapchain, c
 
     VkSwapchainCreateInfoKHR swapchainCreateInfo;
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCreateInfo.pNext = NULL;
+    swapchainCreateInfo.pNext = ZZ_NULL;
     swapchainCreateInfo.flags = 0;
     swapchainCreateInfo.surface = swapchain->surface->surface;
     swapchainCreateInfo.minImageCount = imageCount;
@@ -44,7 +42,7 @@ b8 backend_vulkan_swapchain_create(struct backend_vulkan_swapchain* swapchain, c
     {
         swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         swapchainCreateInfo.queueFamilyIndexCount = 0;
-        swapchainCreateInfo.pQueueFamilyIndices = NULL;
+        swapchainCreateInfo.pQueueFamilyIndices = ZZ_NULL;
     }
     else
     {
@@ -58,22 +56,22 @@ b8 backend_vulkan_swapchain_create(struct backend_vulkan_swapchain* swapchain, c
     swapchainCreateInfo.clipped = VK_TRUE;
     swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(swapchain->device->device, &swapchainCreateInfo, NULL, &swapchain->swapchain) != VK_SUCCESS)
+    if (vkCreateSwapchainKHR(swapchain->device->device, &swapchainCreateInfo, ZZ_NULL, &swapchain->swapchain) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
-    vkGetSwapchainImagesKHR(swapchain->device->device, swapchain->swapchain, &imageCount, NULL);
-    memory_array_create_and_reserve(swapchain->memory, &swapchain->images, imageCount);
+    vkGetSwapchainImagesKHR(swapchain->device->device, swapchain->swapchain, &imageCount, ZZ_NULL);
+    memory_array_create_and_reserve(&swapchain->images, imageCount);
     vkGetSwapchainImagesKHR(swapchain->device->device, swapchain->swapchain, &imageCount, swapchain->images.data);
     swapchain->images.length = imageCount;
 
-    memory_array_create_and_reserve(swapchain->memory, &swapchain->imageViews, imageCount);
+    memory_array_create_and_reserve(&swapchain->imageViews, imageCount);
     for (uint32_t i = 0; i < imageCount; i += 1)
     {
         VkImageViewCreateInfo imageViewCreateInfo;
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        imageViewCreateInfo.pNext = NULL;
+        imageViewCreateInfo.pNext = ZZ_NULL;
         imageViewCreateInfo.flags = 0;
         imageViewCreateInfo.image = swapchain->images.data[i];
         imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -88,21 +86,21 @@ b8 backend_vulkan_swapchain_create(struct backend_vulkan_swapchain* swapchain, c
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
         imageViewCreateInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(swapchain->device->device, &imageViewCreateInfo, NULL, &swapchain->imageViews.data[i]) != VK_SUCCESS)
+        if (vkCreateImageView(swapchain->device->device, &imageViewCreateInfo, ZZ_NULL, &swapchain->imageViews.data[i]) != VK_SUCCESS)
         {
-            return FALSE;
+            return ZZ_FALSE;
         }
     }
     swapchain->imageViews.length = imageCount;
 
-    memory_array_create_and_reserve(swapchain->memory, &swapchain->framebuffers, imageCount);
+    memory_array_create_and_reserve(&swapchain->framebuffers, imageCount);
     for (uint32_t i = 0; i < imageCount; i += 1)
     {
         VkImageView attachmentImageViews[1] = {swapchain->imageViews.data[i]};
 
         VkFramebufferCreateInfo framebufferCreateInfo;
         framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferCreateInfo.pNext = NULL;
+        framebufferCreateInfo.pNext = ZZ_NULL;
         framebufferCreateInfo.flags = 0;
         framebufferCreateInfo.renderPass = swapchain->render_pass->renderPass;
         framebufferCreateInfo.attachmentCount = 1;
@@ -111,34 +109,34 @@ b8 backend_vulkan_swapchain_create(struct backend_vulkan_swapchain* swapchain, c
         framebufferCreateInfo.height = swapchain->extent.height;
         framebufferCreateInfo.layers = 1;
 
-        if (vkCreateFramebuffer(swapchain->device->device, &framebufferCreateInfo, NULL, &swapchain->framebuffers.data[i]) != VK_SUCCESS)
+        if (vkCreateFramebuffer(swapchain->device->device, &framebufferCreateInfo, ZZ_NULL, &swapchain->framebuffers.data[i]) != VK_SUCCESS)
         {
-            return FALSE;
+            return ZZ_FALSE;
         }
     }
     swapchain->framebuffers.length = imageCount;
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 void backend_vulkan_swapchain_destroy(struct backend_vulkan_swapchain* swapchain)
 {
     for (u16 i = 0; i < swapchain->framebuffers.length; i += 1)
     {
-        vkDestroyFramebuffer(swapchain->device->device, swapchain->framebuffers.data[i], NULL);
+        vkDestroyFramebuffer(swapchain->device->device, swapchain->framebuffers.data[i], ZZ_NULL);
         swapchain->framebuffers.data[i] = VK_NULL_HANDLE;
     }
     for (u16 i = 0; i < swapchain->imageViews.length; i += 1)
     {
-        vkDestroyImageView(swapchain->device->device, swapchain->imageViews.data[i], NULL);
+        vkDestroyImageView(swapchain->device->device, swapchain->imageViews.data[i], ZZ_NULL);
         swapchain->imageViews.data[i] = VK_NULL_HANDLE;
     }
-    vkDestroySwapchainKHR(swapchain->device->device, swapchain->swapchain, NULL);
+    vkDestroySwapchainKHR(swapchain->device->device, swapchain->swapchain, ZZ_NULL);
     swapchain->swapchain = VK_NULL_HANDLE;
 
-    memory_array_destroy(swapchain->memory, &swapchain->framebuffers);
-    memory_array_destroy(swapchain->memory, &swapchain->images);
-    memory_array_destroy(swapchain->memory, &swapchain->imageViews);
+    memory_array_destroy(&swapchain->framebuffers);
+    memory_array_destroy(&swapchain->images);
+    memory_array_destroy(&swapchain->imageViews);
 }
 
 b8 backend_vulkan_swapchain_recreate(struct backend_vulkan_swapchain* swapchain)
@@ -146,8 +144,6 @@ b8 backend_vulkan_swapchain_recreate(struct backend_vulkan_swapchain* swapchain)
     vkDeviceWaitIdle(swapchain->device->device);
     backend_vulkan_swapchain_destroy(swapchain);
     struct backend_vulkan_swapchain_config swapchain_config;
-    swapchain_config.memory = swapchain->memory;
-    swapchain_config.application = swapchain->application;
     swapchain_config.surface = swapchain->surface;
     swapchain_config.device = swapchain->device;
     swapchain_config.render_pass = swapchain->render_pass;

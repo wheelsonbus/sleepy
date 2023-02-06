@@ -5,76 +5,70 @@
 #include "zz/event.h"
 #include "zz/application.h"
 
+//static struct render render;
+
 b8 render_on_resize(void* sender, void* receiver, union event_data data)
 {
-    struct render* render = (struct render*)receiver;
     u16 width = data.u16[0];
     u16 height = data.u16[1];
 
     if (width != 0 && height != 0)
     {
-        backend_render_resize(&render->backend_render);
+        backend_render_resize();
     }
 
-    return FALSE;
+    return ZZ_FALSE;
 }
 
-b8 render_create(struct render* render, struct render_config* config)
+b8 render_initialize(struct render_config* config)
 {
-    render->program = config->program;
-    render->memory = config->memory;
-    render->event = config->event;
-    render->application = config->application;
-
     struct backend_render_config backend_render_config;
-    backend_render_config.memory = config->memory;
-    backend_render_config.application = config->application;
-    if (!backend_render_create(&render->backend_render, &backend_render_config))
+    if (!backend_render_initialize(&backend_render_config))
     {
         ZZ_LOG_FATAL("Failed to create backend render module.");
-        return FALSE;
+        return ZZ_FALSE;
     }
 
-    event_register_receiver(render->event, ZZ_EVENT_CODE_RESIZE, render, render_on_resize);
+    event_register_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, render_on_resize);
 
     ZZ_LOG_INFO("Render module created.");
-    return TRUE;
+    return ZZ_TRUE;
 }
 
-void render_destroy(struct render* render)
+void render_deinitialize()
 {
-    event_unregister_receiver(render->event, ZZ_EVENT_CODE_RESIZE, render, render_on_resize);
+    event_unregister_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, render_on_resize);
 
-    backend_render_destroy(&render->backend_render);
+    backend_render_deinitialize();
 
     ZZ_LOG_INFO("Render module destroyed.");
 }
 
-b8 render_draw_frame(struct render* render)
+b8 render_draw_frame()
 {
-    if (!backend_render_draw_frame(&render->backend_render))
+    if (!backend_render_draw_frame())
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
-    return TRUE;
+    return ZZ_TRUE;
 }
 
-void render_set_model_matrix(struct render* render, mat4 matrix)
+void render_set_model_matrix(mat4 matrix)
 {
-    backend_render_set_model_matrix(&render->backend_render, matrix);
+    backend_render_set_model_matrix(matrix);
 }
 
-void render_set_view_matrix(struct render* render, mat4 matrix)
+void render_set_view_matrix(mat4 matrix)
 {
-    backend_render_set_view_matrix(&render->backend_render, matrix);
+    backend_render_set_view_matrix(matrix);
 }
 
-void render_set_projection_matrix(struct render* render, mat4 matrix)
+void render_set_projection_matrix(mat4 matrix)
 {
-    backend_render_set_projection_matrix(&render->backend_render, matrix);
+    backend_render_set_projection_matrix(matrix);
 }
 
-void render_draw_sprite(struct render* render, struct sprite* sprite, vec3 position)
+void render_draw_sprite(struct sprite* sprite, vec3 position)
 {
-    backend_render_draw_sprite(&render->backend_render, sprite, position);
+    backend_render_draw_sprite(sprite, position);
 }

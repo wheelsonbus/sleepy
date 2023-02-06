@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-static b8 math_random_seeded = FALSE;
+static b8 math_random_seeded = ZZ_FALSE;
 
 f32 f32_sin(f32 x) {return sinf(x);}
 f32 f32_cos(f32 x) {return cosf(x);}

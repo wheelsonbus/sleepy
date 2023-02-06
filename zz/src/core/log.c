@@ -8,7 +8,7 @@
 
 b8 log_initialize() {
     ZZ_LOG_INFO("Log module initialized.");
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 void log_deinitialize() {

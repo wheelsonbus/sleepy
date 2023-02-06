@@ -1,6 +1,6 @@
 #include "box.h"
 
-void box_draw(struct box* box, struct program* program)
+void box_draw(struct box* box)
 {
-    program_draw_sprite(program, &box->sprite, box->position);
+    program_draw_sprite(&box->sprite, box->position);
 }

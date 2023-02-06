@@ -6,41 +6,41 @@
 
 b8 backend_vulkan_command_pool_create(struct backend_vulkan_command_pool* command_pool, struct backend_vulkan_command_pool_config* config)
 {
-    command_pool->memory = config->memory;
     command_pool->device = config->device;
     command_pool->sync = config->sync;
 
     VkCommandPoolCreateInfo commandPoolCreateInfo;
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    commandPoolCreateInfo.pNext = NULL;
+    commandPoolCreateInfo.pNext = ZZ_NULL;
     commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     commandPoolCreateInfo.queueFamilyIndex = command_pool->device->queue_family_indices.graphics;
 
-    if (vkCreateCommandPool(command_pool->device->device, &commandPoolCreateInfo, NULL, &command_pool->commandPool) != VK_SUCCESS)
+    if (vkCreateCommandPool(command_pool->device->device, &commandPoolCreateInfo, ZZ_NULL, &command_pool->commandPool) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     VkCommandBufferAllocateInfo commandBufferAllocateInfo;
     commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    commandBufferAllocateInfo.pNext = NULL;
+    commandBufferAllocateInfo.pNext = ZZ_NULL;
     commandBufferAllocateInfo.commandPool = command_pool->commandPool;
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     commandBufferAllocateInfo.commandBufferCount = command_pool->sync->max_frames_in_flight;
 
-    memory_array_create_and_reserve(command_pool->memory, &command_pool->commandBuffers, command_pool->sync->max_frames_in_flight);
+    memory_array_create_and_reserve(&command_pool->commandBuffers, command_pool->sync->max_frames_in_flight);
     if (vkAllocateCommandBuffers(command_pool->device->device, &commandBufferAllocateInfo, command_pool->commandBuffers.data) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
     command_pool->commandBuffers.length = command_pool->sync->max_frames_in_flight;
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 void backend_vulkan_command_pool_destroy(struct backend_vulkan_command_pool* command_pool)
 {
-    vkDestroyCommandPool(command_pool->device->device, command_pool->commandPool, NULL);
+    memory_array_destroy(&command_pool->commandBuffers);
+    vkDestroyCommandPool(command_pool->device->device, command_pool->commandPool, ZZ_NULL);
     command_pool->commandPool = VK_NULL_HANDLE;
 }
 
@@ -50,25 +50,25 @@ b8 backend_vulkan_command_pool_copy_buffer(struct backend_vulkan_command_pool* c
 
     VkCommandBufferAllocateInfo commandBufferAllocateInfo;
     commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    commandBufferAllocateInfo.pNext = NULL;
+    commandBufferAllocateInfo.pNext = ZZ_NULL;
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     commandBufferAllocateInfo.commandPool = command_pool->commandPool;
     commandBufferAllocateInfo.commandBufferCount = 1;
 
     if (vkAllocateCommandBuffers(command_pool->device->device, &commandBufferAllocateInfo, &commandBuffer) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     VkCommandBufferBeginInfo commandBufferBeginInfo;
     commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    commandBufferBeginInfo.pNext = NULL;
+    commandBufferBeginInfo.pNext = ZZ_NULL;
     commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    commandBufferBeginInfo.pInheritanceInfo = NULL;
+    commandBufferBeginInfo.pInheritanceInfo = ZZ_NULL;
 
     if (vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     VkBufferCopy bufferCopy;
@@ -80,47 +80,47 @@ b8 backend_vulkan_command_pool_copy_buffer(struct backend_vulkan_command_pool* c
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     VkSubmitInfo submitInfo;
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.pNext = NULL;
+    submitInfo.pNext = ZZ_NULL;
     submitInfo.waitSemaphoreCount = 0;
-    submitInfo.pWaitSemaphores = NULL;
-    submitInfo.pWaitDstStageMask = NULL;
+    submitInfo.pWaitSemaphores = ZZ_NULL;
+    submitInfo.pWaitDstStageMask = ZZ_NULL;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
     submitInfo.signalSemaphoreCount = 0;
-    submitInfo.pSignalSemaphores = NULL;
+    submitInfo.pSignalSemaphores = ZZ_NULL;
 
     if (vkQueueSubmit(command_pool->device->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) // TODO Implement transfer queue
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
     vkQueueWaitIdle(command_pool->device->graphicsQueue);
 
     vkFreeCommandBuffers(command_pool->device->device, command_pool->commandPool, 1, &commandBuffer);
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 b8 backend_vulkan_record_command_buffer(struct backend_vulkan_buffer* vertex_buffer, struct backend_vulkan_buffer* index_buffer, uint32_t indexCount, struct backend_vulkan_pipeline* pipeline, u16 current_frame, VkCommandBuffer commandBuffer, VkRenderPass renderPass, VkPipeline graphicsPipeline, memory_array_VkFramebuffer_t* swapchainFramebuffers, VkExtent2D* swapchainExtent, uint32_t imageIndex)
 {
     VkCommandBufferBeginInfo commandBufferBeginInfo;
     commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    commandBufferBeginInfo.pNext = NULL;
+    commandBufferBeginInfo.pNext = ZZ_NULL;
     commandBufferBeginInfo.flags = 0;
-    commandBufferBeginInfo.pInheritanceInfo = NULL;
+    commandBufferBeginInfo.pInheritanceInfo = ZZ_NULL;
 
     if (vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     VkRenderPassBeginInfo renderPassBeginInfo;
     renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassBeginInfo.pNext = NULL;
+    renderPassBeginInfo.pNext = ZZ_NULL;
     renderPassBeginInfo.renderPass = renderPass;
     renderPassBeginInfo.framebuffer = swapchainFramebuffers->data[imageIndex];
     renderPassBeginInfo.renderArea.offset.x = 0;
@@ -157,7 +157,7 @@ b8 backend_vulkan_record_command_buffer(struct backend_vulkan_buffer* vertex_buf
     vkCmdBindVertexBuffers(commandBuffer, 0, vertexBufferCount, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer, index_buffer->buffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipelineLayout, 0, 1, &pipeline->descriptorSets.data[current_frame], 0, NULL);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipelineLayout, 0, 1, &pipeline->descriptorSets.data[current_frame], 0, ZZ_NULL);
 
     vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
 
@@ -165,10 +165,10 @@ b8 backend_vulkan_record_command_buffer(struct backend_vulkan_buffer* vertex_buf
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 #endif

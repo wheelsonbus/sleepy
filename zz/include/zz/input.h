@@ -134,36 +134,30 @@ struct input_state
 
 struct input
 {
-    struct program* program;
-    struct memory* memory;
-    struct event* event;
-
     struct input_state state;
     struct input_state previous_state;
 };
 
 struct input_config
 {
-    struct program* program;
-    struct memory* memory;
-    struct event* event;
+    
 };
 
-ZZ_API b8 input_create(struct input* input, struct input_config* config);
-ZZ_API void input_destroy(struct input* input);
+ZZ_API b8 input_initialize(struct input_config* config);
+ZZ_API void input_deinitialize();
 
-void input_update(struct input* input);
+void input_update();
 
-ZZ_API b8 input_get_key_state(struct input* input, enum input_key_code code);
-ZZ_API b8 input_get_previous_key_state(struct input* input, enum input_key_code code);
-void input_set_key_state(struct input* input, enum input_key_code code, b8 down);
+ZZ_API b8 input_get_key_state(enum input_key_code code);
+ZZ_API b8 input_get_previous_key_state(enum input_key_code code);
+void input_set_key_state(enum input_key_code code, b8 down);
 
-ZZ_API b8 input_get_mouse_button_state(struct input* input, enum input_mouse_button_code code);
-ZZ_API b8 input_get_mouse_button_state(struct input* input, enum input_mouse_button_code code);
-void input_set_mouse_button_state(struct input* input, enum input_mouse_button_code code, b8 down);
+ZZ_API b8 input_get_mouse_button_state(enum input_mouse_button_code code);
+ZZ_API b8 input_get_mouse_button_state(enum input_mouse_button_code code);
+void input_set_mouse_button_state(enum input_mouse_button_code code, b8 down);
 
-ZZ_API void input_get_mouse_position(struct input* input, i32* x, i32* y);
-ZZ_API void input_get_previous_mouse_position(struct input* input, i32* x, i32* y);
-void input_set_mouse_position(struct input* input, i16 x, i16 y);
+ZZ_API void input_get_mouse_position(i32* x, i32* y);
+ZZ_API void input_get_previous_mouse_position(i32* x, i32* y);
+void input_set_mouse_position(i16 x, i16 y);
 
-void input_move_mouse_wheel(struct input* input, i8 delta);
+void input_move_mouse_wheel(i8 delta);

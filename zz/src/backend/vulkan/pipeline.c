@@ -8,7 +8,6 @@
 
 b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, struct backend_vulkan_pipeline_config* config)
 {
-    pipeline->memory = config->memory;
     pipeline->device = config->device;
     pipeline->render_pass = config->render_pass;
     pipeline->swapchain = config->swapchain;
@@ -25,15 +24,15 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
 
     VkDescriptorPoolCreateInfo descriptorPoolCreateInfo;
     descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    descriptorPoolCreateInfo.pNext = NULL;
+    descriptorPoolCreateInfo.pNext = ZZ_NULL;
     descriptorPoolCreateInfo.flags = 0;
     descriptorPoolCreateInfo.maxSets = pipeline->uniform_buffers->length;
     descriptorPoolCreateInfo.poolSizeCount = 1;
     descriptorPoolCreateInfo.pPoolSizes = &descriptorPoolSize;
 
-    if (vkCreateDescriptorPool(pipeline->device->device, &descriptorPoolCreateInfo, NULL, &pipeline->descriptorPool) != VK_SUCCESS)
+    if (vkCreateDescriptorPool(pipeline->device->device, &descriptorPoolCreateInfo, ZZ_NULL, &pipeline->descriptorPool) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     VkDescriptorSetLayoutBinding uboDescriptorSetLayoutBinding;
@@ -41,39 +40,39 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
     uboDescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     uboDescriptorSetLayoutBinding.descriptorCount = 1;
     uboDescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    uboDescriptorSetLayoutBinding.pImmutableSamplers = NULL;
+    uboDescriptorSetLayoutBinding.pImmutableSamplers = ZZ_NULL;
 
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
     descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptorSetLayoutCreateInfo.pNext = NULL;
+    descriptorSetLayoutCreateInfo.pNext = ZZ_NULL;
     descriptorSetLayoutCreateInfo.flags = 0;
     descriptorSetLayoutCreateInfo.bindingCount = 1;
     descriptorSetLayoutCreateInfo.pBindings = &uboDescriptorSetLayoutBinding;
 
-    if (vkCreateDescriptorSetLayout(pipeline->device->device, &descriptorSetLayoutCreateInfo, NULL, &pipeline->descriptorSetLayout) != VK_SUCCESS)
+    if (vkCreateDescriptorSetLayout(pipeline->device->device, &descriptorSetLayoutCreateInfo, ZZ_NULL, &pipeline->descriptorSetLayout) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     memory_array_t(VkDescriptorSetLayout) descriptorSetLayouts;
-    memory_array_create_and_reserve(pipeline->memory, &descriptorSetLayouts, pipeline->uniform_buffers->length);
+    memory_array_create_and_reserve(&descriptorSetLayouts, pipeline->uniform_buffers->length);
     for (u16 i = 0; i < descriptorSetLayouts.capacity; i += 1)
     {
-        memory_array_push(pipeline->memory, &descriptorSetLayouts, pipeline->descriptorSetLayout);
+        memory_array_push(&descriptorSetLayouts, pipeline->descriptorSetLayout);
     }
 
     VkDescriptorSetAllocateInfo descriptorSetAllocateInfo;
     descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    descriptorSetAllocateInfo.pNext = NULL;
+    descriptorSetAllocateInfo.pNext = ZZ_NULL;
     descriptorSetAllocateInfo.descriptorPool = pipeline->descriptorPool;
     descriptorSetAllocateInfo.descriptorSetCount = descriptorSetLayouts.length;
     descriptorSetAllocateInfo.pSetLayouts = descriptorSetLayouts.data;
 
-    memory_array_create_and_reserve(pipeline->memory, &pipeline->descriptorSets, pipeline->uniform_buffers->length);
+    memory_array_create_and_reserve(&pipeline->descriptorSets, pipeline->uniform_buffers->length);
     if (vkAllocateDescriptorSets(pipeline->device->device, &descriptorSetAllocateInfo, pipeline->descriptorSets.data) != VK_SUCCESS)
     {
-        memory_array_destroy(pipeline->memory, &descriptorSetLayouts);
-        return FALSE;
+        memory_array_destroy(&descriptorSetLayouts);
+        return ZZ_FALSE;
     }
 
     for (u16 i = 0; i < descriptorSetLayouts.length; i += 1)
@@ -85,45 +84,45 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
 
         VkWriteDescriptorSet writeDescriptorSet;
         writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        writeDescriptorSet.pNext = NULL;
+        writeDescriptorSet.pNext = ZZ_NULL;
         writeDescriptorSet.dstSet = pipeline->descriptorSets.data[i];
         writeDescriptorSet.dstBinding = 0;
         writeDescriptorSet.dstArrayElement = 0;
         writeDescriptorSet.descriptorCount = 1;
         writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        writeDescriptorSet.pImageInfo = NULL;
+        writeDescriptorSet.pImageInfo = ZZ_NULL;
         writeDescriptorSet.pBufferInfo = &descriptorBufferInfo;
-        writeDescriptorSet.pTexelBufferView = NULL;
+        writeDescriptorSet.pTexelBufferView = ZZ_NULL;
 
-        vkUpdateDescriptorSets(pipeline->device->device, 1, &writeDescriptorSet, 0, NULL);
+        vkUpdateDescriptorSets(pipeline->device->device, 1, &writeDescriptorSet, 0, ZZ_NULL);
     }
     
-    memory_array_destroy(pipeline->memory, &descriptorSetLayouts)
+    memory_array_destroy(&descriptorSetLayouts);
 
     VkPipelineShaderStageCreateInfo vertexPipelineShaderStageCreateInfo;
     vertexPipelineShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    vertexPipelineShaderStageCreateInfo.pNext = NULL;
+    vertexPipelineShaderStageCreateInfo.pNext = ZZ_NULL;
     vertexPipelineShaderStageCreateInfo.flags = 0;
     vertexPipelineShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
     vertexPipelineShaderStageCreateInfo.module = vertexShaderModule;
     vertexPipelineShaderStageCreateInfo.pName = "main";
-    vertexPipelineShaderStageCreateInfo.pSpecializationInfo = NULL;
+    vertexPipelineShaderStageCreateInfo.pSpecializationInfo = ZZ_NULL;
     
     VkPipelineShaderStageCreateInfo fragmentPipelineShaderStageCreateInfo;
     fragmentPipelineShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragmentPipelineShaderStageCreateInfo.pNext = NULL;
+    fragmentPipelineShaderStageCreateInfo.pNext = ZZ_NULL;
     fragmentPipelineShaderStageCreateInfo.flags = 0;
     fragmentPipelineShaderStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
     fragmentPipelineShaderStageCreateInfo.module = fragmentShaderModule;
     fragmentPipelineShaderStageCreateInfo.pName = "main";
-    fragmentPipelineShaderStageCreateInfo.pSpecializationInfo = NULL;
+    fragmentPipelineShaderStageCreateInfo.pSpecializationInfo = ZZ_NULL;
 
     uint32_t pipelineShaderStageCreateInfoCount = 2;
     VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfos[2] = {vertexPipelineShaderStageCreateInfo, fragmentPipelineShaderStageCreateInfo};
 
     VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo;
     pipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    pipelineDynamicStateCreateInfo.pNext = NULL;
+    pipelineDynamicStateCreateInfo.pNext = ZZ_NULL;
     pipelineDynamicStateCreateInfo.flags = 0;
     pipelineDynamicStateCreateInfo.dynamicStateCount = 2;
     VkDynamicState dynamicStates[2] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
@@ -145,7 +144,7 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
 
     VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo;
     pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    pipelineVertexInputStateCreateInfo.pNext = NULL;
+    pipelineVertexInputStateCreateInfo.pNext = ZZ_NULL;
     pipelineVertexInputStateCreateInfo.flags = 0;
     pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
     pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = &vertexInputBindingDescription;
@@ -154,7 +153,7 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
 
     VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo;
     pipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    pipelineInputAssemblyStateCreateInfo.pNext = NULL;
+    pipelineInputAssemblyStateCreateInfo.pNext = ZZ_NULL;
     pipelineInputAssemblyStateCreateInfo.flags = 0;
     pipelineInputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     pipelineInputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
@@ -174,7 +173,7 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
 
     VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo;
     pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    pipelineViewportStateCreateInfo.pNext = NULL;
+    pipelineViewportStateCreateInfo.pNext = ZZ_NULL;
     pipelineViewportStateCreateInfo.flags = 0;
     pipelineViewportStateCreateInfo.viewportCount = 1;
     pipelineViewportStateCreateInfo.pViewports = &viewport;
@@ -183,7 +182,7 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
 
     VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo;
     pipelineRasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    pipelineRasterizationStateCreateInfo.pNext = NULL;
+    pipelineRasterizationStateCreateInfo.pNext = ZZ_NULL;
     pipelineRasterizationStateCreateInfo.flags = 0;
     pipelineRasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
     pipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
@@ -198,12 +197,12 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
 
     VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo;
     pipelineMultisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    pipelineMultisampleStateCreateInfo.pNext = NULL;
+    pipelineMultisampleStateCreateInfo.pNext = ZZ_NULL;
     pipelineMultisampleStateCreateInfo.flags = 0;
     pipelineMultisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
     pipelineMultisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
     pipelineMultisampleStateCreateInfo.minSampleShading = 1.0f;
-    pipelineMultisampleStateCreateInfo.pSampleMask = NULL;
+    pipelineMultisampleStateCreateInfo.pSampleMask = ZZ_NULL;
     pipelineMultisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE;
     pipelineMultisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;
 
@@ -221,7 +220,7 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
 
     VkPipelineColorBlendStateCreateInfo pipelineColorBlendState;
     pipelineColorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    pipelineColorBlendState.pNext = NULL;
+    pipelineColorBlendState.pNext = ZZ_NULL;
     pipelineColorBlendState.flags = 0;
     pipelineColorBlendState.logicOpEnable = VK_FALSE;
     pipelineColorBlendState.logicOp = VK_LOGIC_OP_COPY;
@@ -234,31 +233,31 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
 
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo;
     pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutCreateInfo.pNext = NULL;
+    pipelineLayoutCreateInfo.pNext = ZZ_NULL;
     pipelineLayoutCreateInfo.flags = 0;
     pipelineLayoutCreateInfo.setLayoutCount = 1;
     pipelineLayoutCreateInfo.pSetLayouts = &pipeline->descriptorSetLayout;
     pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
-    pipelineLayoutCreateInfo.pPushConstantRanges = NULL;
+    pipelineLayoutCreateInfo.pPushConstantRanges = ZZ_NULL;
 
-    if (vkCreatePipelineLayout(pipeline->device->device, &pipelineLayoutCreateInfo, NULL, &pipeline->pipelineLayout) != VK_SUCCESS)
+    if (vkCreatePipelineLayout(pipeline->device->device, &pipelineLayoutCreateInfo, ZZ_NULL, &pipeline->pipelineLayout) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo;
     graphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    graphicsPipelineCreateInfo.pNext = NULL;
+    graphicsPipelineCreateInfo.pNext = ZZ_NULL;
     graphicsPipelineCreateInfo.flags = 0;
     graphicsPipelineCreateInfo.stageCount = pipelineShaderStageCreateInfoCount;
     graphicsPipelineCreateInfo.pStages = pipelineShaderStageCreateInfos;
     graphicsPipelineCreateInfo.pVertexInputState = &pipelineVertexInputStateCreateInfo;
     graphicsPipelineCreateInfo.pInputAssemblyState = &pipelineInputAssemblyStateCreateInfo;
-    graphicsPipelineCreateInfo.pTessellationState = NULL;
+    graphicsPipelineCreateInfo.pTessellationState = ZZ_NULL;
     graphicsPipelineCreateInfo.pViewportState = &pipelineViewportStateCreateInfo;
     graphicsPipelineCreateInfo.pRasterizationState = &pipelineRasterizationStateCreateInfo;
     graphicsPipelineCreateInfo.pMultisampleState = &pipelineMultisampleStateCreateInfo;
-    graphicsPipelineCreateInfo.pDepthStencilState = NULL;
+    graphicsPipelineCreateInfo.pDepthStencilState = ZZ_NULL;
     graphicsPipelineCreateInfo.pColorBlendState = &pipelineColorBlendState;
     graphicsPipelineCreateInfo.pDynamicState = &pipelineDynamicStateCreateInfo;
     graphicsPipelineCreateInfo.layout = pipeline->pipelineLayout;
@@ -267,27 +266,27 @@ b8 backend_vulkan_pipeline_create(struct backend_vulkan_pipeline* pipeline, stru
     graphicsPipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
     graphicsPipelineCreateInfo.basePipelineIndex = -1;
 
-    if (vkCreateGraphicsPipelines(pipeline->device->device, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, NULL, &pipeline->pipeline) != VK_SUCCESS)
+    if (vkCreateGraphicsPipelines(pipeline->device->device, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, ZZ_NULL, &pipeline->pipeline) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     backend_vulkan_destroy_shader_module(&vertexShaderModule, pipeline->device->device);
     backend_vulkan_destroy_shader_module(&fragmentShaderModule, pipeline->device->device);
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 void backend_vulkan_pipeline_destroy(struct backend_vulkan_pipeline* pipeline)
 {
-    vkDestroyPipeline(pipeline->device->device, pipeline->pipeline, NULL);
+    vkDestroyPipeline(pipeline->device->device, pipeline->pipeline, ZZ_NULL);
     pipeline->pipeline = VK_NULL_HANDLE;
-    vkDestroyPipelineLayout(pipeline->device->device, pipeline->pipelineLayout, NULL);
+    vkDestroyPipelineLayout(pipeline->device->device, pipeline->pipelineLayout, ZZ_NULL);
     pipeline->pipelineLayout = VK_NULL_HANDLE;
-    memory_array_destroy(pipeline->memory, &pipeline->descriptorSets);
-    vkDestroyDescriptorPool(pipeline->device->device, pipeline->descriptorPool, NULL);
+    memory_array_destroy(&pipeline->descriptorSets);
+    vkDestroyDescriptorPool(pipeline->device->device, pipeline->descriptorPool, ZZ_NULL);
     pipeline->descriptorPool = VK_NULL_HANDLE;
-    vkDestroyDescriptorSetLayout(pipeline->device->device, pipeline->descriptorSetLayout, NULL);
+    vkDestroyDescriptorSetLayout(pipeline->device->device, pipeline->descriptorSetLayout, ZZ_NULL);
     pipeline->descriptorSetLayout = VK_NULL_HANDLE;
 }
 
@@ -296,9 +295,9 @@ b8 backend_vulkan_create_shader_module(VkShaderModule* shaderModule, VkDevice de
     FILE* file;
 
     file = fopen(filename, "rb");
-    if (file == NULL)
+    if (file == ZZ_NULL)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
     fseek(file, 0, SEEK_END);
     u64 bytecode_size = ftell(file);
@@ -311,22 +310,22 @@ b8 backend_vulkan_create_shader_module(VkShaderModule* shaderModule, VkDevice de
 
     VkShaderModuleCreateInfo shaderModuleCreateInfo;
     shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    shaderModuleCreateInfo.pNext = NULL;
+    shaderModuleCreateInfo.pNext = ZZ_NULL;
     shaderModuleCreateInfo.flags = 0;
     shaderModuleCreateInfo.codeSize = bytecode_size;
     shaderModuleCreateInfo.pCode = (uint32_t*)bytecode;
 
-    if (vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, shaderModule) != VK_SUCCESS)
+    if (vkCreateShaderModule(device, &shaderModuleCreateInfo, ZZ_NULL, shaderModule) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 void backend_vulkan_destroy_shader_module(VkShaderModule* shaderModule, VkDevice device)
 {
-    vkDestroyShaderModule(device, *shaderModule, NULL);
+    vkDestroyShaderModule(device, *shaderModule, ZZ_NULL);
     *shaderModule = VK_NULL_HANDLE;
 }
 

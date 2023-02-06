@@ -7,36 +7,32 @@
 
 #include "zz/log.h"
 
+static struct platform_application platform_application;
+
 static LARGE_INTEGER platform_application_windows_clock_frequency;
 static LARGE_INTEGER platform_application_windows_start_time;
 
-static struct event* platform_event;
-static struct input* platform_input;
-
-b8 platform_application_create(struct platform_application* platform_application, struct platform_application_config* config)
+b8 platform_application_initialize(struct platform_application_config* config)
 {
-    platform_event = config->event;
-    platform_input = config->input;
+    platform_application.hInstance = GetModuleHandleA(0);
 
-    platform_application->hInstance = GetModuleHandleA(0);
-
-    HICON icon = LoadIcon(platform_application->hInstance, IDI_APPLICATION);
+    HICON icon = LoadIcon(platform_application.hInstance, IDI_APPLICATION);
     WNDCLASSA wc;
     memset(&wc, 0, sizeof(wc));
     wc.style = CS_DBLCLKS;
     wc.lpfnWndProc = platform_application_windows_process_message;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
-    wc.hInstance = platform_application->hInstance;
+    wc.hInstance = platform_application.hInstance;
     wc.hIcon = icon;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = NULL;
+    wc.hCursor = LoadCursor(ZZ_NULL, IDC_ARROW);
+    wc.hbrBackground = ZZ_NULL;
     wc.lpszClassName = "zz_window_class";
 
     if (!RegisterClassA(&wc))
     {
         MessageBoxA(0, "Window registration failed.", "Error", MB_ICONEXCLAMATION | MB_OK);
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     u32 window_x = config->x;
@@ -60,67 +56,77 @@ b8 platform_application_create(struct platform_application* platform_application
     window_width += borderRect.right - borderRect.left;
     window_height += borderRect.bottom - borderRect.top;
 
-    HWND hWnd = CreateWindowExA(window_ex_style, "zz_window_class", config->name, window_style, window_x, window_y, window_width, window_height, 0, 0, platform_application->hInstance, 0);
+    HWND hWnd = CreateWindowExA(window_ex_style, "zz_window_class", config->name, window_style, window_x, window_y, window_width, window_height, 0, 0, platform_application.hInstance, 0);
     if (hWnd == 0)
     {
-        MessageBoxA(NULL, "Window creation failed.", "Error", MB_ICONEXCLAMATION | MB_OK);
+        MessageBoxA(ZZ_NULL, "Window creation failed.", "Error", MB_ICONEXCLAMATION | MB_OK);
         ZZ_LOG_FATAL("Window creation failed.");
-        return FALSE;
+        return ZZ_FALSE;
     }
     else
     {
-        platform_application->hWnd = hWnd;
+        platform_application.hWnd = hWnd;
     }
 
-    b32 should_activate = TRUE;
+    b32 should_activate = ZZ_TRUE;
     i32 show_window_flags = should_activate ? SW_SHOW : SW_SHOWNOACTIVATE;
-    ShowWindow(platform_application->hWnd, show_window_flags);
+    ShowWindow(platform_application.hWnd, show_window_flags);
 
     QueryPerformanceFrequency(&platform_application_windows_clock_frequency);
     QueryPerformanceCounter(&platform_application_windows_start_time);
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
-void platform_application_destroy(struct platform_application* platform_application)
+void platform_application_deinitialize()
 {
-    if(platform_application->hWnd)
+    if(platform_application.hWnd)
     {
-        DestroyWindow(platform_application->hWnd);
-        platform_application->hWnd = 0;
+        DestroyWindow(platform_application.hWnd);
+        platform_application.hWnd = 0;
     }
 }
 
-b8 platform_application_pump_messages(struct platform_application* platform_application)
+b8 platform_application_pump_messages()
 {
     MSG msg;
-    while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
+    while (PeekMessageA(&msg, ZZ_NULL, 0, 0, PM_REMOVE))
     {
         TranslateMessage(&msg);
         DispatchMessageA(&msg);
     }
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
-void platform_application_get_size(struct platform_application* platform_application, u16* width, u16* height)
+void platform_application_get_size(u16* width, u16* height)
 {
     RECT rect;
-    GetClientRect(platform_application->hWnd, &rect);
+    GetClientRect(platform_application.hWnd, &rect);
     *width = rect.right - rect.left;
     *height = rect.bottom - rect.top;
 }
 
-u64 platform_application_get_time(struct platform_application* platform_application)
+u64 platform_application_get_time()
 {
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
     return ((u64)1000 * (now.QuadPart - platform_application_windows_start_time.QuadPart)) / platform_application_windows_clock_frequency.QuadPart;
 }
 
-void platform_application_sleep(struct platform_application* platform_application, u64 milliseconds)
+void platform_application_sleep(u64 milliseconds)
 {
     Sleep(milliseconds);
+}
+
+HINSTANCE platform_windows_application_get_hinstance()
+{
+    return platform_application.hInstance;
+}
+
+HWND platform_windows_application_get_hwnd()
+{
+    return platform_application.hWnd;
 }
 
 LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg, WPARAM wParam, LPARAM lParam)
@@ -130,7 +136,7 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
         case WM_ERASEBKGND:
             return 1;
         case WM_CLOSE:
-            event_send_null(platform_event, ZZ_EVENT_CODE_QUIT, 0);
+            event_send_null(ZZ_EVENT_CODE_QUIT, 0);
             return 0;
         case WM_DESTROY:
             PostQuitMessage(0);
@@ -145,7 +151,7 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
                 union event_data event_data;
                 event_data.u16[0] = (u16)width;
                 event_data.u16[1] = (u16)height;
-                event_send(platform_event, ZZ_EVENT_CODE_RESIZE, 0, event_data);
+                event_send(ZZ_EVENT_CODE_RESIZE, 0, event_data);
             }  
             break;
         case WM_KEYDOWN:
@@ -154,14 +160,14 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
         case WM_SYSKEYUP:
             {
                 b8 down = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
-                input_set_key_state(platform_input, (u16)wParam, down);
+                input_set_key_state((u16)wParam, down);
             }
             break;
         case WM_MOUSEMOVE:
             {
                 i32 x = GET_X_LPARAM(lParam);
                 i32 y = GET_Y_LPARAM(lParam);
-                input_set_mouse_position(platform_input, x, y);
+                input_set_mouse_position(x, y);
             }
             break;
         case WM_MOUSEWHEEL:
@@ -169,11 +175,11 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
                 i32 delta = GET_WHEEL_DELTA_WPARAM(wParam);
                 if (delta < 0)
                 {
-                    input_move_mouse_wheel(platform_input, -1);
+                    input_move_mouse_wheel(-1);
                 }
                 else if (delta > 0)
                 {
-                    input_move_mouse_wheel(platform_input, 1);
+                    input_move_mouse_wheel(1);
                 }
             }
             break;
@@ -203,7 +209,7 @@ LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg
                 }
                 if (code != ZZ_INPUT_MOUSE_BUTTON_CODE_MAX)
                 {
-                    input_set_mouse_button_state(platform_input, code, down);
+                    input_set_mouse_button_state(code, down);
                 }
             }
             break;

@@ -13,6 +13,9 @@ struct platform_application
     HWND hWnd;
 };
 
+HINSTANCE platform_windows_application_get_hinstance();
+HWND platform_windows_application_get_hwnd();
+
 LRESULT CALLBACK platform_application_windows_process_message(HWND hWnd, u32 msg, WPARAM wParam, LPARAM lParam);
 
 #endif

@@ -11,20 +11,19 @@ int main()
 
     struct program_config program_config;
     entry(&program_config);
-    struct program program;
-    if (!program_create(&program, &program_config))
+    if (!program_initialize(&program_config))
     {
         ZZ_LOG_FATAL("Failed to create program.");
         return 1;
     }
 
-    if (!program_loop(&program))
+    if (!program_loop())
     {
-        ZZ_LOG_ERROR("program_loop returned FALSE.");
+        ZZ_LOG_ERROR("program_loop returned ZZ_FALSE.");
         return 2;
     }
 
-    program_destroy(&program);
+    program_deinitialize();
 
     log_deinitialize();
 

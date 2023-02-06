@@ -18,8 +18,6 @@ struct backend_vulkan_surface
 
 struct backend_vulkan_surface_config
 {
-    struct application* application;
-    
     struct backend_vulkan_instance* instance;
 };
 

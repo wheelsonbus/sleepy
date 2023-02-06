@@ -27,13 +27,13 @@ b8 backend_vulkan_render_pass_create(struct backend_vulkan_render_pass* render_p
     subpassDescription.flags = 0;
     subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpassDescription.inputAttachmentCount = 0;
-    subpassDescription.pInputAttachments = NULL;
+    subpassDescription.pInputAttachments = ZZ_NULL;
     subpassDescription.colorAttachmentCount = 1;
     subpassDescription.pColorAttachments = &colorAttatchmentReference;
-    subpassDescription.pResolveAttachments = NULL;
-    subpassDescription.pDepthStencilAttachment = NULL;
+    subpassDescription.pResolveAttachments = ZZ_NULL;
+    subpassDescription.pDepthStencilAttachment = ZZ_NULL;
     subpassDescription.preserveAttachmentCount = 0;
-    subpassDescription.pPreserveAttachments = NULL;
+    subpassDescription.pPreserveAttachments = ZZ_NULL;
 
     VkSubpassDescription subpassDescriptions[1] = {subpassDescription};
 
@@ -49,7 +49,7 @@ b8 backend_vulkan_render_pass_create(struct backend_vulkan_render_pass* render_p
 
     VkRenderPassCreateInfo renderPassCreateInfo;
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassCreateInfo.pNext = NULL;
+    renderPassCreateInfo.pNext = ZZ_NULL;
     renderPassCreateInfo.flags = 0;
     renderPassCreateInfo.attachmentCount = 1;
     renderPassCreateInfo.pAttachments = attachmentDescriptions;
@@ -58,17 +58,17 @@ b8 backend_vulkan_render_pass_create(struct backend_vulkan_render_pass* render_p
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = subpassDependencies;
 
-    if (vkCreateRenderPass(render_pass->device->device, &renderPassCreateInfo, NULL, &render_pass->renderPass) != VK_SUCCESS)
+    if (vkCreateRenderPass(render_pass->device->device, &renderPassCreateInfo, ZZ_NULL, &render_pass->renderPass) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 void backend_vulkan_render_pass_destroy(struct backend_vulkan_render_pass* render_pass)
 {
-    vkDestroyRenderPass(render_pass->device->device, render_pass->renderPass, NULL);
+    vkDestroyRenderPass(render_pass->device->device, render_pass->renderPass, ZZ_NULL);
     render_pass->renderPass = VK_NULL_HANDLE;
 }
 

@@ -14,8 +14,6 @@ typedef struct {VkFence* data; u16 length, capacity;} memory_array_VkFence_t; //
 
 struct backend_vulkan_sync
 {
-    struct memory* memory;
-
     struct backend_vulkan_device* device;
 
     u16 max_frames_in_flight;
@@ -26,8 +24,6 @@ struct backend_vulkan_sync
 
 struct backend_vulkan_sync_config
 {
-    struct memory* memory;
-
     struct backend_vulkan_device* device;
 
     u16 max_frames_in_flight;

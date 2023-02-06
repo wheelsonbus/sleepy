@@ -21,9 +21,6 @@ typedef struct {u32* data; u16 length, capacity;} memory_array_u16_t;
 
 struct backend_render
 {
-    struct memory* memory;
-    struct application* application;
-
     struct backend_vulkan_instance instance;
     struct backend_vulkan_surface surface;
     struct backend_vulkan_device device;

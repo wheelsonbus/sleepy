@@ -20,9 +20,6 @@ struct backend_vulkan_swapchain
 {
     VkSwapchainKHR swapchain;
 
-    struct memory* memory;
-    struct application* application;
-
     struct backend_vulkan_device* device;
     struct backend_vulkan_surface* surface;
     struct backend_vulkan_render_pass* render_pass;
@@ -35,9 +32,6 @@ struct backend_vulkan_swapchain
 
 struct backend_vulkan_swapchain_config
 {
-    struct memory* memory;
-    struct application* application;
-
     struct backend_vulkan_device* device;
     struct backend_vulkan_surface* surface;
     struct backend_vulkan_render_pass* render_pass;

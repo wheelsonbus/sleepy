@@ -13,8 +13,6 @@ struct backend_vulkan_buffer
 {
     VkBuffer buffer;
 
-    struct memory* memory;
-
     struct backend_vulkan_device* device;
 
     VkBufferUsageFlags usageFlags;
@@ -29,8 +27,6 @@ typedef struct {struct backend_vulkan_buffer* data; u16 length, capacity;} memor
 
 struct backend_vulkan_buffer_config
 {
-    struct memory* memory;
-
     struct backend_vulkan_device* device;
 
     VkBufferUsageFlags usageFlags;

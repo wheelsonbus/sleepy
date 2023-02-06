@@ -21,11 +21,11 @@ struct program
     u64 accumulated_frame_time;
     u64 last_frame_time;
 
-    b8 (*on_initialize)(struct program* program);
-    b8 (*on_deinitialize)(struct program* program);
+    b8 (*on_initialize)();
+    b8 (*on_deinitialize)();
 
-    b8 (*on_tick)(struct program* program, u64 delta_time);
-    b8 (*on_frame)(struct program* program, u64 delta_time);
+    b8 (*on_tick)(u64 delta_time);
+    b8 (*on_frame)(u64 delta_time);
 };
 
 struct program_config
@@ -34,19 +34,19 @@ struct program_config
     u16 x, y;
     u16 width, height;
 
-    b8 (*on_initialize)(struct program* program);
-    b8 (*on_deinitialize)(struct program* program);
+    b8 (*on_initialize)();
+    b8 (*on_deinitialize)();
     
-    b8 (*on_tick)(struct program* program, u64 delta_time);
-    b8 (*on_frame)(struct program* program, u64 delta_time);
+    b8 (*on_tick)(u64 delta_time);
+    b8 (*on_frame)(u64 delta_time);
 };
 
-ZZ_API b8 program_create(struct program* program, struct program_config* config);
-ZZ_API void program_destroy(struct program* program);
+ZZ_API b8 program_initialize(struct program_config* config);
+ZZ_API void program_deinitialize();
 
-ZZ_API b8 program_loop(struct program* program);
+ZZ_API b8 program_loop();
 
-ZZ_API void program_set_model_matrix(struct program* program, mat4 matrix);
-ZZ_API void program_set_view_matrix(struct program* program, mat4 matrix);
-ZZ_API void program_set_projection_matrix(struct program* program, mat4 matrix);
-ZZ_API void program_draw_sprite(struct program* program, struct sprite* sprite, vec3 position);
+ZZ_API void program_set_model_matrix(mat4 matrix);
+ZZ_API void program_set_view_matrix(mat4 matrix);
+ZZ_API void program_set_projection_matrix(mat4 matrix);
+ZZ_API void program_draw_sprite(struct sprite* sprite, vec3 position);

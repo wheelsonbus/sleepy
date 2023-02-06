@@ -8,27 +8,26 @@
 
 b8 backend_vulkan_buffer_create(struct backend_vulkan_buffer* buffer, struct backend_vulkan_buffer_config* config)
 {
-    buffer->memory = config->memory;
     buffer->device = config->device;
     buffer->usageFlags = config->usageFlags;
     buffer->memoryPropertyFlags = config->memoryPropertyFlags;
     buffer->size = config->size;
 
-    buffer->locked = FALSE;
+    buffer->locked = ZZ_FALSE;
 
     VkBufferCreateInfo bufferCreateInfo;
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferCreateInfo.pNext = NULL;
+    bufferCreateInfo.pNext = ZZ_NULL;
     bufferCreateInfo.flags = 0;
     bufferCreateInfo.size = buffer->size;
     bufferCreateInfo.usage = buffer->usageFlags;
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     bufferCreateInfo.queueFamilyIndexCount = 0;
-    bufferCreateInfo.pQueueFamilyIndices = NULL;
+    bufferCreateInfo.pQueueFamilyIndices = ZZ_NULL;
 
-    if (vkCreateBuffer(buffer->device->device, &bufferCreateInfo, NULL, &buffer->buffer) != VK_SUCCESS)
+    if (vkCreateBuffer(buffer->device->device, &bufferCreateInfo, ZZ_NULL, &buffer->buffer) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     VkMemoryRequirements memoryRequirements;
@@ -36,64 +35,64 @@ b8 backend_vulkan_buffer_create(struct backend_vulkan_buffer* buffer, struct bac
 
     if (!backend_vulkan_device_select_memory_type_index(buffer->device, &buffer->memoryTypeIndex, memoryRequirements.memoryTypeBits, buffer->memoryPropertyFlags))
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     VkMemoryAllocateInfo memoryAllocateInfo;
     memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memoryAllocateInfo.pNext = NULL;
+    memoryAllocateInfo.pNext = ZZ_NULL;
     memoryAllocateInfo.allocationSize = memoryRequirements.size;
     memoryAllocateInfo.memoryTypeIndex = buffer->memoryTypeIndex;
 
-    if (vkAllocateMemory(buffer->device->device, &memoryAllocateInfo, NULL, &buffer->deviceMemory) != VK_SUCCESS)
+    if (vkAllocateMemory(buffer->device->device, &memoryAllocateInfo, ZZ_NULL, &buffer->deviceMemory) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     vkBindBufferMemory(buffer->device->device, buffer->buffer, buffer->deviceMemory, 0);
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 void backend_vulkan_buffer_destroy(struct backend_vulkan_buffer* buffer)
 {
-    vkFreeMemory(buffer->device->device, buffer->deviceMemory, NULL);
+    vkFreeMemory(buffer->device->device, buffer->deviceMemory, ZZ_NULL);
     buffer->deviceMemory = VK_NULL_HANDLE;
-    vkDestroyBuffer(buffer->device->device, buffer->buffer, NULL);
+    vkDestroyBuffer(buffer->device->device, buffer->buffer, ZZ_NULL);
     buffer->buffer = VK_NULL_HANDLE;
     buffer->usageFlags = 0;
     buffer->size = 0;
-    buffer->locked = FALSE;
+    buffer->locked = ZZ_FALSE;
 }
 
 b8 backend_vulkan_buffer_lock(struct backend_vulkan_buffer* buffer, void** block, u64 offset, u64 size, VkMemoryMapFlags flags)
 {
     if (buffer->locked || vkMapMemory(buffer->device->device, buffer->deviceMemory, (VkDeviceSize)offset, (VkDeviceSize)size, flags, block) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
-    buffer->locked = TRUE;
-    return TRUE;
+    buffer->locked = ZZ_TRUE;
+    return ZZ_TRUE;
 }
 
 void backend_vulkan_buffer_unlock(struct backend_vulkan_buffer* buffer)
 {
     vkUnmapMemory(buffer->device->device, buffer->deviceMemory);
-    buffer->locked = FALSE;
+    buffer->locked = ZZ_FALSE;
 }
 
 b8 backend_vulkan_buffer_load(struct backend_vulkan_buffer* buffer, const void* data, u64 offset, u64 size, VkMemoryMapFlags flags)
 {
-    void* block = NULL;
+    void* block = ZZ_NULL;
     if (!backend_vulkan_buffer_lock(buffer, &block, offset, size, flags))
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
-    memory_copy(buffer->memory, block, data, size);
+    memory_copy(block, data, size);
 
     backend_vulkan_buffer_unlock(buffer);
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 #endif

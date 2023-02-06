@@ -14,7 +14,7 @@ b8 backend_vulkan_device_create(struct backend_vulkan_device* device, struct bac
     float queuePriority = 1.0f;
     uint32_t uniqueQueueFamilyIndexCount = 0;
     uint32_t uniqueQueueFamilyIndices[2];
-    if (TRUE)
+    if (ZZ_TRUE)
     {
         uniqueQueueFamilyIndices[uniqueQueueFamilyIndexCount++] = device->queue_family_indices.graphics;
     }
@@ -26,7 +26,7 @@ b8 backend_vulkan_device_create(struct backend_vulkan_device* device, struct bac
     for (uint32_t i = 0; i < uniqueQueueFamilyIndexCount; i += 1)
     {
         deviceQueueCreateInfos[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        deviceQueueCreateInfos[i].pNext = NULL;
+        deviceQueueCreateInfos[i].pNext = ZZ_NULL;
         deviceQueueCreateInfos[i].flags = 0;
         deviceQueueCreateInfos[i].queueFamilyIndex = uniqueQueueFamilyIndices[i];
         deviceQueueCreateInfos[i].queueCount = 1;
@@ -37,41 +37,41 @@ b8 backend_vulkan_device_create(struct backend_vulkan_device* device, struct bac
 
     VkDeviceCreateInfo deviceCreateInfo;
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    deviceCreateInfo.pNext = NULL;
+    deviceCreateInfo.pNext = ZZ_NULL;
     deviceCreateInfo.flags = 0;
     deviceCreateInfo.queueCreateInfoCount = uniqueQueueFamilyIndexCount;
     deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos;
     deviceCreateInfo.enabledLayerCount = 0;
-    deviceCreateInfo.ppEnabledLayerNames = NULL;
+    deviceCreateInfo.ppEnabledLayerNames = ZZ_NULL;
     deviceCreateInfo.enabledExtensionCount = 1;
     const char* enabledExtensionNames[1] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
     deviceCreateInfo.ppEnabledExtensionNames = enabledExtensionNames;
     deviceCreateInfo.pEnabledFeatures = &physicalDeviceFeatures;
 
-    if (vkCreateDevice(device->physicalDevice, &deviceCreateInfo, NULL, &device->device) != VK_SUCCESS)
+    if (vkCreateDevice(device->physicalDevice, &deviceCreateInfo, ZZ_NULL, &device->device) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     vkGetDeviceQueue(device->device, device->queue_family_indices.graphics, 0, &device->graphicsQueue);
     vkGetDeviceQueue(device->device, device->queue_family_indices.present, 0, &device->presentQueue);
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 void backend_vulkan_device_destroy(struct backend_vulkan_device* device)
 {
-    vkDestroyDevice(device->device, NULL);
+    vkDestroyDevice(device->device, ZZ_NULL);
     device->device = VK_NULL_HANDLE;
 }
 
 b8 backend_vulkan_device_select_physical_device(struct backend_vulkan_device* device)
 {
     uint32_t physicalDeviceCount = 0;
-    vkEnumeratePhysicalDevices(device->instance->instance, &physicalDeviceCount, NULL);
+    vkEnumeratePhysicalDevices(device->instance->instance, &physicalDeviceCount, ZZ_NULL);
     if (physicalDeviceCount == 0)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
     VkPhysicalDevice physicalDevices[physicalDeviceCount];
     vkEnumeratePhysicalDevices(device->instance->instance, &physicalDeviceCount, physicalDevices);
@@ -89,7 +89,7 @@ b8 backend_vulkan_device_select_physical_device(struct backend_vulkan_device* de
         vkGetPhysicalDeviceMemoryProperties(physicalDevices[i], &memoryProperties);
 
         uint32_t queueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices[i], &queueFamilyCount, NULL);
+        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices[i], &queueFamilyCount, ZZ_NULL);
         VkQueueFamilyProperties queueFamilies[queueFamilyCount];
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevices[i], &queueFamilyCount, queueFamilies);
 
@@ -101,7 +101,7 @@ b8 backend_vulkan_device_select_physical_device(struct backend_vulkan_device* de
                 graphicsIndex = j;
             }
 
-            VkBool32 presentSupported = FALSE;
+            VkBool32 presentSupported = ZZ_FALSE;
             vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevices[i], j, device->surface->surface, &presentSupported);
             if (presentSupported)
             {
@@ -112,20 +112,20 @@ b8 backend_vulkan_device_select_physical_device(struct backend_vulkan_device* de
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevices[i], device->surface->surface, &device->swapchain_support_details.surfaceCapabilities);
 
         uint32_t surfaceFormatCount = 0;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevices[i], device->surface->surface, &surfaceFormatCount, NULL);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevices[i], device->surface->surface, &surfaceFormatCount, ZZ_NULL);
         if (surfaceFormatCount == 0)
         {
             break;
         }
         VkSurfaceFormatKHR surfaceFormats[surfaceFormatCount];
         vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevices[i], device->surface->surface, &surfaceFormatCount, surfaceFormats);
-        b8 surface_format_available = FALSE;
+        b8 surface_format_available = ZZ_FALSE;
         for (uint32_t i = 0; i < surfaceFormatCount; i += 1)
         {
             if (surfaceFormats[i].format == VK_FORMAT_B8G8R8A8_SRGB && surfaceFormats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             {
                 device->swapchain_support_details.surfaceFormat = surfaceFormats[i];
-                surface_format_available = TRUE;
+                surface_format_available = ZZ_TRUE;
                 break;
             }
         }
@@ -135,20 +135,20 @@ b8 backend_vulkan_device_select_physical_device(struct backend_vulkan_device* de
         }
         
         uint32_t presentModeCount = 0;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevices[i], device->surface->surface, &presentModeCount, NULL);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevices[i], device->surface->surface, &presentModeCount, ZZ_NULL);
         if (presentModeCount == 0)
         {
             break;
         }
         VkPresentModeKHR presentModes[presentModeCount];
         vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevices[i], device->surface->surface, &presentModeCount, presentModes);
-        b8 preferred_present_mode_available = FALSE;
+        b8 preferred_present_mode_available = ZZ_FALSE;
         for (uint32_t i = 0; i < presentModeCount; i += 1)
         {
             if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
             {
                 device->swapchain_support_details.presentMode = presentModes[i];
-                preferred_present_mode_available = TRUE;
+                preferred_present_mode_available = ZZ_TRUE;
                 break;
             }
         }
@@ -167,9 +167,9 @@ b8 backend_vulkan_device_select_physical_device(struct backend_vulkan_device* de
 
     if (maxScore == 0)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 b8 backend_vulkan_device_select_memory_type_index(struct backend_vulkan_device* device, uint32_t* memoryTypeIndex, uint32_t memoryTypeIndexFilter, VkMemoryPropertyFlags memoryPropertyFlags)
@@ -182,11 +182,11 @@ b8 backend_vulkan_device_select_memory_type_index(struct backend_vulkan_device* 
         if (memoryTypeIndexFilter & (1 << i) && (memoryPropertyFlags & physicalDeviceMemoryProperties.memoryTypes[i].propertyFlags) == memoryPropertyFlags)
         {
             *memoryTypeIndex = i;
-            return TRUE;
+            return ZZ_TRUE;
         }
     }
 
-    return FALSE;
+    return ZZ_FALSE;
 }
 
 #endif

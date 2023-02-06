@@ -6,29 +6,21 @@
 #include "platform/application.h"
 
 struct application
-{
-    struct memory* memory;
-    struct event* event;
-    struct input* input;
+{    
     
-    struct platform_application platform_application;
 };
 
 struct application_config
 {
-    struct memory* memory;
-    struct event* event;
-    struct input* input;
-
     char* name;
     u16 x, y;
     u16 width, height;
 };
 
-ZZ_API b8 application_create(struct application* application, struct application_config* config);
-ZZ_API void application_destroy(struct application* application);
+ZZ_API b8 application_initialize(struct application_config* config);
+ZZ_API void application_deinitialize();
 
-ZZ_API void application_get_size(struct application* application, u16* width, u16* height);
+ZZ_API void application_get_size(u16* width, u16* height);
 
-ZZ_API u64 application_get_time(struct application* application);
-ZZ_API void application_sleep(struct application* application, u64 milliseconds);
+ZZ_API u64 application_get_time();
+ZZ_API void application_sleep(u64 milliseconds);

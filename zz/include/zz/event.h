@@ -61,22 +61,20 @@ struct event_code_registry
 };
 
 struct event
-{
-    struct memory* memory;
-    
+{    
     struct event_code_registry registries[ZZ_EVENT_CODE_MAX];
 };
 
 struct event_config
 {
-    struct memory* memory;
+
 };
 
-ZZ_API b8 event_create(struct event* event, struct event_config* config);
-ZZ_API void event_destroy(struct event* event);
+ZZ_API b8 event_initialize(struct event_config* config);
+ZZ_API void event_deinitialize();
 
-ZZ_API b8 event_register_receiver(struct event* event, u16 code, void* receiver, event_callback_t callback);
-ZZ_API b8 event_unregister_receiver(struct event* event, u16 code, void* receiver, event_callback_t callback);
+ZZ_API b8 event_register_receiver(u16 code, void* receiver, event_callback_t callback);
+ZZ_API b8 event_unregister_receiver(u16 code, void* receiver, event_callback_t callback);
 
-ZZ_API b8 event_send(struct event* event, u16 code, void* sender, union event_data data);
-ZZ_API b8 event_send_null(struct event* event, u16 code, void* sender);
+ZZ_API b8 event_send(u16 code, void* sender, union event_data data);
+ZZ_API b8 event_send_null(u16 code, void* sender);

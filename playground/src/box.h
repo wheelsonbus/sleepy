@@ -12,4 +12,4 @@ struct box
 };
 typedef struct {struct box* data; u16 length, capacity;} memory_array_box_t;
 
-void box_draw(struct box* box, struct program* program);
+void box_draw(struct box* box);

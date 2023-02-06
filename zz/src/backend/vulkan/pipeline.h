@@ -20,8 +20,6 @@ struct backend_vulkan_pipeline
 {
     VkPipeline pipeline;
 
-    struct memory* memory;
-
     struct backend_vulkan_device* device;
     struct backend_vulkan_render_pass* render_pass;
     struct backend_vulkan_swapchain* swapchain;
@@ -36,8 +34,6 @@ struct backend_vulkan_pipeline
 
 struct backend_vulkan_pipeline_config
 {
-    struct memory* memory;
-
     struct backend_vulkan_device* device;
     struct backend_vulkan_render_pass* render_pass;
     struct backend_vulkan_swapchain* swapchain;

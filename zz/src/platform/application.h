@@ -5,26 +5,19 @@
 #include "zz/event.h"
 #include "zz/input.h"
 
-#include "windows/application.h"
-
-struct platform_application;
-
 struct platform_application_config
 {
-    struct event* event;
-    struct input* input;
-
     char* name;
     u32 x, y;
     u32 width, height;
 };
 
-b8 platform_application_create(struct platform_application* platform_application, struct platform_application_config* config);
-void platform_application_destroy(struct platform_application* platform_application);
+b8 platform_application_initialize(struct platform_application_config* config);
+void platform_application_deinitialize();
 
-b8 platform_application_pump_messages(struct platform_application* platform_application);
+b8 platform_application_pump_messages();
 
-void platform_application_get_size(struct platform_application* platform_application, u16* width, u16* height);
+void platform_application_get_size(u16* width, u16* height);
 
-u64 platform_application_get_time(struct platform_application* platform_application);
-void platform_application_sleep(struct platform_application* platform_application, u64 milliseconds);
+u64 platform_application_get_time();
+void platform_application_sleep(u64 milliseconds);

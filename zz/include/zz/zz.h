@@ -25,8 +25,10 @@ typedef char b8;
 typedef int b32;
 
 // Boolean values
-#define TRUE 1
-#define FALSE 0
+#define ZZ_TRUE 1
+#define ZZ_FALSE 0
+
+#define ZZ_NULL (void*)0
 
 // Utility macros
 #define ZZ_UTILITY_CLAMP(value, min, max) (value <= min) ? min : ((value >= max) ? max : value)
@@ -49,6 +51,8 @@ STATIC_ASSERT(sizeof(i32) == 4, "Expected i32 to be 4 bytes.");
 STATIC_ASSERT(sizeof(i64) == 8, "Expected i64 to be 8 bytes.");
 STATIC_ASSERT(sizeof(f32) == 4, "Expected f32 to be 4 bytes.");
 STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
+STATIC_ASSERT(sizeof(b8) == 1, "Expected b8 to be 1 byte.");
+STATIC_ASSERT(sizeof(b32) == 4, "Expected b32 to be 4 bytes.");
 
 #ifdef ZZ_EXPORT
 // Exports

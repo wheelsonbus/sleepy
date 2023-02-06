@@ -116,7 +116,7 @@ ZZ_INLINE f32 vec2_distance(vec2 v0, vec2 v1) {return f32_sqrt(vec2_distance_squ
 
 ZZ_INLINE f32 vec2_dot_product(vec2 v0, vec2 v1) {return (v0.x * v1.x) + (v0.y * v1.y);}
 
-ZZ_INLINE b8 vec2_compare(vec2 v0, vec2 v1, f32 epsilon) {return (f32_abs(v0.x - v1.x) > epsilon || f32_abs(v0.y - v1.y) > epsilon) ? FALSE : TRUE;}
+ZZ_INLINE b8 vec2_compare(vec2 v0, vec2 v1, f32 epsilon) {return (f32_abs(v0.x - v1.x) > epsilon || f32_abs(v0.y - v1.y) > epsilon) ? ZZ_FALSE : ZZ_TRUE;}
 
 ZZ_INLINE vec3 vec3_fill(f32 x, f32 y, f32 z) {return (vec3){x, y, z};}
 ZZ_INLINE vec3 vec3_from_vec2(vec2 v, f32 z) {return (vec3){v.x, v.y, z};}
@@ -148,7 +148,7 @@ ZZ_INLINE f32 vec3_distance(vec3 v0, vec3 v1) {return f32_sqrt(vec3_distance_squ
 ZZ_INLINE f32 vec3_dot_product(vec3 v0, vec3 v1) {return (v0.x * v1.x) + (v0.y * v1.y) + (v0.z * v1.z);}
 ZZ_INLINE vec3 vec3_cross_product(vec3 v0, vec3 v1) {return (vec3){(v0.y * v1.z) - (v0.z * v1.y), (v0.z * v1.x) - (v0.x * v1.z), (v0.x * v1.y) - (v0.y * v1.x)};}
 
-ZZ_INLINE b8 vec3_compare(vec3 v0, vec3 v1, f32 epsilon) {return (f32_abs(v0.x - v1.x) > epsilon || f32_abs(v0.y - v1.y) > epsilon || f32_abs(v0.z - v0.z) > epsilon) ? FALSE : TRUE;}
+ZZ_INLINE b8 vec3_compare(vec3 v0, vec3 v1, f32 epsilon) {return (f32_abs(v0.x - v1.x) > epsilon || f32_abs(v0.y - v1.y) > epsilon || f32_abs(v0.z - v0.z) > epsilon) ? ZZ_FALSE : ZZ_TRUE;}
 
 ZZ_INLINE vec4 vec4_fill(f32 x, f32 y, f32 z, f32 w) {return (vec4){x, y, z, w};}
 ZZ_INLINE vec4 vec4_from_vec2(vec2 v, f32 z, f32 w) {return (vec4){v.x, v.y, z, w};}
@@ -173,7 +173,7 @@ ZZ_INLINE f32 vec4_distance(vec4 v0, vec4 v1) {return f32_sqrt(vec4_distance_squ
 
 ZZ_INLINE f32 vec4_dot_product(vec4 v0, vec4 v1) {return (v0.x * v1.x) + (v0.y * v1.y) + (v0.z * v1.z) + (v0.w * v1.w);}
 
-ZZ_INLINE b8 vec4_compare(vec4 v0, vec4 v1, f32 epsilon) {return (f32_abs(v0.x - v1.x) > epsilon || f32_abs(v0.y - v1.y) > epsilon || f32_abs(v0.z - v0.z) > epsilon || f32_abs(v0.w - v1.w)) ? FALSE : TRUE;}
+ZZ_INLINE b8 vec4_compare(vec4 v0, vec4 v1, f32 epsilon) {return (f32_abs(v0.x - v1.x) > epsilon || f32_abs(v0.y - v1.y) > epsilon || f32_abs(v0.z - v0.z) > epsilon || f32_abs(v0.w - v1.w)) ? ZZ_FALSE : ZZ_TRUE;}
 
 ZZ_INLINE mat4 mat4_identity() {return (mat4){.x = {1.0f, 0.0f, 0.0f, 0.0f}, .y = {0.0f, 1.0f, 0.0f, 0.0f}, .z = {0.0f, 0.0f, 1.0f, 0.0f}, .w = {0.0f, 0.0f, 0.0f, 1.0f}};}
 

@@ -8,7 +8,7 @@ b8 backend_vulkan_instance_create(struct backend_vulkan_instance* instance, cons
 {
     VkApplicationInfo applicationInfo;
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    applicationInfo.pNext = NULL;
+    applicationInfo.pNext = ZZ_NULL;
     applicationInfo.pApplicationName = "PLACEHOLDER"; // PLACEHOLDER
     applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0); // PLACEHOLDER
     applicationInfo.pEngineName = "Sleepy Engine";
@@ -17,7 +17,7 @@ b8 backend_vulkan_instance_create(struct backend_vulkan_instance* instance, cons
 
     VkInstanceCreateInfo instanceCreateInfo;
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instanceCreateInfo.pNext = NULL;
+    instanceCreateInfo.pNext = ZZ_NULL;
     instanceCreateInfo.flags = 0;
     instanceCreateInfo.pApplicationInfo = &applicationInfo;
 #if defined(ZZ_DEBUG)
@@ -32,7 +32,7 @@ b8 backend_vulkan_instance_create(struct backend_vulkan_instance* instance, cons
 #endif
 #elif defined(ZZ_RELEASE)
     instanceCreateInfo.enabledLayerCount = 0;
-    instanceCreateInfo.ppEnabledLayerNames = NULL;
+    instanceCreateInfo.ppEnabledLayerNames = ZZ_NULL;
 #if defined(ZZ_PLATFORM_WINDOWS)
     instanceCreateInfo.enabledExtensionCount = 2;
     const char* enabledExtensionNames[2] = {"VK_KHR_surface", "VK_KHR_win32_surface"};
@@ -41,44 +41,44 @@ b8 backend_vulkan_instance_create(struct backend_vulkan_instance* instance, cons
 #endif
 #endif
     
-    if (vkCreateInstance(&instanceCreateInfo, NULL, &instance->instance) != VK_SUCCESS)
+    if (vkCreateInstance(&instanceCreateInfo, ZZ_NULL, &instance->instance) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 
     
 #if defined(ZZ_DEBUG)
     VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo;
     debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debugUtilsMessengerCreateInfo.pNext = NULL;
+    debugUtilsMessengerCreateInfo.pNext = ZZ_NULL;
     debugUtilsMessengerCreateInfo.flags = 0;
     debugUtilsMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     debugUtilsMessengerCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     debugUtilsMessengerCreateInfo.pfnUserCallback = backend_vulkan_instance_debug_callback;
-    debugUtilsMessengerCreateInfo.pUserData = NULL;
+    debugUtilsMessengerCreateInfo.pUserData = ZZ_NULL;
 
     PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance->instance, "vkCreateDebugUtilsMessengerEXT");
-    if (vkCreateDebugUtilsMessengerEXT == NULL)
+    if (vkCreateDebugUtilsMessengerEXT == ZZ_NULL)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
-    if (vkCreateDebugUtilsMessengerEXT(instance->instance, &debugUtilsMessengerCreateInfo, NULL, &instance->debugUtilsMessenger) != VK_SUCCESS)
+    if (vkCreateDebugUtilsMessengerEXT(instance->instance, &debugUtilsMessengerCreateInfo, ZZ_NULL, &instance->debugUtilsMessenger) != VK_SUCCESS)
     {
-        return FALSE;
+        return ZZ_FALSE;
     }
 #elif defined(ZZ_RELEASE)
 #endif
 
-    return TRUE;
+    return ZZ_TRUE;
 }
 
 void backend_vulkan_instance_destroy(struct backend_vulkan_instance* instance)
 {
     PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance->instance, "vkDestroyDebugUtilsMessengerEXT");
-    vkDestroyDebugUtilsMessengerEXT(instance->instance, instance->debugUtilsMessenger, NULL);
+    vkDestroyDebugUtilsMessengerEXT(instance->instance, instance->debugUtilsMessenger, ZZ_NULL);
     instance->debugUtilsMessenger = VK_NULL_HANDLE;
 
-    vkDestroyInstance(instance->instance, NULL);
+    vkDestroyInstance(instance->instance, ZZ_NULL);
     instance->instance = VK_NULL_HANDLE;
 }
 

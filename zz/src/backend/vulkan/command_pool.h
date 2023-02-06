@@ -19,8 +19,6 @@ struct backend_vulkan_command_pool
 {
     VkCommandPool commandPool;
 
-    struct memory* memory;
-
     struct backend_vulkan_device* device;
     struct backend_vulkan_sync* sync;
 
@@ -29,8 +27,6 @@ struct backend_vulkan_command_pool
 
 struct backend_vulkan_command_pool_config
 {
-    struct memory* memory;
-
     struct backend_vulkan_device* device;
     struct backend_vulkan_sync* sync;
 };
