@@ -3,7 +3,7 @@
 
 #include <zz/zz.h>
 #include <zz/math.h>
-#include <zz/program.h>
+#include <zz/client.h>
 #include <zz/sprite.h>
 
 struct box

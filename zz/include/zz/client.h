@@ -1,5 +1,5 @@
-#ifndef ZZ_PROGRAM_H
-#define ZZ_PROGRAM_H
+#ifndef ZZ_CLIENT_H
+#define ZZ_CLIENT_H
 
 #include "memory.h"
 #include "event.h"
@@ -7,7 +7,7 @@
 #include "application.h"
 #include "render.h"
 
-struct program
+struct client
 {
     struct memory memory;
     struct event event;
@@ -29,7 +29,7 @@ struct program
     b8 (*on_frame)(u64 delta_time);
 };
 
-struct program_config
+struct client_config
 {
     char* name;
     u16 x, y;
@@ -42,9 +42,9 @@ struct program_config
     b8 (*on_frame)(u64 delta_time);
 };
 
-ZZ_API b8 program_initialize(struct program_config* config);
-ZZ_API void program_deinitialize();
+ZZ_API b8 client_initialize(struct client_config* config);
+ZZ_API void client_deinitialize();
 
-ZZ_API b8 program_loop();
+ZZ_API b8 client_loop();
 
 #endif

@@ -1,4 +1,4 @@
-#include "zz/program.h"
+#include "zz/client.h"
 
 #include "zz/log.h"
 
@@ -7,37 +7,37 @@
 #define ZZ_MILLISECONDS_PER_TICK 10
 #define ZZ_MILLISECONDS_PER_FRAME 0
 
-static struct program program;
+static struct client client;
 
-b8 program_on_quit(void* sender, void* receiver, union event_data data)
+b8 client_on_quit(void* sender, void* receiver, union event_data data)
 {
     ZZ_LOG_INFO("Quit event received. Shutting down.\n");
-    program.running = ZZ_FALSE;
+    client.running = ZZ_FALSE;
     return ZZ_TRUE;
 }
 
-b8 program_on_resize(void* sender, void* receiver, union event_data data)
+b8 client_on_resize(void* sender, void* receiver, union event_data data)
 {
     u16 width = data.u16[0];
     u16 height = data.u16[1];
 
-    if (width != program.width || height != program.height)
+    if (width != client.width || height != client.height)
     {
-        program.width = width;
-        program.height = height;
+        client.width = width;
+        client.height = height;
 
         if (width == 0 || height == 0)
         {
             ZZ_LOG_INFO("Window minimized. Suspending.");
-            program.suspended = ZZ_TRUE;
+            client.suspended = ZZ_TRUE;
             return ZZ_TRUE;
         }
         else
         {
-            if (program.suspended)
+            if (client.suspended)
             {
                 ZZ_LOG_INFO("Window restored. Resuming.");
-                program.suspended = ZZ_FALSE;
+                client.suspended = ZZ_FALSE;
             }
         }
     }
@@ -45,7 +45,7 @@ b8 program_on_resize(void* sender, void* receiver, union event_data data)
     return ZZ_FALSE;
 }
 
-b8 program_on_key_press(void* sender, void* receiver, union event_data data)
+b8 client_on_key_press(void* sender, void* receiver, union event_data data)
 {
     u16 code = data.u16[0];
     ZZ_LOG_DEBUG("%c", code);
@@ -57,17 +57,17 @@ b8 program_on_key_press(void* sender, void* receiver, union event_data data)
     return ZZ_FALSE;
 }
 
-b8 program_initialize(struct program_config* config)
+b8 client_initialize(struct client_config* config)
 {
-    program.on_initialize = config->on_initialize;
-    program.on_deinitialize = config->on_deinitialize;
-    program.on_tick = config->on_tick;
-    program.on_frame = config->on_frame;
-    program.width = config->width;
-    program.height = config->height;
+    client.on_initialize = config->on_initialize;
+    client.on_deinitialize = config->on_deinitialize;
+    client.on_tick = config->on_tick;
+    client.on_frame = config->on_frame;
+    client.width = config->width;
+    client.height = config->height;
     
-    program.running = ZZ_TRUE;
-    program.suspended = ZZ_FALSE;
+    client.running = ZZ_TRUE;
+    client.suspended = ZZ_FALSE;
 
     struct log_config log_config;
     if (!log_initialize(&log_config))
@@ -116,11 +116,11 @@ b8 program_initialize(struct program_config* config)
         return ZZ_FALSE;
     }
 
-    event_register_receiver(ZZ_EVENT_CODE_QUIT, ZZ_NULL, program_on_quit);
-    event_register_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, program_on_resize);
-    event_register_receiver(ZZ_EVENT_CODE_KEY_PRESS, ZZ_NULL, program_on_key_press);
+    event_register_receiver(ZZ_EVENT_CODE_QUIT, ZZ_NULL, client_on_quit);
+    event_register_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, client_on_resize);
+    event_register_receiver(ZZ_EVENT_CODE_KEY_PRESS, ZZ_NULL, client_on_key_press);
 
-    if (!program.on_initialize())
+    if (!client.on_initialize())
     {
         return ZZ_FALSE;
     }
@@ -133,16 +133,16 @@ b8 program_initialize(struct program_config* config)
     return ZZ_TRUE;
 }
 
-void program_deinitialize()
+void client_deinitialize()
 {
-    if (!program.on_deinitialize())
+    if (!client.on_deinitialize())
     {
-        ZZ_LOG_ERROR("Program deinitialize method returned ZZ_FALSE.");
+        ZZ_LOG_ERROR("Client deinitialize method returned ZZ_FALSE.");
     }
 
-    event_unregister_receiver(ZZ_EVENT_CODE_QUIT, ZZ_NULL, program_on_quit);
-    event_unregister_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, program_on_resize);
-    event_unregister_receiver(ZZ_EVENT_CODE_KEY_PRESS, ZZ_NULL, program_on_key_press);
+    event_unregister_receiver(ZZ_EVENT_CODE_QUIT, ZZ_NULL, client_on_quit);
+    event_unregister_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, client_on_resize);
+    event_unregister_receiver(ZZ_EVENT_CODE_KEY_PRESS, ZZ_NULL, client_on_key_press);
 
     render_deinitialize();
     application_deinitialize();
@@ -151,37 +151,37 @@ void program_deinitialize()
     memory_deinitialize();
 }
 
-b8 program_loop()
+b8 client_loop()
 {
-    program.last_frame_time = application_get_time();
-    program.accumulated_tick_time = 0;
-    program.accumulated_frame_time = 0;
+    client.last_frame_time = application_get_time();
+    client.accumulated_tick_time = 0;
+    client.accumulated_frame_time = 0;
 
-    while (program.running)
+    while (client.running)
     {
-        if (program.suspended)
+        if (client.suspended)
         {
             application_sleep(ZZ_MILLISECONDS_PER_TICK);
-            program.last_frame_time = application_get_time();
+            client.last_frame_time = application_get_time();
         }
         else
         {
-            u64 delta_time = application_get_time() - program.last_frame_time;
-            program.last_frame_time += delta_time;
-            program.accumulated_tick_time += delta_time;
-            program.accumulated_frame_time += delta_time;
+            u64 delta_time = application_get_time() - client.last_frame_time;
+            client.last_frame_time += delta_time;
+            client.accumulated_tick_time += delta_time;
+            client.accumulated_frame_time += delta_time;
 
-            while (program.accumulated_tick_time >= ZZ_MILLISECONDS_PER_TICK)
+            while (client.accumulated_tick_time >= ZZ_MILLISECONDS_PER_TICK)
             {
                 input_update();
-                program.on_tick(ZZ_MILLISECONDS_PER_TICK);
-                program.accumulated_tick_time -= ZZ_MILLISECONDS_PER_TICK;
+                client.on_tick(ZZ_MILLISECONDS_PER_TICK);
+                client.accumulated_tick_time -= ZZ_MILLISECONDS_PER_TICK;
             }
 
-            if (program.accumulated_frame_time >= ZZ_MILLISECONDS_PER_FRAME)
+            if (client.accumulated_frame_time >= ZZ_MILLISECONDS_PER_FRAME)
             {
-                program.on_frame(program.accumulated_frame_time);
-                program.accumulated_frame_time = 0;
+                client.on_frame(client.accumulated_frame_time);
+                client.accumulated_frame_time = 0;
             }
             render_draw_frame();
         }

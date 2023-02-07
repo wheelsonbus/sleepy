@@ -1,28 +1,28 @@
 #ifndef ZZ_ENTRY_H
 #define ZZ_ENTRY_H
 
-#include "program.h"
+#include "client.h"
 #include "log.h"
 
-extern void entry(struct program_config* program_config);
+extern void entry(struct client_config* client_config);
 
 int main()
 {
-    struct program_config program_config;
-    entry(&program_config);
-    if (!program_initialize(&program_config))
+    struct client_config client_config;
+    entry(&client_config);
+    if (!client_initialize(&client_config))
     {
-        ZZ_LOG_FATAL("Failed to create program.");
+        ZZ_LOG_FATAL("Failed to create client.");
         return 1;
     }
 
-    if (!program_loop())
+    if (!client_loop())
     {
-        ZZ_LOG_ERROR("program_loop returned ZZ_FALSE.");
+        ZZ_LOG_ERROR("client_loop returned ZZ_FALSE.");
         return 2;
     }
 
-    program_deinitialize();
+    client_deinitialize();
 
     return 0;
 }
