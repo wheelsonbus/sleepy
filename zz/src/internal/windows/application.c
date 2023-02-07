@@ -1,6 +1,6 @@
 #ifdef ZZ_WINDOWS
 
-#include "internal/application.h"
+#include "zz/internal/application.h"
 #include "application.h"
 
 #include <stdlib.h>

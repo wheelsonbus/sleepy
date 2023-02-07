@@ -1,6 +1,6 @@
 #ifdef ZZ_WINDOWS
 
-#include "internal/network.h"
+#include "zz/internal/network.h"
 #include "network.h"
 
 #include <WinSock2.h>

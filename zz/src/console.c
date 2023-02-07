@@ -1,6 +1,6 @@
 #include "zz/console.h"
 
-#include "internal/console.h"
+#include "zz/internal/console.h"
 
 void console_write(const char* message, u8 color)
 {

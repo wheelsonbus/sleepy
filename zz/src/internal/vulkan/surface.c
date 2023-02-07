@@ -3,7 +3,7 @@
 #include "surface.h"
 
 #if defined(ZZ_WINDOWS)
-#include "internal/windows/application.h"
+#include "../src/internal/windows/application.h"
 #include <vulkan/vulkan_win32.h>
 #elif defined(ZZ_LINUX)
 #endif

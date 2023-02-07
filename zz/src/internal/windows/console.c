@@ -1,6 +1,6 @@
 #ifdef ZZ_WINDOWS
 
-#include "internal/console.h"
+#include "zz/internal/console.h"
 
 #include <windows.h>
 

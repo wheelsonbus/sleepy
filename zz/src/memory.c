@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "zz/log.h"
-#include "internal/memory.h"
+#include "zz/internal/memory.h"
 
 static struct memory memory;
 

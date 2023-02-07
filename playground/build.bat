@@ -10,10 +10,10 @@ for /r %%f in (*.c) do (
 rem echo "Source files:" %sourceFiles%
 
 set target=playground
-set compilerFlags=-g
-set includeFlags=-Isrc -I../zz/include -I../zz/src -I%VULKAN_SDK%/Include
+set compilerFlags=-g -shared -Wvarargs -Wall -Werror -Wno-missing-braces
+set includeFlags=-Iinclude -I../zz/include
 set linkerFlags=-L../bin/ -lzz.lib
-set definitions=-DZZ_WINDOWS -DZZ_VULKAN -DZZ_DEBUG -DZZ_IMPORT
+set definitions=-DPLAYGROUND_EXPORT -DZZ_DEBUG
 
 echo "Building %target%%..."
-clang %sourceFiles% %compilerFlags% -o ../bin/%target%.exe %includeFlags% %linkerFlags% %definitions%
+clang %sourceFiles% %compilerFlags% -o ../bin/%target%.dll %includeFlags% %linkerFlags% %definitions%

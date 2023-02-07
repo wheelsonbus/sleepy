@@ -6,7 +6,6 @@
 
 #include "zz/zz.h"
 
-
 struct internal_vulkan_instance
 {
     VkInstance instance;

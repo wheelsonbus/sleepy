@@ -2,7 +2,7 @@
 
 #include "zz/log.h"
 #include "zz/memory.h"
-#include "internal/application.h"
+#include "zz/internal/application.h"
 
 b8 application_initialize(struct application_config* config)
 {

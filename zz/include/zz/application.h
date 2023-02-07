@@ -4,7 +4,7 @@
 #include "zz.h"
 
 #include "memory.h"
-#include "internal/application.h"
+#include "zz/internal/application.h"
 
 struct application
 {    

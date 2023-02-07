@@ -1,4 +1,4 @@
-#include "network.h"
+#include "playground/network.h"
 
 #include <zz/assert.h>
 #include <zz/memory.h>
@@ -8,7 +8,7 @@ static void write_u8(u8** buffer_iterator, u8 u)
     **buffer_iterator = u;
     ++(*buffer_iterator);
 }
-
+/*
 static void write_u16(u8** buffer_iterator, u16 u)
 {
     memory_copy(*buffer_iterator, &u, sizeof(u));
@@ -26,13 +26,13 @@ static void write_u64(u8** buffer_iterator, u64 u)
     memory_copy(*buffer_iterator, &u, sizeof(u));
     *buffer_iterator += sizeof(u);
 }
-
+*/
 static void write_f32(u8** buffer_iterator, f32 f)
 {
     memory_copy(*buffer_iterator, &f, sizeof(f));
     *buffer_iterator += sizeof(f);
 }
-
+/*
 static void write_f64(u8** buffer_iterator, f64 f)
 {
     memory_copy(*buffer_iterator, &f, sizeof(f));
@@ -44,7 +44,7 @@ static void write_vec2(u8** buffer_iterator, vec2 v)
     write_f32(buffer_iterator, v.x);
     write_f32(buffer_iterator, v.y);
 }
-
+*/
 static void write_vec3(u8** buffer_iterator, vec3 v)
 {
     write_f32(buffer_iterator, v.x);
@@ -57,7 +57,7 @@ static void read_u8(u8** buffer_iterator, u8* u)
 	*u = **buffer_iterator;
 	++(*buffer_iterator);
 }
-
+/*
 static void read_u16(u8** buffer_iterator, u16* u)
 {
     memory_copy(u, *buffer_iterator, sizeof(*u));
@@ -75,13 +75,13 @@ static void read_u64(u8** buffer_iterator, u64* u)
     memory_copy(u, *buffer_iterator, sizeof(*u));
     *buffer_iterator += sizeof(*u);
 }
-
+*/
 static void read_f32(u8** buffer_iterator, f32* f)
 {
     memory_copy(f, *buffer_iterator, sizeof(*f));
     *buffer_iterator += sizeof(*f);
 }
-
+/*
 static void read_f64(u8** buffer_iterator, f64* f)
 {
     memory_copy(f, *buffer_iterator, sizeof(*f));
@@ -93,7 +93,7 @@ static void read_vec2(u8** buffer_iterator, vec2* v)
     read_f32(buffer_iterator, &v->x);
     read_f32(buffer_iterator, &v->y);
 }
-
+*/
 static void read_vec3(u8** buffer_iterator, vec3* v)
 {
     read_f32(buffer_iterator, &v->x);

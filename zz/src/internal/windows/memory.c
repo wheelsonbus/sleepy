@@ -1,6 +1,6 @@
 #ifdef ZZ_WINDOWS
 
-#include "internal/memory.h"
+#include "zz/internal/memory.h"
 
 #include <stdlib.h>
 #include <string.h>

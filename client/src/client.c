@@ -1,17 +1,17 @@
-#include "playground.h"
+#include "client.h"
 
 #include <zz/log.h>
 #include <zz/event.h>
 #include <zz/render.h>
 
-#include "camera.h"
-#include "box.h"
-#include "network.h"
+#include <playground/camera.h>
+#include <playground/box.h>
+#include <playground/network.h>
 
 static struct camera camera;
 static memory_array_box_t boxes;
 
-b8 playground_on_initialize()
+b8 client_on_initialize()
 {
     camera.position.x = 0.0f;
     camera.position.y = 0.0f;
@@ -31,14 +31,14 @@ b8 playground_on_initialize()
     return ZZ_TRUE;
 }
 
-b8 playground_on_deinitialize()
+b8 client_on_deinitialize()
 {
     memory_array_destroy(&boxes);
 
     return ZZ_TRUE;
 }
 
-b8 playground_on_tick(u64 delta_time)
+b8 client_on_tick(u64 delta_time)
 {
     f64 m = (float)delta_time * 0.001f * 2.0f;
     camera.position.x -= m * input_get_key_state(ZZ_INPUT_KEY_CODE_LEFT);
@@ -54,7 +54,7 @@ b8 playground_on_tick(u64 delta_time)
     return ZZ_TRUE;
 }
 
-b8 playground_on_frame(u64 delta_time)
+b8 client_on_frame(u64 delta_time)
 {
     for (u16 i = 0; i < boxes.length; i += 1)
     {

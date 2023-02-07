@@ -1,6 +1,8 @@
 #ifndef PLAYGROUND_BOX_H
 #define PLAYGROUND_BOX_H
 
+#include <playground/playground.h>
+
 #include <zz/zz.h>
 #include <zz/math.h>
 #include <zz/client.h>
@@ -13,6 +15,6 @@ struct box
 };
 typedef struct {struct box* data; u16 length, capacity;} memory_array_box_t;
 
-void box_draw(struct box* box);
+PLAYGROUND_API void box_draw(struct box* box);
 
 #endif

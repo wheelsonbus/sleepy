@@ -1,4 +1,4 @@
-#include "camera.h"
+#include "playground/camera.h"
 
 mat4 camera_get_view_matrix(struct camera* camera)
 {

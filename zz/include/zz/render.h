@@ -3,7 +3,7 @@
 
 #include "zz.h"
 
-#include "internal/render.h"
+#include "zz/internal/render.h"
 
 #include "sprite.h"
 

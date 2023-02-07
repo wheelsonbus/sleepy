@@ -1,7 +1,7 @@
 #include "zz/network.h"
 
 #include "zz/log.h"
-#include "internal/network.h"
+#include "zz/internal/network.h"
 
 b8 network_initialize(struct network_config* config)
 {
