@@ -4,8 +4,8 @@
 
 #include "zz/math.h"
 
-#define ZZ_TICK_MILLISECONDS 10
-#define ZZ_FRAME_MILLISECONDS 0
+#define ZZ_MILLISECONDS_PER_TICK 10
+#define ZZ_MILLISECONDS_PER_FRAME 0
 
 static struct program program;
 
@@ -161,7 +161,7 @@ b8 program_loop()
     {
         if (program.suspended)
         {
-            application_sleep(ZZ_TICK_MILLISECONDS);
+            application_sleep(ZZ_MILLISECONDS_PER_TICK);
             program.last_frame_time = application_get_time();
         }
         else
@@ -171,14 +171,14 @@ b8 program_loop()
             program.accumulated_tick_time += delta_time;
             program.accumulated_frame_time += delta_time;
 
-            while (program.accumulated_tick_time >= ZZ_TICK_MILLISECONDS)
+            while (program.accumulated_tick_time >= ZZ_MILLISECONDS_PER_TICK)
             {
                 input_update();
-                program.on_tick(ZZ_TICK_MILLISECONDS);
-                program.accumulated_tick_time -= ZZ_TICK_MILLISECONDS;
+                program.on_tick(ZZ_MILLISECONDS_PER_TICK);
+                program.accumulated_tick_time -= ZZ_MILLISECONDS_PER_TICK;
             }
 
-            if (program.accumulated_frame_time >= ZZ_FRAME_MILLISECONDS)
+            if (program.accumulated_frame_time >= ZZ_MILLISECONDS_PER_FRAME)
             {
                 program.on_frame(program.accumulated_frame_time);
                 program.accumulated_frame_time = 0;

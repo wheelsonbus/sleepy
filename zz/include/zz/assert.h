@@ -3,7 +3,7 @@
 
 #include "zz.h"
 
-ZZ_API void _assert_fail(const char* expression, const char* message, const char* file, i32 line);
+ZZ_API void _assert_fail(const char* expression, const char* message, const char* file, u32 line);
 
 #if defined(ZZ_DEBUG)
 #if _MSC_VER

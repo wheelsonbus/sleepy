@@ -6,6 +6,7 @@
 
 #include "camera.h"
 #include "box.h"
+#include "network.h"
 
 static struct camera camera;
 static memory_array_box_t boxes;
@@ -49,6 +50,22 @@ b8 playground_on_tick(u64 delta_time)
 
     render_set_view_matrix(camera_get_view_matrix(&camera));
     render_set_projection_matrix(camera_get_projection_matrix(&camera));
+
+    u8 buffer[1024];
+    struct network_server_message_state state;
+    state.position_count = (u8)boxes.length;
+    for (u8 i = 0; i < state.position_count; ++i)
+    {
+        state.positions[i] = boxes.data[i].position;
+    }
+    network_server_message_state_write(buffer, &state);
+
+    struct network_server_message_state received_state;
+    network_server_message_state_read(buffer, &received_state);
+    for (u8 i = 0; i < received_state.position_count; ++i)
+    {
+        ZZ_LOG_DEBUG("(%f, %f, %f)", received_state.positions[i].x, received_state.positions[i].y, received_state.positions[i].z);
+    }
 
     return ZZ_TRUE;
 }
