@@ -1,20 +1,10 @@
 #ifndef ZZ_CLIENT_H
 #define ZZ_CLIENT_H
 
-#include "memory.h"
-#include "event.h"
-#include "input.h"
-#include "application.h"
-#include "render.h"
+#include "zz.h"
 
 struct client
 {
-    struct memory memory;
-    struct event event;
-    struct input input;
-    struct application application;
-    struct render render;
-
     u16 width, height;
     b8 running, suspended;
 

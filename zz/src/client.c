@@ -1,8 +1,12 @@
 #include "zz/client.h"
 
 #include "zz/log.h"
-
 #include "zz/math.h"
+#include "zz/memory.h"
+#include "zz/event.h"
+#include "zz/input.h"
+#include "zz/application.h"
+#include "zz/render.h"
 
 #define ZZ_MILLISECONDS_PER_TICK 10
 #define ZZ_MILLISECONDS_PER_FRAME 0

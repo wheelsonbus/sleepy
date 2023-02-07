@@ -6,7 +6,7 @@
 int main()
 {
     struct client_config client_config;
-    client_config.name = "Sleepy Engine Client";
+    client_config.name = "Playground Client";
     client_config.x = 560;
     client_config.y = 80;
     client_config.width = 1280;

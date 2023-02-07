@@ -107,6 +107,13 @@ void internal_application_get_size(u16* width, u16* height)
     *height = rect.bottom - rect.top;
 }
 
+
+void internal_application_initialize_time()
+{
+    QueryPerformanceFrequency(&internal_application_windows_clock_frequency);
+    QueryPerformanceCounter(&internal_application_windows_start_time);
+}
+
 u64 internal_application_get_time()
 {
     LARGE_INTEGER now;
