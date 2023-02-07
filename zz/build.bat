@@ -13,7 +13,7 @@ set target=zz
 set compilerFlags=-g -shared -Wvarargs -Wall -Werror -Wno-missing-braces
 set includeFlags=-Iinclude -Isrc -I%VULKAN_SDK%/Include
 set linkerFlags=-luser32 -lvulkan-1 -L%VULKAN_SDK%/Lib
-set definitions=-DZZ_PLATFORM_WINDOWS -DZZ_BACKEND_VULKAN -DZZ_DEBUG -DZZ_EXPORT -D_CRT_SECURE_NO_WARNINGS
+set definitions=-DZZ__WINDOWS -DZZ__VULKAN -DZZ_DEBUG -DZZ_EXPORT -D_CRT_SECURE_NO_WARNINGS
 
 echo "Building %target%%..."
 clang %sourceFiles% %compilerFlags% -o ../bin/%target%.dll %includeFlags% %linkerFlags% %definitions%

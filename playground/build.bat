@@ -13,7 +13,7 @@ set target=playground
 set compilerFlags=-g
 set includeFlags=-Isrc -I../zz/include -I../zz/src -I%VULKAN_SDK%/Include
 set linkerFlags=-L../bin/ -lzz.lib
-set definitions=-DZZ_PLATFORM_WINDOWS -DZZ_BACKEND_VULKAN -DZZ_DEBUG -DZZ_IMPORT
+set definitions=-DZZ__WINDOWS -DZZ__VULKAN -DZZ_DEBUG -DZZ_IMPORT
 
 echo "Building %target%%..."
 clang %sourceFiles% %compilerFlags% -o ../bin/%target%.exe %includeFlags% %linkerFlags% %definitions%

@@ -3,7 +3,7 @@
 #include "zz.h"
 
 #include "memory.h"
-#include "platform/application.h"
+#include "internal/application.h"
 
 struct application
 {    

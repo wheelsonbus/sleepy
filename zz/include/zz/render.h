@@ -2,7 +2,7 @@
 
 #include "zz.h"
 
-#include "backend/render.h"
+#include "internal/render.h"
 
 #include "sprite.h"
 

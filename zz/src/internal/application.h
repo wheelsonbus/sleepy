@@ -1,0 +1,23 @@
+#pragma once
+
+#include "zz/zz.h"
+
+#include "zz/event.h"
+#include "zz/input.h"
+
+struct internal_application_config
+{
+    char* name;
+    u32 x, y;
+    u32 width, height;
+};
+
+b8 internal_application_initialize(struct internal_application_config* config);
+void internal_application_deinitialize();
+
+b8 internal_application_pump_messages();
+
+void internal_application_get_size(u16* width, u16* height);
+
+u64 internal_application_get_time();
+void internal_application_sleep(u64 milliseconds);
