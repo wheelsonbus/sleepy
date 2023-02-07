@@ -4,15 +4,15 @@
 #include "zz/memory.h"
 #include "zz/internal/application.h"
 
-b8 application_initialize(struct application_config* config)
+b8 zz_application_initialize(struct zz_application_config* config)
 {
-    struct internal_application_config internal_application_config;
+    struct zz_internal_application_config internal_application_config;
     internal_application_config.name = config->name;
     internal_application_config.x = config->x;
     internal_application_config.y = config->y;
     internal_application_config.width = config->width;
     internal_application_config.height = config->height;
-    if (!internal_application_initialize(&internal_application_config))
+    if (!zz_internal_application_initialize(&internal_application_config))
     {
         return ZZ_FALSE;
     }
@@ -21,23 +21,23 @@ b8 application_initialize(struct application_config* config)
     return ZZ_TRUE;
 }
 
-void application_deinitialize()
+void zz_application_deinitialize()
 {
-    internal_application_deinitialize();
+    zz_internal_application_deinitialize();
     ZZ_LOG_INFO("Application module deinitialized.");
 }
 
-void application_get_size(u16* width, u16* height)
+void zz_application_get_size(u16* width, u16* height)
 {
-    internal_application_get_size(width, height);
+    zz_internal_application_get_size(width, height);
 }
 
-u64 application_get_time()
+u64 zz_application_get_time()
 {
-    return internal_application_get_time();
+    return zz_internal_application_get_time();
 }
 
-void application_sleep(u64 milliseconds)
+void zz_application_sleep(u64 milliseconds)
 {
-    internal_application_sleep(milliseconds);
+    zz_internal_application_sleep(milliseconds);
 }

@@ -2,14 +2,14 @@
 
 #include "swapchain.h"
 
-b8 internal_vulkan_swapchain_create(struct internal_vulkan_swapchain* swapchain, const struct internal_vulkan_swapchain_config* config)
+b8 zz_internal_vulkan_swapchain_create(struct zz_internal_vulkan_swapchain* swapchain, const struct zz_internal_vulkan_swapchain_config* config)
 {
     swapchain->surface = config->surface;
     swapchain->device = config->device;
     swapchain->render_pass = config->render_pass;
 
     u16 width, height;
-    application_get_size(&width, &height);
+    zz_application_get_size(&width, &height);
     if (width == 0 || height == 0)
     {
         swapchain->extent = swapchain->device->swapchain_support_details.surfaceCapabilities.currentExtent; // TODO Handle currentExtent.width/height == UINT32_MAX?
@@ -62,11 +62,11 @@ b8 internal_vulkan_swapchain_create(struct internal_vulkan_swapchain* swapchain,
     }
 
     vkGetSwapchainImagesKHR(swapchain->device->device, swapchain->swapchain, &imageCount, ZZ_NULL);
-    memory_array_create_and_reserve(&swapchain->images, imageCount);
+    zz_memory_array_create_and_reserve(&swapchain->images, imageCount);
     vkGetSwapchainImagesKHR(swapchain->device->device, swapchain->swapchain, &imageCount, swapchain->images.data);
     swapchain->images.length = imageCount;
 
-    memory_array_create_and_reserve(&swapchain->imageViews, imageCount);
+    zz_memory_array_create_and_reserve(&swapchain->imageViews, imageCount);
     for (uint32_t i = 0; i < imageCount; i += 1)
     {
         VkImageViewCreateInfo imageViewCreateInfo;
@@ -93,7 +93,7 @@ b8 internal_vulkan_swapchain_create(struct internal_vulkan_swapchain* swapchain,
     }
     swapchain->imageViews.length = imageCount;
 
-    memory_array_create_and_reserve(&swapchain->framebuffers, imageCount);
+    zz_memory_array_create_and_reserve(&swapchain->framebuffers, imageCount);
     for (uint32_t i = 0; i < imageCount; i += 1)
     {
         VkImageView attachmentImageViews[1] = {swapchain->imageViews.data[i]};
@@ -119,7 +119,7 @@ b8 internal_vulkan_swapchain_create(struct internal_vulkan_swapchain* swapchain,
     return ZZ_TRUE;
 }
 
-void internal_vulkan_swapchain_destroy(struct internal_vulkan_swapchain* swapchain)
+void zz_internal_vulkan_swapchain_destroy(struct zz_internal_vulkan_swapchain* swapchain)
 {
     for (u16 i = 0; i < swapchain->framebuffers.length; i += 1)
     {
@@ -134,20 +134,20 @@ void internal_vulkan_swapchain_destroy(struct internal_vulkan_swapchain* swapcha
     vkDestroySwapchainKHR(swapchain->device->device, swapchain->swapchain, ZZ_NULL);
     swapchain->swapchain = VK_NULL_HANDLE;
 
-    memory_array_destroy(&swapchain->framebuffers);
-    memory_array_destroy(&swapchain->images);
-    memory_array_destroy(&swapchain->imageViews);
+    zz_memory_array_destroy(&swapchain->framebuffers);
+    zz_memory_array_destroy(&swapchain->images);
+    zz_memory_array_destroy(&swapchain->imageViews);
 }
 
-b8 internal_vulkan_swapchain_recreate(struct internal_vulkan_swapchain* swapchain)
+b8 zz_internal_vulkan_swapchain_recreate(struct zz_internal_vulkan_swapchain* swapchain)
 {
     vkDeviceWaitIdle(swapchain->device->device);
-    internal_vulkan_swapchain_destroy(swapchain);
-    struct internal_vulkan_swapchain_config swapchain_config;
+    zz_internal_vulkan_swapchain_destroy(swapchain);
+    struct zz_internal_vulkan_swapchain_config swapchain_config;
     swapchain_config.surface = swapchain->surface;
     swapchain_config.device = swapchain->device;
     swapchain_config.render_pass = swapchain->render_pass;
-    return internal_vulkan_swapchain_create(swapchain, &swapchain_config);
+    return zz_internal_vulkan_swapchain_create(swapchain, &swapchain_config);
 }
 
 #endif

@@ -4,12 +4,12 @@
 
 #include "zz/log.h"
 
-b8 internal_vulkan_device_create(struct internal_vulkan_device* device, struct internal_vulkan_device_config* config)
+b8 zz_internal_vulkan_device_create(struct zz_internal_vulkan_device* device, struct zz_internal_vulkan_device_config* config)
 {
     device->instance = config->instance;
     device->surface = config->surface;
 
-    internal_vulkan_device_select_physical_device(device);
+    zz_internal_vulkan_device_select_physical_device(device);
 
     float queuePriority = 1.0f;
     uint32_t uniqueQueueFamilyIndexCount = 0;
@@ -59,13 +59,13 @@ b8 internal_vulkan_device_create(struct internal_vulkan_device* device, struct i
     return ZZ_TRUE;
 }
 
-void internal_vulkan_device_destroy(struct internal_vulkan_device* device)
+void zz_internal_vulkan_device_destroy(struct zz_internal_vulkan_device* device)
 {
     vkDestroyDevice(device->device, ZZ_NULL);
     device->device = VK_NULL_HANDLE;
 }
 
-b8 internal_vulkan_device_select_physical_device(struct internal_vulkan_device* device)
+b8 zz_internal_vulkan_device_select_physical_device(struct zz_internal_vulkan_device* device)
 {
     uint32_t physicalDeviceCount = 0;
     vkEnumeratePhysicalDevices(device->instance->instance, &physicalDeviceCount, ZZ_NULL);
@@ -172,7 +172,7 @@ b8 internal_vulkan_device_select_physical_device(struct internal_vulkan_device* 
     return ZZ_TRUE;
 }
 
-b8 internal_vulkan_device_select_memory_type_index(struct internal_vulkan_device* device, uint32_t* memoryTypeIndex, uint32_t memoryTypeIndexFilter, VkMemoryPropertyFlags memoryPropertyFlags)
+b8 zz_internal_vulkan_device_select_memory_type_index(struct zz_internal_vulkan_device* device, uint32_t* memoryTypeIndex, uint32_t memoryTypeIndexFilter, VkMemoryPropertyFlags memoryPropertyFlags)
 {
     VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
     vkGetPhysicalDeviceMemoryProperties(device->physicalDevice, &physicalDeviceMemoryProperties);

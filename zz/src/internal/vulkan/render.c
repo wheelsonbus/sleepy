@@ -6,9 +6,9 @@
 #include "zz/log.h"
 #include "zz/application.h"
 
-static struct internal_render internal_render;
+static struct zz_internal_render internal_render;
 
-b8 internal_render_initialize(struct internal_render_config* config)
+b8 zz_internal_render_initialize(struct zz_internal_render_config* config)
 {
     internal_render.framebuffer_resized = ZZ_FALSE;
     internal_render.current_frame = 0;
@@ -17,113 +17,113 @@ b8 internal_render_initialize(struct internal_render_config* config)
     internal_render.uniform_buffer_object.view = mat4_identity();
     internal_render.uniform_buffer_object.projection = mat4_identity();
 
-    memory_array_create_and_reserve(&internal_render.vertices, 1024);
-    memory_array_create_and_reserve(&internal_render.indices, 1024);
+    zz_memory_array_create_and_reserve(&internal_render.vertices, 1024);
+    zz_memory_array_create_and_reserve(&internal_render.indices, 1024);
 
-    struct internal_vulkan_instance_config instance_config;
-    if (!internal_vulkan_instance_create(&internal_render.instance, &instance_config))
+    struct zz_internal_vulkan_instance_config instance_config;
+    if (!zz_internal_vulkan_instance_create(&internal_render.instance, &instance_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan instance.");
         return ZZ_FALSE;
     }
 
-    struct internal_vulkan_surface_config surface_config;
+    struct zz_internal_vulkan_surface_config surface_config;
     surface_config.instance = &internal_render.instance;
-    if (!internal_vulkan_surface_create(&internal_render.surface, &surface_config))
+    if (!zz_internal_vulkan_surface_create(&internal_render.surface, &surface_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan surface.");
         return ZZ_FALSE;
     }
 
-    struct internal_vulkan_device_config device_config;
+    struct zz_internal_vulkan_device_config device_config;
     device_config.instance = &internal_render.instance;
     device_config.surface = &internal_render.surface;
-    if (!internal_vulkan_device_create(&internal_render.device, &device_config))
+    if (!zz_internal_vulkan_device_create(&internal_render.device, &device_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan device.");
         return ZZ_FALSE;
     }
 
-    struct internal_vulkan_render_pass_config render_pass_config;
+    struct zz_internal_vulkan_render_pass_config render_pass_config;
     render_pass_config.device = &internal_render.device;
-    if (!internal_vulkan_render_pass_create(&internal_render.render_pass, &render_pass_config))
+    if (!zz_internal_vulkan_render_pass_create(&internal_render.render_pass, &render_pass_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan render pass.");
         return ZZ_FALSE;
     }
 
-    struct internal_vulkan_swapchain_config swapchain_config;
+    struct zz_internal_vulkan_swapchain_config swapchain_config;
     swapchain_config.surface = &internal_render.surface;
     swapchain_config.device = &internal_render.device;
     swapchain_config.render_pass = &internal_render.render_pass;
-    if (!internal_vulkan_swapchain_create(&internal_render.swapchain, &swapchain_config))
+    if (!zz_internal_vulkan_swapchain_create(&internal_render.swapchain, &swapchain_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan swapchain.");
         return ZZ_FALSE;
     }
     
-    struct internal_vulkan_sync_config sync_config;
+    struct zz_internal_vulkan_sync_config sync_config;
     sync_config.device = &internal_render.device;
     sync_config.max_frames_in_flight = 2;
-    if (!internal_vulkan_sync_create(&internal_render.sync, &sync_config))
+    if (!zz_internal_vulkan_sync_create(&internal_render.sync, &sync_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan sync.");
         return ZZ_FALSE;
     }
 
-    struct internal_vulkan_buffer_config vertex_buffer_config;
+    struct zz_internal_vulkan_buffer_config vertex_buffer_config;
     vertex_buffer_config.device = &internal_render.device;
     vertex_buffer_config.usageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     vertex_buffer_config.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    vertex_buffer_config.size = sizeof(struct internal_vulkan_vertex) * 1024;
-    if (!internal_vulkan_buffer_create(&internal_render.vertex_buffer, &vertex_buffer_config))
+    vertex_buffer_config.size = sizeof(struct zz_internal_vulkan_vertex) * 1024;
+    if (!zz_internal_vulkan_buffer_create(&internal_render.vertex_buffer, &vertex_buffer_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan vertex buffer.");
         return ZZ_FALSE;
     }
 
-    struct internal_vulkan_buffer_config vertex_staging_buffer_config;
+    struct zz_internal_vulkan_buffer_config vertex_staging_buffer_config;
     vertex_staging_buffer_config.device = &internal_render.device;
     vertex_staging_buffer_config.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     vertex_staging_buffer_config.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    vertex_staging_buffer_config.size = sizeof(struct internal_vulkan_vertex) * 1024;
-    if (!internal_vulkan_buffer_create(&internal_render.vertex_staging_buffer, &vertex_staging_buffer_config))
+    vertex_staging_buffer_config.size = sizeof(struct zz_internal_vulkan_vertex) * 1024;
+    if (!zz_internal_vulkan_buffer_create(&internal_render.vertex_staging_buffer, &vertex_staging_buffer_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan vertex buffer.");
         return ZZ_FALSE;
     }
     
-    struct internal_vulkan_buffer_config index_buffer_config;
+    struct zz_internal_vulkan_buffer_config index_buffer_config;
     index_buffer_config.device = &internal_render.device;
     index_buffer_config.usageFlags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     index_buffer_config.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     index_buffer_config.size = sizeof(u32) * 1024;
-    if (!internal_vulkan_buffer_create(&internal_render.index_buffer, &index_buffer_config))
+    if (!zz_internal_vulkan_buffer_create(&internal_render.index_buffer, &index_buffer_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan vertex buffer.");
         return ZZ_FALSE;
     }
     
-    struct internal_vulkan_buffer_config index_staging_buffer_config;
+    struct zz_internal_vulkan_buffer_config index_staging_buffer_config;
     index_staging_buffer_config.device = &internal_render.device;
     index_staging_buffer_config.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     index_staging_buffer_config.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
     index_staging_buffer_config.size = sizeof(u32) * 1024;
-    if (!internal_vulkan_buffer_create(&internal_render.index_staging_buffer, &index_staging_buffer_config))
+    if (!zz_internal_vulkan_buffer_create(&internal_render.index_staging_buffer, &index_staging_buffer_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan vertex buffer.");
         return ZZ_FALSE;
     }
 
-    memory_array_create_and_reserve(&internal_render.uniform_buffers, internal_render.sync.max_frames_in_flight);
+    zz_memory_array_create_and_reserve(&internal_render.uniform_buffers, internal_render.sync.max_frames_in_flight);
     for (u16 i = 0; i < internal_render.uniform_buffers.capacity; i += 1)
     {
-        struct internal_vulkan_buffer_config uniform_buffer_config;
+        struct zz_internal_vulkan_buffer_config uniform_buffer_config;
         uniform_buffer_config.device = &internal_render.device;
         uniform_buffer_config.usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         uniform_buffer_config.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-        uniform_buffer_config.size = sizeof(struct internal_vulkan_uniform_buffer_object);
-        if (!internal_vulkan_buffer_create(&internal_render.uniform_buffers.data[i], &uniform_buffer_config)) // TODO Implement persistent mapping
+        uniform_buffer_config.size = sizeof(struct zz_internal_vulkan_uniform_buffer_object);
+        if (!zz_internal_vulkan_buffer_create(&internal_render.uniform_buffers.data[i], &uniform_buffer_config)) // TODO Implement persistent mapping
         {
             ZZ_LOG_FATAL("Failed to create Vulkan uniform buffer.");
             return ZZ_FALSE;
@@ -131,21 +131,21 @@ b8 internal_render_initialize(struct internal_render_config* config)
     }
     internal_render.uniform_buffers.length = internal_render.uniform_buffers.capacity;
 
-    struct internal_vulkan_pipeline_config pipeline_config;
+    struct zz_internal_vulkan_pipeline_config pipeline_config;
     pipeline_config.device = &internal_render.device;
     pipeline_config.render_pass = &internal_render.render_pass;
     pipeline_config.swapchain = &internal_render.swapchain;
     pipeline_config.uniform_buffers = &internal_render.uniform_buffers;
-    if (!internal_vulkan_pipeline_create(&internal_render.pipeline, &pipeline_config))
+    if (!zz_internal_vulkan_pipeline_create(&internal_render.pipeline, &pipeline_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan pipeline.");
         return ZZ_FALSE;
     }
 
-    struct internal_vulkan_command_pool_config command_pool_config;
+    struct zz_internal_vulkan_command_pool_config command_pool_config;
     command_pool_config.device = &internal_render.device;
     command_pool_config.sync = &internal_render.sync;
-    if (!internal_vulkan_command_pool_create(&internal_render.command_pool, &command_pool_config))
+    if (!zz_internal_vulkan_command_pool_create(&internal_render.command_pool, &command_pool_config))
     {
         ZZ_LOG_FATAL("Failed to create Vulkan command pool.");
         return ZZ_FALSE;
@@ -154,48 +154,48 @@ b8 internal_render_initialize(struct internal_render_config* config)
     return ZZ_TRUE;
 }
 
-void internal_render_deinitialize()
+void zz_internal_render_deinitialize()
 {
     vkDeviceWaitIdle(internal_render.device.device);
 
-    internal_vulkan_command_pool_destroy(&internal_render.command_pool);
-    internal_vulkan_pipeline_destroy(&internal_render.pipeline);
+    zz_internal_vulkan_command_pool_destroy(&internal_render.command_pool);
+    zz_internal_vulkan_pipeline_destroy(&internal_render.pipeline);
     for (u16 i = 0; i < internal_render.uniform_buffers.length; i += 1)
     {
-        internal_vulkan_buffer_destroy(&internal_render.uniform_buffers.data[i]);
+        zz_internal_vulkan_buffer_destroy(&internal_render.uniform_buffers.data[i]);
     }
-    memory_array_destroy(&internal_render.uniform_buffers);
-    internal_vulkan_buffer_destroy(&internal_render.index_staging_buffer);
-    internal_vulkan_buffer_destroy(&internal_render.index_buffer);
-    internal_vulkan_buffer_destroy(&internal_render.vertex_staging_buffer);
-    internal_vulkan_buffer_destroy(&internal_render.vertex_buffer);
-    internal_vulkan_sync_destroy(&internal_render.sync);
-    internal_vulkan_swapchain_destroy(&internal_render.swapchain);
-    internal_vulkan_render_pass_destroy(&internal_render.render_pass);
-    internal_vulkan_device_destroy(&internal_render.device);
-    internal_vulkan_surface_destroy(&internal_render.surface);
-    internal_vulkan_instance_destroy(&internal_render.instance);
+    zz_memory_array_destroy(&internal_render.uniform_buffers);
+    zz_internal_vulkan_buffer_destroy(&internal_render.index_staging_buffer);
+    zz_internal_vulkan_buffer_destroy(&internal_render.index_buffer);
+    zz_internal_vulkan_buffer_destroy(&internal_render.vertex_staging_buffer);
+    zz_internal_vulkan_buffer_destroy(&internal_render.vertex_buffer);
+    zz_internal_vulkan_sync_destroy(&internal_render.sync);
+    zz_internal_vulkan_swapchain_destroy(&internal_render.swapchain);
+    zz_internal_vulkan_render_pass_destroy(&internal_render.render_pass);
+    zz_internal_vulkan_device_destroy(&internal_render.device);
+    zz_internal_vulkan_surface_destroy(&internal_render.surface);
+    zz_internal_vulkan_instance_destroy(&internal_render.instance);
 
-    memory_array_destroy(&internal_render.indices);
-    memory_array_destroy(&internal_render.vertices);
+    zz_memory_array_destroy(&internal_render.indices);
+    zz_memory_array_destroy(&internal_render.vertices);
 }
 
-void internal_render_resize()
+void zz_internal_render_resize()
 {
     u16 width, height;
-    application_get_size(&width, &height);
+    zz_application_get_size(&width, &height);
     if ((uint32_t)width != internal_render.swapchain.extent.width || (uint32_t)height != internal_render.swapchain.extent.height)
     {
         internal_render.framebuffer_resized = ZZ_TRUE;
     }
 }
 
-b8 internal_render_draw_frame()
+b8 zz_internal_render_draw_frame()
 {
     if (internal_render.framebuffer_resized)
     {
         ZZ_LOG_INFO("Recreating Vulkan swapchain.");
-        internal_vulkan_swapchain_recreate(&internal_render.swapchain);
+        zz_internal_vulkan_swapchain_recreate(&internal_render.swapchain);
         internal_render.framebuffer_resized = ZZ_FALSE;
         return ZZ_FALSE; 
     }
@@ -207,7 +207,7 @@ b8 internal_render_draw_frame()
     if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR)
     {
         ZZ_LOG_INFO("Recreating Vulkan swapchain.");
-        internal_vulkan_swapchain_recreate(&internal_render.swapchain);
+        zz_internal_vulkan_swapchain_recreate(&internal_render.swapchain);
         return ZZ_FALSE;
     }
     else if (acquireNextImageResult != VK_SUCCESS && acquireNextImageResult != VK_SUBOPTIMAL_KHR)
@@ -217,16 +217,16 @@ b8 internal_render_draw_frame()
     
     vkResetFences(internal_render.device.device, 1, &internal_render.sync.inFlightFences.data[internal_render.current_frame]);
 
-    internal_vulkan_buffer_load(&internal_render.vertex_staging_buffer, internal_render.vertices.data, 0, sizeof(internal_render.vertices.data[0]) * internal_render.vertices.length, 0);
-    internal_vulkan_command_pool_copy_buffer(&internal_render.command_pool, &internal_render.vertex_buffer, &internal_render.vertex_staging_buffer, sizeof(internal_render.vertices.data[0]) * internal_render.vertices.length);
+    zz_internal_vulkan_buffer_load(&internal_render.vertex_staging_buffer, internal_render.vertices.data, 0, sizeof(internal_render.vertices.data[0]) * internal_render.vertices.length, 0);
+    zz_internal_vulkan_command_pool_copy_buffer(&internal_render.command_pool, &internal_render.vertex_buffer, &internal_render.vertex_staging_buffer, sizeof(internal_render.vertices.data[0]) * internal_render.vertices.length);
 
-    internal_vulkan_buffer_load(&internal_render.index_staging_buffer, internal_render.indices.data, 0, sizeof(internal_render.indices.data[0]) * internal_render.indices.length, 0);
-    internal_vulkan_command_pool_copy_buffer(&internal_render.command_pool, &internal_render.index_buffer, &internal_render.index_staging_buffer, sizeof(internal_render.indices.data[0]) * internal_render.indices.length);
+    zz_internal_vulkan_buffer_load(&internal_render.index_staging_buffer, internal_render.indices.data, 0, sizeof(internal_render.indices.data[0]) * internal_render.indices.length, 0);
+    zz_internal_vulkan_command_pool_copy_buffer(&internal_render.command_pool, &internal_render.index_buffer, &internal_render.index_staging_buffer, sizeof(internal_render.indices.data[0]) * internal_render.indices.length);
 
-    internal_vulkan_buffer_load(&internal_render.uniform_buffers.data[internal_render.current_frame], &internal_render.uniform_buffer_object, 0, sizeof(internal_render.uniform_buffer_object), 0);
+    zz_internal_vulkan_buffer_load(&internal_render.uniform_buffers.data[internal_render.current_frame], &internal_render.uniform_buffer_object, 0, sizeof(internal_render.uniform_buffer_object), 0);
 
     vkResetCommandBuffer(internal_render.command_pool.commandBuffers.data[internal_render.current_frame], 0);
-    internal_vulkan_record_command_buffer(&internal_render.vertex_buffer, &internal_render.index_buffer, internal_render.indices.length, &internal_render.pipeline, internal_render.current_frame, internal_render.command_pool.commandBuffers.data[internal_render.current_frame], internal_render.render_pass.renderPass, internal_render.pipeline.pipeline, &internal_render.swapchain.framebuffers, &internal_render.swapchain.extent, imageIndex);
+    zz_internal_vulkan_record_command_buffer(&internal_render.vertex_buffer, &internal_render.index_buffer, internal_render.indices.length, &internal_render.pipeline, internal_render.current_frame, internal_render.command_pool.commandBuffers.data[internal_render.current_frame], internal_render.render_pass.renderPass, internal_render.pipeline.pipeline, &internal_render.swapchain.framebuffers, &internal_render.swapchain.extent, imageIndex);
 
     VkSubmitInfo submitInfo;
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -263,42 +263,42 @@ b8 internal_render_draw_frame()
 
     internal_render.current_frame = (internal_render.current_frame + 1) % internal_render.sync.max_frames_in_flight;
 
-    memory_array_clear(&internal_render.vertices);
-    memory_array_clear(&internal_render.indices);
+    zz_memory_array_clear(&internal_render.vertices);
+    zz_memory_array_clear(&internal_render.indices);
 
     return ZZ_TRUE;
 }
 
-void internal_render_set_model_matrix(mat4 matrix)
+void zz_internal_render_set_model_matrix(mat4 matrix)
 {
     internal_render.uniform_buffer_object.model = matrix;
 }
 
-void internal_render_set_view_matrix(mat4 matrix)
+void zz_internal_render_set_view_matrix(mat4 matrix)
 {
     internal_render.uniform_buffer_object.view = matrix;
 }
 
-void internal_render_set_projection_matrix(mat4 matrix)
+void zz_internal_render_set_projection_matrix(mat4 matrix)
 {
     internal_render.uniform_buffer_object.projection = matrix;
 }
 
-void internal_render_draw_sprite(struct sprite* sprite, vec3 position)
+void zz_internal_render_draw_sprite(struct zz_sprite* sprite, vec3 position)
 {
     u32 index = (u32)internal_render.vertices.length;
 
-    memory_array_push(&internal_render.vertices, ((struct internal_vulkan_vertex){(vec3){position.x, position.y, position.z}}));
-    memory_array_push(&internal_render.vertices, ((struct internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y, position.z}}));
-    memory_array_push(&internal_render.vertices, ((struct internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y + sprite->size.y, position.z}}));
-    memory_array_push(&internal_render.vertices, ((struct internal_vulkan_vertex){(vec3){position.x, position.y + sprite->size.y, position.z}}));
+    zz_memory_array_push(&internal_render.vertices, ((struct zz_internal_vulkan_vertex){(vec3){position.x, position.y, position.z}}));
+    zz_memory_array_push(&internal_render.vertices, ((struct zz_internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y, position.z}}));
+    zz_memory_array_push(&internal_render.vertices, ((struct zz_internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y + sprite->size.y, position.z}}));
+    zz_memory_array_push(&internal_render.vertices, ((struct zz_internal_vulkan_vertex){(vec3){position.x, position.y + sprite->size.y, position.z}}));
 
-    memory_array_push(&internal_render.indices, index + 0);
-    memory_array_push(&internal_render.indices, index + 1);
-    memory_array_push(&internal_render.indices, index + 2);
-    memory_array_push(&internal_render.indices, index + 2);
-    memory_array_push(&internal_render.indices, index + 3);
-    memory_array_push(&internal_render.indices, index + 0);
+    zz_memory_array_push(&internal_render.indices, index + 0);
+    zz_memory_array_push(&internal_render.indices, index + 1);
+    zz_memory_array_push(&internal_render.indices, index + 2);
+    zz_memory_array_push(&internal_render.indices, index + 2);
+    zz_memory_array_push(&internal_render.indices, index + 3);
+    zz_memory_array_push(&internal_render.indices, index + 0);
 }
 
 #endif

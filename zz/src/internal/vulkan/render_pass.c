@@ -2,7 +2,7 @@
 
 #include "render_pass.h"
 
-b8 internal_vulkan_render_pass_create(struct internal_vulkan_render_pass* render_pass, struct internal_vulkan_render_pass_config* config)
+b8 zz_internal_vulkan_render_pass_create(struct zz_internal_vulkan_render_pass* render_pass, struct zz_internal_vulkan_render_pass_config* config)
 {
     render_pass->device = config->device;
 
@@ -66,7 +66,7 @@ b8 internal_vulkan_render_pass_create(struct internal_vulkan_render_pass* render
     return ZZ_TRUE;
 }
 
-void internal_vulkan_render_pass_destroy(struct internal_vulkan_render_pass* render_pass)
+void zz_internal_vulkan_render_pass_destroy(struct zz_internal_vulkan_render_pass* render_pass)
 {
     vkDestroyRenderPass(render_pass->device->device, render_pass->renderPass, ZZ_NULL);
     render_pass->renderPass = VK_NULL_HANDLE;

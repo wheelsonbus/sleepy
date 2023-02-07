@@ -3,7 +3,7 @@
 
 #include "zz.h"
 
-void console_write(const char* message, u8 color);
-void console_write_error(const char* message, u8 color);
+void zz_console_write(const char* message, u8 color);
+void zz_console_write_error(const char* message, u8 color);
 
 #endif

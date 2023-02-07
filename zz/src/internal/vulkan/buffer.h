@@ -9,11 +9,11 @@
 
 #include "device.h"
 
-struct internal_vulkan_buffer
+struct zz_internal_vulkan_buffer
 {
     VkBuffer buffer;
 
-    struct internal_vulkan_device* device;
+    struct zz_internal_vulkan_device* device;
 
     VkBufferUsageFlags usageFlags;
     VkDeviceMemory deviceMemory;
@@ -23,11 +23,11 @@ struct internal_vulkan_buffer
     VkDeviceSize size;
     b8 locked;
 };
-typedef struct {struct internal_vulkan_buffer* data; u16 length, capacity;} memory_array_internal_vulkan_buffer_t;
+typedef struct {struct zz_internal_vulkan_buffer* data; u16 length, capacity;} zz_memory_array_internal_vulkan_buffer_t;
 
-struct internal_vulkan_buffer_config
+struct zz_internal_vulkan_buffer_config
 {
-    struct internal_vulkan_device* device;
+    struct zz_internal_vulkan_device* device;
 
     VkBufferUsageFlags usageFlags;
     VkMemoryPropertyFlags memoryPropertyFlags;
@@ -35,13 +35,13 @@ struct internal_vulkan_buffer_config
     VkDeviceSize size;
 };
 
-b8 internal_vulkan_buffer_create(struct internal_vulkan_buffer* buffer, struct internal_vulkan_buffer_config* config);
-void internal_vulkan_buffer_destroy(struct internal_vulkan_buffer* buffer);
+b8 zz_internal_vulkan_buffer_create(struct zz_internal_vulkan_buffer* buffer, struct zz_internal_vulkan_buffer_config* config);
+void zz_internal_vulkan_buffer_destroy(struct zz_internal_vulkan_buffer* buffer);
 
-b8 internal_vulkan_buffer_lock(struct internal_vulkan_buffer* buffer, void** block, u64 offset, u64 size, VkMemoryMapFlags flags);
-void internal_vulkan_buffer_unlock(struct internal_vulkan_buffer* buffer);
+b8 zz_internal_vulkan_buffer_lock(struct zz_internal_vulkan_buffer* buffer, void** block, u64 offset, u64 size, VkMemoryMapFlags flags);
+void zz_internal_vulkan_buffer_unlock(struct zz_internal_vulkan_buffer* buffer);
 
-b8 internal_vulkan_buffer_load(struct internal_vulkan_buffer* buffer, const void* data, u64 offset, u64 size, VkMemoryMapFlags flags);
+b8 zz_internal_vulkan_buffer_load(struct zz_internal_vulkan_buffer* buffer, const void* data, u64 offset, u64 size, VkMemoryMapFlags flags);
 
 #endif
 #endif

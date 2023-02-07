@@ -7,14 +7,14 @@
 
 //static struct internal_network internal_network;
 
-b8 internal_network_initialize(struct internal_network_config* config)
+b8 zz_internal_network_initialize(struct zz_internal_network_config* config)
 {
 
 
     return ZZ_TRUE;
 }
 
-void internal_network_deinitialize()
+void zz_internal_network_deinitialize()
 {
 
 }

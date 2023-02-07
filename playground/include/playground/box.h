@@ -11,9 +11,9 @@
 struct box
 {
     vec3 position;
-    struct sprite sprite;
+    struct zz_sprite sprite;
 };
-typedef struct {struct box* data; u16 length, capacity;} memory_array_box_t;
+typedef struct {struct box* data; u16 length, capacity;} zz_memory_array_box_t;
 
 PLAYGROUND_API void box_draw(struct box* box);
 

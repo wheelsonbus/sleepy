@@ -5,7 +5,7 @@
 
 int main()
 {
-    struct client_config client_config;
+    struct zz_client_config client_config;
     client_config.name = "Playground Client";
     client_config.x = 560;
     client_config.y = 80;
@@ -16,18 +16,18 @@ int main()
     client_config.on_tick = client_on_tick;
     client_config.on_frame = client_on_frame;
     
-    if (!client_initialize(&client_config))
+    if (!zz_client_initialize(&client_config))
     {
         ZZ_LOG_FATAL("Failed to create client.");
         return -1;
     }
 
-    if (!client_loop())
+    if (!zz_client_loop())
     {
         ZZ_LOG_ERROR("client_loop returned ZZ_FALSE.");
     }
 
-    client_deinitialize();
+    zz_client_deinitialize();
 
     return 0;
 }

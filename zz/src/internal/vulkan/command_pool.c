@@ -4,7 +4,7 @@
 
 #include "zz/log.h"
 
-b8 internal_vulkan_command_pool_create(struct internal_vulkan_command_pool* command_pool, struct internal_vulkan_command_pool_config* config)
+b8 zz_internal_vulkan_command_pool_create(struct zz_internal_vulkan_command_pool* command_pool, struct zz_internal_vulkan_command_pool_config* config)
 {
     command_pool->device = config->device;
     command_pool->sync = config->sync;
@@ -27,7 +27,7 @@ b8 internal_vulkan_command_pool_create(struct internal_vulkan_command_pool* comm
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     commandBufferAllocateInfo.commandBufferCount = command_pool->sync->max_frames_in_flight;
 
-    memory_array_create_and_reserve(&command_pool->commandBuffers, command_pool->sync->max_frames_in_flight);
+    zz_memory_array_create_and_reserve(&command_pool->commandBuffers, command_pool->sync->max_frames_in_flight);
     if (vkAllocateCommandBuffers(command_pool->device->device, &commandBufferAllocateInfo, command_pool->commandBuffers.data) != VK_SUCCESS)
     {
         return ZZ_FALSE;
@@ -37,14 +37,14 @@ b8 internal_vulkan_command_pool_create(struct internal_vulkan_command_pool* comm
     return ZZ_TRUE;
 }
 
-void internal_vulkan_command_pool_destroy(struct internal_vulkan_command_pool* command_pool)
+void zz_internal_vulkan_command_pool_destroy(struct zz_internal_vulkan_command_pool* command_pool)
 {
-    memory_array_destroy(&command_pool->commandBuffers);
+    zz_memory_array_destroy(&command_pool->commandBuffers);
     vkDestroyCommandPool(command_pool->device->device, command_pool->commandPool, ZZ_NULL);
     command_pool->commandPool = VK_NULL_HANDLE;
 }
 
-b8 internal_vulkan_command_pool_copy_buffer(struct internal_vulkan_command_pool* command_pool, struct internal_vulkan_buffer* destinationBuffer, struct internal_vulkan_buffer* sourceBuffer, u64 size)
+b8 zz_internal_vulkan_command_pool_copy_buffer(struct zz_internal_vulkan_command_pool* command_pool, struct zz_internal_vulkan_buffer* destinationBuffer, struct zz_internal_vulkan_buffer* sourceBuffer, u64 size)
 {
     VkCommandBuffer commandBuffer;
 
@@ -105,7 +105,7 @@ b8 internal_vulkan_command_pool_copy_buffer(struct internal_vulkan_command_pool*
     return ZZ_TRUE;
 }
 
-b8 internal_vulkan_record_command_buffer(struct internal_vulkan_buffer* vertex_buffer, struct internal_vulkan_buffer* index_buffer, uint32_t indexCount, struct internal_vulkan_pipeline* pipeline, u16 current_frame, VkCommandBuffer commandBuffer, VkRenderPass renderPass, VkPipeline graphicsPipeline, memory_array_VkFramebuffer_t* swapchainFramebuffers, VkExtent2D* swapchainExtent, uint32_t imageIndex)
+b8 zz_internal_vulkan_record_command_buffer(struct zz_internal_vulkan_buffer* vertex_buffer, struct zz_internal_vulkan_buffer* index_buffer, uint32_t indexCount, struct zz_internal_vulkan_pipeline* pipeline, u16 current_frame, VkCommandBuffer commandBuffer, VkRenderPass renderPass, VkPipeline graphicsPipeline, zz_memory_array_VkFramebuffer_t* swapchainFramebuffers, VkExtent2D* swapchainExtent, uint32_t imageIndex)
 {
     VkCommandBufferBeginInfo commandBufferBeginInfo;
     commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

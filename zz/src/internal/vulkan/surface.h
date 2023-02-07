@@ -9,20 +9,20 @@
 
 #include "instance.h"
 
-struct internal_vulkan_surface
+struct zz_internal_vulkan_surface
 {
     VkSurfaceKHR surface;
 
-    struct internal_vulkan_instance* instance;
+    struct zz_internal_vulkan_instance* instance;
 };
 
-struct internal_vulkan_surface_config
+struct zz_internal_vulkan_surface_config
 {
-    struct internal_vulkan_instance* instance;
+    struct zz_internal_vulkan_instance* instance;
 };
 
-b8 internal_vulkan_surface_create(struct internal_vulkan_surface* surface, const struct internal_vulkan_surface_config* config);
-void internal_vulkan_surface_destroy(struct internal_vulkan_surface* surface);
+b8 zz_internal_vulkan_surface_create(struct zz_internal_vulkan_surface* surface, const struct zz_internal_vulkan_surface_config* config);
+void zz_internal_vulkan_surface_destroy(struct zz_internal_vulkan_surface* surface);
 
 #endif
 #endif

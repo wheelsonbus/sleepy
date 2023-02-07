@@ -4,7 +4,7 @@
 #include "zz.h"
 #include "math.h"
 
-struct sprite
+struct zz_sprite
 {
     vec2 size;
 };

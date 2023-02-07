@@ -4,14 +4,14 @@
 
 #include "zz/log.h"
 
-b8 internal_vulkan_sync_create(struct internal_vulkan_sync* sync, struct internal_vulkan_sync_config* config)
+b8 zz_internal_vulkan_sync_create(struct zz_internal_vulkan_sync* sync, struct zz_internal_vulkan_sync_config* config)
 {
     sync->device = config->device;
     sync->max_frames_in_flight = config->max_frames_in_flight;
 
-    memory_array_create_and_reserve(&sync->imageAvailableSemaphores, sync->max_frames_in_flight);
-    memory_array_create_and_reserve(&sync->renderFinishedSemaphores, sync->max_frames_in_flight);
-    memory_array_create_and_reserve(&sync->inFlightFences, sync->max_frames_in_flight);
+    zz_memory_array_create_and_reserve(&sync->imageAvailableSemaphores, sync->max_frames_in_flight);
+    zz_memory_array_create_and_reserve(&sync->renderFinishedSemaphores, sync->max_frames_in_flight);
+    zz_memory_array_create_and_reserve(&sync->inFlightFences, sync->max_frames_in_flight);
     for (u16 i = 0; i < sync->max_frames_in_flight; i += 1)
     {
         VkSemaphoreCreateInfo imageAvailableSemaphoreCreateInfo;
@@ -51,7 +51,7 @@ b8 internal_vulkan_sync_create(struct internal_vulkan_sync* sync, struct interna
     return ZZ_TRUE;
 }
 
-void internal_vulkan_sync_destroy(struct internal_vulkan_sync* sync)
+void zz_internal_vulkan_sync_destroy(struct zz_internal_vulkan_sync* sync)
 {
     for (u16 i = 0; i < sync->max_frames_in_flight; i += 1)
     {
@@ -63,9 +63,9 @@ void internal_vulkan_sync_destroy(struct internal_vulkan_sync* sync)
         sync->inFlightFences.data[i] = VK_NULL_HANDLE;
     }
 
-    memory_array_destroy(&sync->imageAvailableSemaphores);
-    memory_array_destroy(&sync->renderFinishedSemaphores);
-    memory_array_destroy(&sync->inFlightFences);
+    zz_memory_array_destroy(&sync->imageAvailableSemaphores);
+    zz_memory_array_destroy(&sync->renderFinishedSemaphores);
+    zz_memory_array_destroy(&sync->inFlightFences);
 
     sync->max_frames_in_flight = 0;
 }

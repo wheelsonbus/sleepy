@@ -9,28 +9,28 @@
 
 #include "device.h"
 
-typedef struct {VkSemaphore* data; u16 length, capacity;} memory_array_VkSemaphore_t; //memory_array_t(VkSemaphore)
-typedef struct {VkFence* data; u16 length, capacity;} memory_array_VkFence_t; //memory_array_t(VkFence)
+typedef struct {VkSemaphore* data; u16 length, capacity;} zz_memory_array_VkSemaphore_t;
+typedef struct {VkFence* data; u16 length, capacity;} zz_memory_array_VkFence_t;
 
-struct internal_vulkan_sync
+struct zz_internal_vulkan_sync
 {
-    struct internal_vulkan_device* device;
+    struct zz_internal_vulkan_device* device;
 
     u16 max_frames_in_flight;
-    memory_array_VkSemaphore_t imageAvailableSemaphores;
-    memory_array_VkSemaphore_t renderFinishedSemaphores;
-    memory_array_VkFence_t inFlightFences;
+    zz_memory_array_VkSemaphore_t imageAvailableSemaphores;
+    zz_memory_array_VkSemaphore_t renderFinishedSemaphores;
+    zz_memory_array_VkFence_t inFlightFences;
 };
 
-struct internal_vulkan_sync_config
+struct zz_internal_vulkan_sync_config
 {
-    struct internal_vulkan_device* device;
+    struct zz_internal_vulkan_device* device;
 
     u16 max_frames_in_flight;
 };
 
-b8 internal_vulkan_sync_create(struct internal_vulkan_sync* sync, struct internal_vulkan_sync_config* config);
-void internal_vulkan_sync_destroy(struct internal_vulkan_sync* sync);
+b8 zz_internal_vulkan_sync_create(struct zz_internal_vulkan_sync* sync, struct zz_internal_vulkan_sync_config* config);
+void zz_internal_vulkan_sync_destroy(struct zz_internal_vulkan_sync* sync);
 
 #endif
 #endif

@@ -3,17 +3,17 @@
 
 #include "zz/zz.h"
 
-struct internal_network
+struct zz_internal_network
 {
 
 };
 
-struct internal_network_config
+struct zz_internal_network_config
 {
 
 };
 
-b8 internal_network_initialize(struct internal_network_config* config);
-void internal_network_deinitialize();
+b8 zz_internal_network_initialize(struct zz_internal_network_config* config);
+void zz_internal_network_deinitialize();
 
 #endif

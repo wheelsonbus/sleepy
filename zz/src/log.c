@@ -6,16 +6,16 @@
 
 #include "zz/console.h"
 
-b8 log_initialize(struct log_config* config) {
+b8 zz_log_initialize(struct zz_log_config* config) {
     ZZ_LOG_INFO("Log module initialized.");
     return ZZ_TRUE;
 }
 
-void log_deinitialize() {
+void zz_log_deinitialize() {
     ZZ_LOG_INFO("Log module deinitialized.");
 }
 
-void _log(int level, const char* message, ...)
+void _zz_log(int level, const char* message, ...)
 {
     const char* level_prefixes[6] = {"[FATAL] ", "[ERROR] ", "[WARNING] ", "[INFO] ", "[DEBUG] ", "[TRACE] "};
     
@@ -30,10 +30,10 @@ void _log(int level, const char* message, ...)
 
     if (level < 2)
     {
-        console_write_error(output, level);
+        zz_console_write_error(output, level);
     }
     else 
     {
-        console_write(output, level);
+        zz_console_write(output, level);
     }
 }

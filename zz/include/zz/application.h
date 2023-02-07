@@ -6,24 +6,24 @@
 #include "memory.h"
 #include "zz/internal/application.h"
 
-struct application
+struct zz_application
 {    
     
 };
 
-struct application_config
+struct zz_application_config
 {
     char* name;
     u16 x, y;
     u16 width, height;
 };
 
-ZZ_API b8 application_initialize(struct application_config* config);
-ZZ_API void application_deinitialize();
+ZZ_API b8 zz_application_initialize(struct zz_application_config* config);
+ZZ_API void zz_application_deinitialize();
 
-ZZ_API void application_get_size(u16* width, u16* height);
+ZZ_API void zz_application_get_size(u16* width, u16* height);
 
-ZZ_API u64 application_get_time();
-ZZ_API void application_sleep(u64 milliseconds);
+ZZ_API u64 zz_application_get_time();
+ZZ_API void zz_application_sleep(u64 milliseconds);
 
 #endif

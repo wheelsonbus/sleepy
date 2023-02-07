@@ -29,7 +29,7 @@ static void write_u64(u8** buffer_iterator, u64 u)
 */
 static void write_f32(u8** buffer_iterator, f32 f)
 {
-    memory_copy(*buffer_iterator, &f, sizeof(f));
+    zz_memory_copy(*buffer_iterator, &f, sizeof(f));
     *buffer_iterator += sizeof(f);
 }
 /*
@@ -78,7 +78,7 @@ static void read_u64(u8** buffer_iterator, u64* u)
 */
 static void read_f32(u8** buffer_iterator, f32* f)
 {
-    memory_copy(f, *buffer_iterator, sizeof(*f));
+    zz_memory_copy(f, *buffer_iterator, sizeof(*f));
     *buffer_iterator += sizeof(*f);
 }
 /*

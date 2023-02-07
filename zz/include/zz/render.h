@@ -7,24 +7,24 @@
 
 #include "sprite.h"
 
-struct render
+struct zz_render
 {
 
 };
 
-struct render_config
+struct zz_render_config
 {
 
 };
 
-b8 render_initialize(struct render_config* config);
-void render_deinitialize();
+b8 zz_render_initialize(struct zz_render_config* config);
+void zz_render_deinitialize();
 
-b8 render_draw_frame();
+b8 zz_render_draw_frame();
 
-ZZ_API void render_set_model_matrix(mat4 matrix);
-ZZ_API void render_set_view_matrix(mat4 matrix);
-ZZ_API void render_set_projection_matrix(mat4 matrix);
-ZZ_API void render_draw_sprite(struct sprite* sprite, vec3 position);
+ZZ_API void zz_render_set_model_matrix(mat4 matrix);
+ZZ_API void zz_render_set_view_matrix(mat4 matrix);
+ZZ_API void zz_render_set_projection_matrix(mat4 matrix);
+ZZ_API void zz_render_draw_sprite(struct zz_sprite* sprite, vec3 position);
 
 #endif

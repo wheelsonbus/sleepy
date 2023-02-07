@@ -3,10 +3,10 @@
 #include "zz/log.h"
 #include "zz/internal/network.h"
 
-b8 network_initialize(struct network_config* config)
+b8 zz_network_initialize(struct zz_network_config* config)
 {
-    struct internal_network_config internal_network_config;
-    if (!internal_network_initialize(&internal_network_config))
+    struct zz_internal_network_config internal_network_config;
+    if (!zz_internal_network_initialize(&internal_network_config))
     {
         return ZZ_TRUE;
     }
@@ -15,7 +15,7 @@ b8 network_initialize(struct network_config* config)
     return ZZ_TRUE;
 }
 
-void network_deinitialize()
+void zz_network_deinitialize()
 {
     ZZ_LOG_INFO("Network module deinitialized.");
 }

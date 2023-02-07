@@ -4,7 +4,7 @@
 
 #include "zz/log.h"
 
-b8 internal_vulkan_instance_create(struct internal_vulkan_instance* instance, const struct internal_vulkan_instance_config* config)
+b8 zz_internal_vulkan_instance_create(struct zz_internal_vulkan_instance* instance, const struct zz_internal_vulkan_instance_config* config)
 {
     VkApplicationInfo applicationInfo;
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -54,7 +54,7 @@ b8 internal_vulkan_instance_create(struct internal_vulkan_instance* instance, co
     debugUtilsMessengerCreateInfo.flags = 0;
     debugUtilsMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     debugUtilsMessengerCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    debugUtilsMessengerCreateInfo.pfnUserCallback = internal_vulkan_instance_debug_callback;
+    debugUtilsMessengerCreateInfo.pfnUserCallback = zz_internal_vulkan_instance_debug_callback;
     debugUtilsMessengerCreateInfo.pUserData = ZZ_NULL;
 
     PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance->instance, "vkCreateDebugUtilsMessengerEXT");
@@ -72,7 +72,7 @@ b8 internal_vulkan_instance_create(struct internal_vulkan_instance* instance, co
     return ZZ_TRUE;
 }
 
-void internal_vulkan_instance_destroy(struct internal_vulkan_instance* instance)
+void zz_internal_vulkan_instance_destroy(struct zz_internal_vulkan_instance* instance)
 {
     PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance->instance, "vkDestroyDebugUtilsMessengerEXT");
     vkDestroyDebugUtilsMessengerEXT(instance->instance, instance->debugUtilsMessenger, ZZ_NULL);
@@ -83,7 +83,7 @@ void internal_vulkan_instance_destroy(struct internal_vulkan_instance* instance)
 }
 
 #if defined(ZZ_DEBUG)
-VKAPI_ATTR VkBool32 VKAPI_CALL internal_vulkan_instance_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+VKAPI_ATTR VkBool32 VKAPI_CALL zz_internal_vulkan_instance_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
     switch(messageSeverity)
     {

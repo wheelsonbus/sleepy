@@ -6,7 +6,7 @@
 
 #include "zz/log.h"
 
-b8 internal_vulkan_pipeline_create(struct internal_vulkan_pipeline* pipeline, struct internal_vulkan_pipeline_config* config)
+b8 zz_internal_vulkan_pipeline_create(struct zz_internal_vulkan_pipeline* pipeline, struct zz_internal_vulkan_pipeline_config* config)
 {
     pipeline->device = config->device;
     pipeline->render_pass = config->render_pass;
@@ -14,9 +14,9 @@ b8 internal_vulkan_pipeline_create(struct internal_vulkan_pipeline* pipeline, st
     pipeline->uniform_buffers = config->uniform_buffers;
     
     VkShaderModule vertexShaderModule;
-    internal_vulkan_create_shader_module(&vertexShaderModule, pipeline->device->device, "vertex.spv");
+    zz_internal_vulkan_create_shader_module(&vertexShaderModule, pipeline->device->device, "vertex.spv");
     VkShaderModule fragmentShaderModule;
-    internal_vulkan_create_shader_module(&fragmentShaderModule, pipeline->device->device, "fragment.spv");
+    zz_internal_vulkan_create_shader_module(&fragmentShaderModule, pipeline->device->device, "fragment.spv");
 
     VkDescriptorPoolSize descriptorPoolSize;
     descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -54,11 +54,11 @@ b8 internal_vulkan_pipeline_create(struct internal_vulkan_pipeline* pipeline, st
         return ZZ_FALSE;
     }
 
-    memory_array_t(VkDescriptorSetLayout) descriptorSetLayouts;
-    memory_array_create_and_reserve(&descriptorSetLayouts, pipeline->uniform_buffers->length);
+    zz_memory_array_t(VkDescriptorSetLayout) descriptorSetLayouts;
+    zz_memory_array_create_and_reserve(&descriptorSetLayouts, pipeline->uniform_buffers->length);
     for (u16 i = 0; i < descriptorSetLayouts.capacity; i += 1)
     {
-        memory_array_push(&descriptorSetLayouts, pipeline->descriptorSetLayout);
+        zz_memory_array_push(&descriptorSetLayouts, pipeline->descriptorSetLayout);
     }
 
     VkDescriptorSetAllocateInfo descriptorSetAllocateInfo;
@@ -68,10 +68,10 @@ b8 internal_vulkan_pipeline_create(struct internal_vulkan_pipeline* pipeline, st
     descriptorSetAllocateInfo.descriptorSetCount = descriptorSetLayouts.length;
     descriptorSetAllocateInfo.pSetLayouts = descriptorSetLayouts.data;
 
-    memory_array_create_and_reserve(&pipeline->descriptorSets, pipeline->uniform_buffers->length);
+    zz_memory_array_create_and_reserve(&pipeline->descriptorSets, pipeline->uniform_buffers->length);
     if (vkAllocateDescriptorSets(pipeline->device->device, &descriptorSetAllocateInfo, pipeline->descriptorSets.data) != VK_SUCCESS)
     {
-        memory_array_destroy(&descriptorSetLayouts);
+        zz_memory_array_destroy(&descriptorSetLayouts);
         return ZZ_FALSE;
     }
 
@@ -97,7 +97,7 @@ b8 internal_vulkan_pipeline_create(struct internal_vulkan_pipeline* pipeline, st
         vkUpdateDescriptorSets(pipeline->device->device, 1, &writeDescriptorSet, 0, ZZ_NULL);
     }
     
-    memory_array_destroy(&descriptorSetLayouts);
+    zz_memory_array_destroy(&descriptorSetLayouts);
 
     VkPipelineShaderStageCreateInfo vertexPipelineShaderStageCreateInfo;
     vertexPipelineShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -130,14 +130,14 @@ b8 internal_vulkan_pipeline_create(struct internal_vulkan_pipeline* pipeline, st
 
     VkVertexInputBindingDescription vertexInputBindingDescription;
     vertexInputBindingDescription.binding = 0;
-    vertexInputBindingDescription.stride = sizeof(struct internal_vulkan_vertex);
+    vertexInputBindingDescription.stride = sizeof(struct zz_internal_vulkan_vertex);
     vertexInputBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     VkVertexInputAttributeDescription positionVertexInputAttributeDescription;
     positionVertexInputAttributeDescription.location = 0;
     positionVertexInputAttributeDescription.binding = 0;
     positionVertexInputAttributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
-    positionVertexInputAttributeDescription.offset = offsetof(struct internal_vulkan_vertex, position);
+    positionVertexInputAttributeDescription.offset = offsetof(struct zz_internal_vulkan_vertex, position);
 
     uint32_t vertexInputAttributeDescriptionCount = 1;
     VkVertexInputAttributeDescription vertexInputAttributeDescriptions[1] = {positionVertexInputAttributeDescription};
@@ -271,26 +271,26 @@ b8 internal_vulkan_pipeline_create(struct internal_vulkan_pipeline* pipeline, st
         return ZZ_FALSE;
     }
 
-    internal_vulkan_destroy_shader_module(&vertexShaderModule, pipeline->device->device);
-    internal_vulkan_destroy_shader_module(&fragmentShaderModule, pipeline->device->device);
+    zz_internal_vulkan_destroy_shader_module(&vertexShaderModule, pipeline->device->device);
+    zz_internal_vulkan_destroy_shader_module(&fragmentShaderModule, pipeline->device->device);
 
     return ZZ_TRUE;
 }
 
-void internal_vulkan_pipeline_destroy(struct internal_vulkan_pipeline* pipeline)
+void zz_internal_vulkan_pipeline_destroy(struct zz_internal_vulkan_pipeline* pipeline)
 {
     vkDestroyPipeline(pipeline->device->device, pipeline->pipeline, ZZ_NULL);
     pipeline->pipeline = VK_NULL_HANDLE;
     vkDestroyPipelineLayout(pipeline->device->device, pipeline->pipelineLayout, ZZ_NULL);
     pipeline->pipelineLayout = VK_NULL_HANDLE;
-    memory_array_destroy(&pipeline->descriptorSets);
+    zz_memory_array_destroy(&pipeline->descriptorSets);
     vkDestroyDescriptorPool(pipeline->device->device, pipeline->descriptorPool, ZZ_NULL);
     pipeline->descriptorPool = VK_NULL_HANDLE;
     vkDestroyDescriptorSetLayout(pipeline->device->device, pipeline->descriptorSetLayout, ZZ_NULL);
     pipeline->descriptorSetLayout = VK_NULL_HANDLE;
 }
 
-b8 internal_vulkan_create_shader_module(VkShaderModule* shaderModule, VkDevice device, const char* filename)
+b8 zz_internal_vulkan_create_shader_module(VkShaderModule* shaderModule, VkDevice device, const char* filename)
 {
     FILE* file;
 
@@ -323,7 +323,7 @@ b8 internal_vulkan_create_shader_module(VkShaderModule* shaderModule, VkDevice d
     return ZZ_TRUE;
 }
 
-void internal_vulkan_destroy_shader_module(VkShaderModule* shaderModule, VkDevice device)
+void zz_internal_vulkan_destroy_shader_module(VkShaderModule* shaderModule, VkDevice device)
 {
     vkDestroyShaderModule(device, *shaderModule, ZZ_NULL);
     *shaderModule = VK_NULL_HANDLE;

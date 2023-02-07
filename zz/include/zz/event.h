@@ -5,7 +5,7 @@
 
 #include "memory.h"
 
-enum event_code
+enum zz_event_code
 {
     ZZ_EVENT_CODE_QUIT = 0x01,
 
@@ -22,14 +22,14 @@ enum event_code
     ZZ_EVENT_CODE_MAX = 0x100,
 };
 
-struct event_data_null
+struct zz_event_data_null
 {
     i64 i64[2];
 };
 
-union event_data
+union zz_event_data
 {
-    struct event_data_null null;
+    struct zz_event_data_null null;
 
     i64 i64[2];
     u64 u64[2];
@@ -48,36 +48,36 @@ union event_data
     char c[16];
 };
 
-typedef b8 (*event_callback_t)(void* sender, void* receiver, union event_data data);
+typedef b8 (*zz_event_callback_t)(void* sender, void* receiver, union zz_event_data data);
 
-struct event_receiver_registration
+struct zz_event_receiver_registration
 {
     void* receiver;
-    event_callback_t callback;
+    zz_event_callback_t callback;
 };
 
-struct event_code_registry
+struct zz_event_code_registry
 {
-    memory_array_t(struct event_receiver_registration) registrations;
+    zz_memory_array_t(struct zz_event_receiver_registration) registrations;
 };
 
-struct event
+struct zz_event
 {    
-    struct event_code_registry registries[ZZ_EVENT_CODE_MAX];
+    struct zz_event_code_registry registries[ZZ_EVENT_CODE_MAX];
 };
 
-struct event_config
+struct zz_event_config
 {
 
 };
 
-ZZ_API b8 event_initialize(struct event_config* config);
-ZZ_API void event_deinitialize();
+ZZ_API b8 zz_event_initialize(struct zz_event_config* config);
+ZZ_API void zz_event_deinitialize();
 
-ZZ_API b8 event_register_receiver(u16 code, void* receiver, event_callback_t callback);
-ZZ_API b8 event_unregister_receiver(u16 code, void* receiver, event_callback_t callback);
+ZZ_API b8 zz_event_register_receiver(u16 code, void* receiver, zz_event_callback_t callback);
+ZZ_API b8 zz_event_unregister_receiver(u16 code, void* receiver, zz_event_callback_t callback);
 
-ZZ_API b8 event_send(u16 code, void* sender, union event_data data);
-ZZ_API b8 event_send_null(u16 code, void* sender);
+ZZ_API b8 zz_event_send(u16 code, void* sender, union zz_event_data data);
+ZZ_API b8 zz_event_send_null(u16 code, void* sender);
 
 #endif

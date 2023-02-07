@@ -11,16 +11,16 @@
 #define ZZ_MILLISECONDS_PER_TICK 10
 #define ZZ_MILLISECONDS_PER_FRAME 0
 
-static struct client client;
+static struct zz_client client;
 
-b8 client_on_quit(void* sender, void* receiver, union event_data data)
+static b8 on_quit(void* sender, void* receiver, union zz_event_data data)
 {
     ZZ_LOG_INFO("Quit event received. Shutting down.\n");
     client.running = ZZ_FALSE;
     return ZZ_TRUE;
 }
 
-b8 client_on_resize(void* sender, void* receiver, union event_data data)
+static b8 on_resize(void* sender, void* receiver, union zz_event_data data)
 {
     u16 width = data.u16[0];
     u16 height = data.u16[1];
@@ -49,19 +49,19 @@ b8 client_on_resize(void* sender, void* receiver, union event_data data)
     return ZZ_FALSE;
 }
 
-b8 client_on_key_press(void* sender, void* receiver, union event_data data)
+static b8 on_key_press(void* sender, void* receiver, union zz_event_data data)
 {
     u16 code = data.u16[0];
     ZZ_LOG_DEBUG("%c", code);
     if (code == ZZ_INPUT_KEY_CODE_ESCAPE)
     {
-        event_send_null(ZZ_EVENT_CODE_QUIT, 0);
+        zz_event_send_null(ZZ_EVENT_CODE_QUIT, 0);
     }
 
     return ZZ_FALSE;
 }
 
-b8 client_initialize(struct client_config* config)
+b8 zz_client_initialize(struct zz_client_config* config)
 {
     client.on_initialize = config->on_initialize;
     client.on_deinitialize = config->on_deinitialize;
@@ -73,91 +73,91 @@ b8 client_initialize(struct client_config* config)
     client.running = ZZ_TRUE;
     client.suspended = ZZ_FALSE;
 
-    struct log_config log_config;
-    if (!log_initialize(&log_config))
+    struct zz_log_config log_config;
+    if (!zz_log_initialize(&log_config))
     {
         ZZ_LOG_FATAL("Failed to initialize log module.");
         return ZZ_FALSE;
     }
 
-    struct memory_config memory_config;
-    if (!memory_initialize(&memory_config))
+    struct zz_memory_config memory_config;
+    if (!zz_memory_initialize(&memory_config))
     {
         ZZ_LOG_FATAL("Failed to initialize memory module.");
         return ZZ_FALSE;
     }
 
-    struct event_config event_config;
-    if (!event_initialize(&event_config))
+    struct zz_event_config event_config;
+    if (!zz_event_initialize(&event_config))
     {
         ZZ_LOG_FATAL("Failed to initialize event module.");
         return ZZ_FALSE;
     }
 
-    struct input_config input_config;
-    if (!input_initialize(&input_config))
+    struct zz_input_config input_config;
+    if (!zz_input_initialize(&input_config))
     {
         ZZ_LOG_FATAL("Failed to initialize input module.");
         return ZZ_FALSE;
     }
 
-    struct application_config application_config;
+    struct zz_application_config application_config;
     application_config.name = config->name;
     application_config.x = config->x;
     application_config.y = config->y;
     application_config.width = config->width;
     application_config.height = config->height;
-    if (!application_initialize(&application_config))
+    if (!zz_application_initialize(&application_config))
     {
         ZZ_LOG_FATAL("Failed to initialize application module.");
         return ZZ_FALSE;
     }
 
-    struct render_config render_config;
-    if (!render_initialize(&render_config))
+    struct zz_render_config render_config;
+    if (!zz_render_initialize(&render_config))
     {
         ZZ_LOG_FATAL("Failed to initialize render module.");
         return ZZ_FALSE;
     }
 
-    event_register_receiver(ZZ_EVENT_CODE_QUIT, ZZ_NULL, client_on_quit);
-    event_register_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, client_on_resize);
-    event_register_receiver(ZZ_EVENT_CODE_KEY_PRESS, ZZ_NULL, client_on_key_press);
+    zz_event_register_receiver(ZZ_EVENT_CODE_QUIT, ZZ_NULL, on_quit);
+    zz_event_register_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, on_resize);
+    zz_event_register_receiver(ZZ_EVENT_CODE_KEY_PRESS, ZZ_NULL, on_key_press);
 
     if (!client.on_initialize())
     {
         return ZZ_FALSE;
     }
 
-    union event_data event_data;
+    union zz_event_data event_data;
     event_data.u16[0] = config->width;
     event_data.u16[1] = config->height;
-    event_send(ZZ_EVENT_CODE_RESIZE, 0, event_data);
+    zz_event_send(ZZ_EVENT_CODE_RESIZE, 0, event_data);
 
     return ZZ_TRUE;
 }
 
-void client_deinitialize()
+void zz_client_deinitialize()
 {
     if (!client.on_deinitialize())
     {
         ZZ_LOG_ERROR("Client deinitialize method returned ZZ_FALSE.");
     }
 
-    event_unregister_receiver(ZZ_EVENT_CODE_QUIT, ZZ_NULL, client_on_quit);
-    event_unregister_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, client_on_resize);
-    event_unregister_receiver(ZZ_EVENT_CODE_KEY_PRESS, ZZ_NULL, client_on_key_press);
+    zz_event_unregister_receiver(ZZ_EVENT_CODE_QUIT, ZZ_NULL, on_quit);
+    zz_event_unregister_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, on_resize);
+    zz_event_unregister_receiver(ZZ_EVENT_CODE_KEY_PRESS, ZZ_NULL, on_key_press);
 
-    render_deinitialize();
-    application_deinitialize();
-    input_deinitialize();
-    event_deinitialize();
-    memory_deinitialize();
+    zz_render_deinitialize();
+    zz_application_deinitialize();
+    zz_input_deinitialize();
+    zz_event_deinitialize();
+    zz_memory_deinitialize();
 }
 
-b8 client_loop()
+b8 zz_client_loop()
 {
-    client.last_frame_time = application_get_time();
+    client.last_frame_time = zz_application_get_time();
     client.accumulated_tick_time = 0;
     client.accumulated_frame_time = 0;
 
@@ -165,19 +165,19 @@ b8 client_loop()
     {
         if (client.suspended)
         {
-            application_sleep(ZZ_MILLISECONDS_PER_TICK);
-            client.last_frame_time = application_get_time();
+            zz_application_sleep(ZZ_MILLISECONDS_PER_TICK);
+            client.last_frame_time = zz_application_get_time();
         }
         else
         {
-            u64 delta_time = application_get_time() - client.last_frame_time;
+            u64 delta_time = zz_application_get_time() - client.last_frame_time;
             client.last_frame_time += delta_time;
             client.accumulated_tick_time += delta_time;
             client.accumulated_frame_time += delta_time;
 
             while (client.accumulated_tick_time >= ZZ_MILLISECONDS_PER_TICK)
             {
-                input_update();
+                zz_input_update();
                 client.on_tick(ZZ_MILLISECONDS_PER_TICK);
                 client.accumulated_tick_time -= ZZ_MILLISECONDS_PER_TICK;
             }
@@ -187,9 +187,9 @@ b8 client_loop()
                 client.on_frame(client.accumulated_frame_time);
                 client.accumulated_frame_time = 0;
             }
-            render_draw_frame();
+            zz_render_draw_frame();
         }
-        internal_application_pump_messages();
+        zz_internal_application_pump_messages();
     }
 
     return ZZ_TRUE;

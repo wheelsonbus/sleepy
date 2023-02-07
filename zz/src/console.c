@@ -2,12 +2,12 @@
 
 #include "zz/internal/console.h"
 
-void console_write(const char* message, u8 color)
+void zz_console_write(const char* message, u8 color)
 {
-    internal_console_write(message, color);
+    zz_internal_console_write(message, color);
 }
 
-void console_write_error(const char* message, u8 color)
+void zz_console_write_error(const char* message, u8 color)
 {
-    internal_console_write_error(message, color);
+    zz_internal_console_write_error(message, color);
 }

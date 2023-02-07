@@ -3,7 +3,7 @@
 
 #include "zz.h"
 
-struct server
+struct zz_server
 {
     b8 running;
 
@@ -17,7 +17,7 @@ struct server
     b8 (*on_tick)(u64 delta_time);
 };
 
-struct server_config
+struct zz_server_config
 {
     b8 (*on_initialize)();
     b8 (*on_deinitialize)();
@@ -25,9 +25,9 @@ struct server_config
     b8 (*on_tick)(u64 delta_time);
 };
 
-ZZ_API b8 server_initialize(struct server_config* config);
-ZZ_API void server_deinitialize();
+ZZ_API b8 zz_server_initialize(struct zz_server_config* config);
+ZZ_API void zz_server_deinitialize();
 
-ZZ_API b8 server_loop();
+ZZ_API b8 zz_server_loop();
 
 #endif

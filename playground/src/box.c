@@ -4,5 +4,5 @@
 
 void box_draw(struct box* box)
 {
-    render_draw_sprite(&box->sprite, box->position);
+    zz_render_draw_sprite(&box->sprite, box->position);
 }

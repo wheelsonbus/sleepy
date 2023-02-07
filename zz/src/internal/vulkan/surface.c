@@ -8,7 +8,7 @@
 #elif defined(ZZ_LINUX)
 #endif
 
-b8 internal_vulkan_surface_create(struct internal_vulkan_surface* surface, const struct internal_vulkan_surface_config* config)
+b8 zz_internal_vulkan_surface_create(struct zz_internal_vulkan_surface* surface, const struct zz_internal_vulkan_surface_config* config)
 {
     surface->instance = config->instance;
     
@@ -17,8 +17,8 @@ b8 internal_vulkan_surface_create(struct internal_vulkan_surface* surface, const
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
     surfaceCreateInfo.pNext = ZZ_NULL;
     surfaceCreateInfo.flags = 0;
-    surfaceCreateInfo.hinstance = internal_windows_application_get_hinstance();
-    surfaceCreateInfo.hwnd = internal_windows_application_get_hwnd();
+    surfaceCreateInfo.hinstance = zz_internal_windows_application_get_hinstance();
+    surfaceCreateInfo.hwnd = zz_internal_windows_application_get_hwnd();
 
     if (vkCreateWin32SurfaceKHR(surface->instance->instance, &surfaceCreateInfo, ZZ_NULL, &surface->surface) != VK_SUCCESS)
     {
@@ -30,7 +30,7 @@ b8 internal_vulkan_surface_create(struct internal_vulkan_surface* surface, const
     return ZZ_TRUE;
 }
 
-void internal_vulkan_surface_destroy(struct internal_vulkan_surface* surface)
+void zz_internal_vulkan_surface_destroy(struct zz_internal_vulkan_surface* surface)
 {
     vkDestroySurfaceKHR(surface->instance->instance, surface->surface, ZZ_NULL);
     surface->surface = ZZ_NULL;

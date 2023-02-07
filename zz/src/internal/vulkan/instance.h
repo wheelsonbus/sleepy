@@ -6,7 +6,7 @@
 
 #include "zz/zz.h"
 
-struct internal_vulkan_instance
+struct zz_internal_vulkan_instance
 {
     VkInstance instance;
 #if defined(ZZ_DEBUG)
@@ -15,16 +15,16 @@ struct internal_vulkan_instance
 #endif
 };
 
-struct internal_vulkan_instance_config
+struct zz_internal_vulkan_instance_config
 {
 
 };
 
-b8 internal_vulkan_instance_create(struct internal_vulkan_instance* instance, const struct internal_vulkan_instance_config* config);
-void internal_vulkan_instance_destroy(struct internal_vulkan_instance* instance);
+b8 zz_internal_vulkan_instance_create(struct zz_internal_vulkan_instance* instance, const struct zz_internal_vulkan_instance_config* config);
+void zz_internal_vulkan_instance_destroy(struct zz_internal_vulkan_instance* instance);
 
 #if defined(ZZ_DEBUG)
-VKAPI_ATTR VkBool32 VKAPI_CALL internal_vulkan_instance_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+VKAPI_ATTR VkBool32 VKAPI_CALL zz_internal_vulkan_instance_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 #elif defined(ZZ_RELEASE)
 #endif
 

@@ -3,7 +3,7 @@
 
 #include "zz.h"
 
-struct client
+struct zz_client
 {
     u16 width, height;
     b8 running, suspended;
@@ -19,7 +19,7 @@ struct client
     b8 (*on_frame)(u64 delta_time);
 };
 
-struct client_config
+struct zz_client_config
 {
     char* name;
     u16 x, y;
@@ -32,9 +32,9 @@ struct client_config
     b8 (*on_frame)(u64 delta_time);
 };
 
-ZZ_API b8 client_initialize(struct client_config* config);
-ZZ_API void client_deinitialize();
+ZZ_API b8 zz_client_initialize(struct zz_client_config* config);
+ZZ_API void zz_client_deinitialize();
 
-ZZ_API b8 client_loop();
+ZZ_API b8 zz_client_loop();
 
 #endif

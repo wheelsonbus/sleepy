@@ -7,12 +7,12 @@
 
 #include "zz/log.h"
 
-static struct internal_application internal_application;
+static struct zz_internal_application internal_application;
 
 static LARGE_INTEGER internal_application_windows_clock_frequency;
 static LARGE_INTEGER internal_application_windows_start_time;
 
-b8 internal_application_initialize(struct internal_application_config* config)
+b8 zz_internal_application_initialize(struct zz_internal_application_config* config)
 {
     internal_application.hInstance = GetModuleHandleA(0);
 
@@ -20,7 +20,7 @@ b8 internal_application_initialize(struct internal_application_config* config)
     WNDCLASSA wc;
     memset(&wc, 0, sizeof(wc));
     wc.style = CS_DBLCLKS;
-    wc.lpfnWndProc = internal_application_windows_process_message;
+    wc.lpfnWndProc = zz_internal_application_windows_process_message;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = internal_application.hInstance;
@@ -78,7 +78,7 @@ b8 internal_application_initialize(struct internal_application_config* config)
     return ZZ_TRUE;
 }
 
-void internal_application_deinitialize()
+void zz_internal_application_deinitialize()
 {
     if(internal_application.hWnd)
     {
@@ -87,7 +87,7 @@ void internal_application_deinitialize()
     }
 }
 
-b8 internal_application_pump_messages()
+b8 zz_internal_application_pump_messages()
 {
     MSG msg;
     while (PeekMessageA(&msg, ZZ_NULL, 0, 0, PM_REMOVE))
@@ -99,7 +99,7 @@ b8 internal_application_pump_messages()
     return ZZ_TRUE;
 }
 
-void internal_application_get_size(u16* width, u16* height)
+void zz_internal_application_get_size(u16* width, u16* height)
 {
     RECT rect;
     GetClientRect(internal_application.hWnd, &rect);
@@ -108,42 +108,42 @@ void internal_application_get_size(u16* width, u16* height)
 }
 
 
-void internal_application_initialize_time()
+void zz_internal_application_initialize_time()
 {
     QueryPerformanceFrequency(&internal_application_windows_clock_frequency);
     QueryPerformanceCounter(&internal_application_windows_start_time);
 }
 
-u64 internal_application_get_time()
+u64 zz_internal_application_get_time()
 {
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
     return ((u64)1000 * (now.QuadPart - internal_application_windows_start_time.QuadPart)) / internal_application_windows_clock_frequency.QuadPart;
 }
 
-void internal_application_sleep(u64 milliseconds)
+void zz_internal_application_sleep(u64 milliseconds)
 {
     Sleep(milliseconds);
 }
 
-HINSTANCE internal_windows_application_get_hinstance()
+HINSTANCE zz_internal_windows_application_get_hinstance()
 {
     return internal_application.hInstance;
 }
 
-HWND internal_windows_application_get_hwnd()
+HWND zz_internal_windows_application_get_hwnd()
 {
     return internal_application.hWnd;
 }
 
-LRESULT CALLBACK internal_application_windows_process_message(HWND hWnd, u32 msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK zz_internal_application_windows_process_message(HWND hWnd, u32 msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
         case WM_ERASEBKGND:
             return 1;
         case WM_CLOSE:
-            event_send_null(ZZ_EVENT_CODE_QUIT, 0);
+            zz_event_send_null(ZZ_EVENT_CODE_QUIT, 0);
             return 0;
         case WM_DESTROY:
             PostQuitMessage(0);
@@ -155,10 +155,10 @@ LRESULT CALLBACK internal_application_windows_process_message(HWND hWnd, u32 msg
                 u32 width = rect.right - rect.left;
                 u32 height = rect.bottom - rect.top;
 
-                union event_data event_data;
+                union zz_event_data event_data;
                 event_data.u16[0] = (u16)width;
                 event_data.u16[1] = (u16)height;
-                event_send(ZZ_EVENT_CODE_RESIZE, 0, event_data);
+                zz_event_send(ZZ_EVENT_CODE_RESIZE, 0, event_data);
             }  
             break;
         case WM_KEYDOWN:
@@ -167,14 +167,14 @@ LRESULT CALLBACK internal_application_windows_process_message(HWND hWnd, u32 msg
         case WM_SYSKEYUP:
             {
                 b8 down = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
-                input_set_key_state((u16)wParam, down);
+                zz_input_set_key_state((u16)wParam, down);
             }
             break;
         case WM_MOUSEMOVE:
             {
                 i32 x = GET_X_LPARAM(lParam);
                 i32 y = GET_Y_LPARAM(lParam);
-                input_set_mouse_position(x, y);
+                zz_input_set_mouse_position(x, y);
             }
             break;
         case WM_MOUSEWHEEL:
@@ -182,11 +182,11 @@ LRESULT CALLBACK internal_application_windows_process_message(HWND hWnd, u32 msg
                 i32 delta = GET_WHEEL_DELTA_WPARAM(wParam);
                 if (delta < 0)
                 {
-                    input_move_mouse_wheel(-1);
+                    zz_input_move_mouse_wheel(-1);
                 }
                 else if (delta > 0)
                 {
-                    input_move_mouse_wheel(1);
+                    zz_input_move_mouse_wheel(1);
                 }
             }
             break;
@@ -198,7 +198,7 @@ LRESULT CALLBACK internal_application_windows_process_message(HWND hWnd, u32 msg
         case WM_RBUTTONUP:
             {
                 b8 down = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
-                enum input_mouse_button_code code = ZZ_INPUT_MOUSE_BUTTON_CODE_MAX;
+                enum zz_input_mouse_button_code code = ZZ_INPUT_MOUSE_BUTTON_CODE_MAX;
                 switch (msg)
                 {
                     case WM_LBUTTONDOWN:
@@ -216,7 +216,7 @@ LRESULT CALLBACK internal_application_windows_process_message(HWND hWnd, u32 msg
                 }
                 if (code != ZZ_INPUT_MOUSE_BUTTON_CODE_MAX)
                 {
-                    input_set_mouse_button_state(code, down);
+                    zz_input_set_mouse_button_state(code, down);
                 }
             }
             break;
