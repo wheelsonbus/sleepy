@@ -12,7 +12,7 @@ b8 event_initialize(struct event_config* config)
         memory_array_create(&event.registries[i].registrations);
     }
 
-    ZZ_LOG_INFO("Event module created.");
+    ZZ_LOG_INFO("Event module initialized.");
     return ZZ_TRUE;
 }
 
@@ -23,7 +23,7 @@ void event_deinitialize()
         memory_array_destroy(&event.registries[i].registrations);
     }
 
-    ZZ_LOG_INFO("Event module destroyed.");
+    ZZ_LOG_INFO("Event module deinitialized.");
 }
 
 b8 event_register_receiver(u16 code, void* receiver, event_callback_t callback)

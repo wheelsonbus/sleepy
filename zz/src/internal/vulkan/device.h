@@ -1,6 +1,6 @@
-#if defined(ZZ__VULKAN)
-
-#pragma once
+#ifdef ZZ_VULKAN
+#ifndef ZZ_INTERNAL_VULKAN_DEVICE_H
+#define ZZ_INTERNAL_VULKAN_DEVICE_H
 
 #include <vulkan/vulkan.h>
 
@@ -47,4 +47,6 @@ void internal_vulkan_device_destroy(struct internal_vulkan_device* device);
 b8 internal_vulkan_device_select_physical_device(struct internal_vulkan_device* device);
 
 b8 internal_vulkan_device_select_memory_type_index(struct internal_vulkan_device* device, uint32_t* memoryTypeIndex, uint32_t memoryTypeIndexFilter, VkMemoryPropertyFlags memoryPropertyFlags);
+
+#endif
 #endif

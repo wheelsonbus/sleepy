@@ -1,18 +1,18 @@
-#if defined(ZZ__VULKAN)
+#ifdef ZZ_VULKAN
 
 #include "surface.h"
 
-#if defined(ZZ__WINDOWS)
+#if defined(ZZ_WINDOWS)
 #include "internal/windows/application.h"
 #include <vulkan/vulkan_win32.h>
-#elif defined(ZZ__LINUX)
+#elif defined(ZZ_LINUX)
 #endif
 
 b8 internal_vulkan_surface_create(struct internal_vulkan_surface* surface, const struct internal_vulkan_surface_config* config)
 {
     surface->instance = config->instance;
     
-#if defined(ZZ__WINDOWS)
+#if defined(ZZ_WINDOWS)
     VkWin32SurfaceCreateInfoKHR surfaceCreateInfo;
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
     surfaceCreateInfo.pNext = ZZ_NULL;
@@ -24,7 +24,7 @@ b8 internal_vulkan_surface_create(struct internal_vulkan_surface* surface, const
     {
         return ZZ_FALSE;
     }
-#elif defined(ZZ__LINUX)
+#elif defined(ZZ_LINUX)
 #endif
     
     return ZZ_TRUE;

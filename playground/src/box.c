@@ -2,5 +2,5 @@
 
 void box_draw(struct box* box)
 {
-    program_draw_sprite(&box->sprite, box->position);
+    render_draw_sprite(&box->sprite, box->position);
 }

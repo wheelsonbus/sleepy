@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZZ_MEMORY_H
+#define ZZ_MEMORY_H
 
 #include "zz.h"
 
@@ -63,3 +64,5 @@ ZZ_API void _memory_array_reserve(void** data, u16* length, u16* capacity, u16 s
 ZZ_API void _memory_array_expand_at(void** data, u16* length, u16* capacity, u16 stride, u16 index);
 ZZ_API void _memory_array_remove_at(void** data, u16* length, u16* capacity, u16 stride, u16 index);
 ZZ_API void _memory_array_clear(void** data, u16* length, u16* capacity, u16 stride);
+
+#endif

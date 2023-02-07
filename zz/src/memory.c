@@ -17,13 +17,13 @@ static const char* memory_tag_strings[ZZ_MEMORY_TAG_MAX] = {
 b8 memory_initialize(struct memory_config* config)
 {
     internal_memory_zero(&memory.statistics, sizeof(memory.statistics));
-    ZZ_LOG_INFO("Memory module created.");
+    ZZ_LOG_INFO("Memory module initialized.");
     return ZZ_TRUE;
 }
 
 void memory_deinitialize()
 {
-    ZZ_LOG_INFO("Memory module destroyed.");
+    ZZ_LOG_INFO("Memory module deinitialized.");
 }
 
 void* memory_allocate(u64 size, enum memory_tag tag)

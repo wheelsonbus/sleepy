@@ -1,4 +1,4 @@
-#if defined(ZZ__VULKAN)
+#ifdef ZZ_VULKAN
 
 #include "device.h"
 

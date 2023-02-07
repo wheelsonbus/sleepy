@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZZ_LOG_H
+#define ZZ_LOG_H
 
 #include "zz.h"
 
@@ -24,7 +25,6 @@ ZZ_API void _log(int level, const char* message, ...);
 #define ZZ_LOG_INFO(message, ...) _log(3, message, ##__VA_ARGS__)
 #define ZZ_LOG_DEBUG(message, ...) _log(4, message, ##__VA_ARGS__)
 #define ZZ_LOG_TRACE(message, ...) _log(5, message, ##__VA_ARGS__)
-
 #elif defined(ZZ_RELEASE)
 #define ZZ_LOG_FATAL(message, ...) _log(0, message, ##__VA_ARGS__)
 #define ZZ_LOG_ERROR(message, ...) _log(1, message, ##__VA_ARGS__)
@@ -32,5 +32,6 @@ ZZ_API void _log(int level, const char* message, ...);
 #define ZZ_LOG_INFO(message, ...)
 #define ZZ_LOG_DEBUG(message, ...)
 #define ZZ_LOG_TRACE(message, ...)
+#endif
 
 #endif

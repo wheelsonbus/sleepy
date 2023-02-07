@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZZ_MATH_H
+#define ZZ_MATH_H
 
 #include "zz.h"
 
@@ -187,3 +188,5 @@ ZZ_INLINE mat4 mat4_orthographic(f32 clip_left, f32 clip_right, f32 clip_top, f3
         .w = {-(clip_left + clip_right) * multiplier.x, -(clip_top + clip_bottom) * multiplier.y, clip_near * multiplier.z, 1.0f}
     };
 }
+
+#endif

@@ -1,6 +1,6 @@
-#if defined(ZZ__VULKAN)
-
-#pragma once
+#ifdef ZZ_VULKAN
+#ifndef ZZ_INTERNAL_VULKAN_PIPELINE_H
+#define ZZ_INTERNAL_VULKAN_PIPELINE_H
 
 #include <vulkan/vulkan.h>
 
@@ -46,4 +46,5 @@ void internal_vulkan_pipeline_destroy(struct internal_vulkan_pipeline* pipeline)
 b8 internal_vulkan_create_shader_module(VkShaderModule* shaderModule, VkDevice device, const char* filename);
 void internal_vulkan_destroy_shader_module(VkShaderModule* shaderModule, VkDevice device);
 
+#endif
 #endif

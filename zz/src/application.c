@@ -17,14 +17,14 @@ b8 application_initialize(struct application_config* config)
         return ZZ_FALSE;
     }
 
-    ZZ_LOG_INFO("Application module created.");
+    ZZ_LOG_INFO("Application module initialized.");
     return ZZ_TRUE;
 }
 
 void application_deinitialize()
 {
     internal_application_deinitialize();
-    ZZ_LOG_INFO("Application module destroyed.");
+    ZZ_LOG_INFO("Application module deinitialized.");
 }
 
 void application_get_size(u16* width, u16* height)

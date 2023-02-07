@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZZ_H
+#define ZZ_H
 
 #define ZZ_VERSION_MAJOR 1
 #define ZZ_VERSION_MINOR 0
@@ -77,4 +78,6 @@ STATIC_ASSERT(sizeof(b32) == 4, "Expected b32 to be 4 bytes.");
 #else
 #define ZZ_INLINE static inline
 #define ZZ_NOINLINE
+#endif
+
 #endif

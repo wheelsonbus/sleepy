@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZZ_INPUT_H
+#define ZZ_INPUT_H
 
 #include "zz.h"
 
@@ -161,3 +162,5 @@ ZZ_API void input_get_previous_mouse_position(i32* x, i32* y);
 void input_set_mouse_position(i16 x, i16 y);
 
 void input_move_mouse_wheel(i8 delta);
+
+#endif

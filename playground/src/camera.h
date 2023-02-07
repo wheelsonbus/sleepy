@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLAYGROUND_CAMERA_H
+#define PLAYGROUND_CAMERA_H
 
 #include <zz/zz.h>
 #include <zz/math.h>
@@ -11,3 +12,5 @@ struct camera
 
 mat4 camera_get_view_matrix(struct camera* camera);
 mat4 camera_get_projection_matrix(struct camera* camera);
+
+#endif

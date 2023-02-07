@@ -1,6 +1,6 @@
-#if defined(ZZ__VULKAN)
-
-#pragma once
+#ifdef ZZ_VULKAN
+#ifndef ZZ_INTERNAL_VULKAN_COMMAND_POOL_H
+#define ZZ_INTERNAL_VULKAN_COMMAND_POOL_H
 
 #include <vulkan/vulkan.h>
 
@@ -38,4 +38,5 @@ b8 internal_vulkan_command_pool_copy_buffer(struct internal_vulkan_command_pool*
 
 b8 internal_vulkan_record_command_buffer(struct internal_vulkan_buffer* vertex_buffer, struct internal_vulkan_buffer* index_buffer, uint32_t indexCount, struct internal_vulkan_pipeline* pipeline, u16 current_frame, VkCommandBuffer commandBuffer, VkRenderPass renderPass, VkPipeline graphicsPipeline, memory_array_VkFramebuffer_t* swapchainFramebuffers, VkExtent2D* swapchainExtent, uint32_t imageIndex);
 
+#endif
 #endif

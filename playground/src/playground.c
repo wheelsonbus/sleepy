@@ -1,6 +1,8 @@
 #include "playground.h"
 
+#include <zz/log.h>
 #include <zz/event.h>
+#include <zz/render.h>
 
 #include "camera.h"
 #include "box.h"
@@ -45,8 +47,8 @@ b8 playground_on_tick(u64 delta_time)
     camera.position.z -= m * input_get_key_state(ZZ_INPUT_KEY_CODE_Z);
     camera.position.z += m * input_get_key_state(ZZ_INPUT_KEY_CODE_X);
 
-    program_set_view_matrix(camera_get_view_matrix(&camera));
-    program_set_projection_matrix(camera_get_projection_matrix(&camera));
+    render_set_view_matrix(camera_get_view_matrix(&camera));
+    render_set_projection_matrix(camera_get_projection_matrix(&camera));
 
     return ZZ_TRUE;
 }

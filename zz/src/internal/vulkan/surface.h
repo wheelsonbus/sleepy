@@ -1,6 +1,6 @@
-#if defined(ZZ__VULKAN)
-
-#pragma once
+#ifdef ZZ_VULKAN
+#ifndef ZZ_INTERNAL_VULKAN_SURFACE_H
+#define ZZ_INTERNAL_VULKAN_SURFACE_H
 
 #include <vulkan/vulkan.h>
 
@@ -24,4 +24,5 @@ struct internal_vulkan_surface_config
 b8 internal_vulkan_surface_create(struct internal_vulkan_surface* surface, const struct internal_vulkan_surface_config* config);
 void internal_vulkan_surface_destroy(struct internal_vulkan_surface* surface);
 
+#endif
 #endif

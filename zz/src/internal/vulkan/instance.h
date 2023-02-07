@@ -1,6 +1,6 @@
-#if defined(ZZ__VULKAN)
-
-#pragma once
+#ifdef ZZ_VULKAN
+#ifndef ZZ_INTERNAL_VULKAN_INSTANCE_H
+#define ZZ_INTERNAL_VULKAN_INSTANCE_H
 
 #include <vulkan/vulkan.h>
 
@@ -29,4 +29,5 @@ VKAPI_ATTR VkBool32 VKAPI_CALL internal_vulkan_instance_debug_callback(VkDebugUt
 #elif defined(ZZ_RELEASE)
 #endif
 
+#endif
 #endif

@@ -1,6 +1,6 @@
-#if defined(ZZ__VULKAN)
-
-#pragma once
+#ifdef ZZ_VULKAN
+#ifndef ZZ_INTERNAL_VULKAN_SWAPCHAIN_H
+#define ZZ_INTERNAL_VULKAN_SWAPCHAIN_H
 
 #include <vulkan/vulkan.h>
 
@@ -42,4 +42,5 @@ void internal_vulkan_swapchain_destroy(struct internal_vulkan_swapchain* swapcha
 
 b8 internal_vulkan_swapchain_recreate(struct internal_vulkan_swapchain* swapchain);
 
+#endif
 #endif

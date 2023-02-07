@@ -1,4 +1,4 @@
-#if defined(ZZ__VULKAN)
+#ifdef ZZ_VULKAN
 
 #include "instance.h"
 
@@ -24,20 +24,20 @@ b8 internal_vulkan_instance_create(struct internal_vulkan_instance* instance, co
     instanceCreateInfo.enabledLayerCount = 1;
     const char* enabledLayerNames[1] = {"VK_LAYER_KHRONOS_validation"};
     instanceCreateInfo.ppEnabledLayerNames = enabledLayerNames;
-#if defined(ZZ__WINDOWS)
+#if defined(ZZ_WINDOWS)
     instanceCreateInfo.enabledExtensionCount = 3;
     const char* enabledExtensionNames[3] = {VK_EXT_DEBUG_UTILS_EXTENSION_NAME, "VK_KHR_surface", "VK_KHR_win32_surface"};
     instanceCreateInfo.ppEnabledExtensionNames = enabledExtensionNames;
-#elif defined(ZZ__LINUX)
+#elif defined(ZZ_LINUX)
 #endif
 #elif defined(ZZ_RELEASE)
     instanceCreateInfo.enabledLayerCount = 0;
     instanceCreateInfo.ppEnabledLayerNames = ZZ_NULL;
-#if defined(ZZ__WINDOWS)
+#if defined(ZZ_WINDOWS)
     instanceCreateInfo.enabledExtensionCount = 2;
     const char* enabledExtensionNames[2] = {"VK_KHR_surface", "VK_KHR_win32_surface"};
     instanceCreateInfo.ppEnabledExtensionNames = enabledExtensionNames;
-#elif defined(ZZ__LINUX)
+#elif defined(ZZ_LINUX)
 #endif
 #endif
     

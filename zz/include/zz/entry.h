@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZZ_ENTRY_H
+#define ZZ_ENTRY_H
 
 #include "program.h"
 #include "log.h"
@@ -25,3 +26,5 @@ int main()
 
     return 0;
 }
+
+#endif

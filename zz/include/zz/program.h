@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZZ_PROGRAM_H
+#define ZZ_PROGRAM_H
 
 #include "memory.h"
 #include "event.h"
@@ -46,7 +47,4 @@ ZZ_API void program_deinitialize();
 
 ZZ_API b8 program_loop();
 
-ZZ_API void program_set_model_matrix(mat4 matrix);
-ZZ_API void program_set_view_matrix(mat4 matrix);
-ZZ_API void program_set_projection_matrix(mat4 matrix);
-ZZ_API void program_draw_sprite(struct sprite* sprite, vec3 position);
+#endif

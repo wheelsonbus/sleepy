@@ -190,24 +190,3 @@ b8 program_loop()
 
     return ZZ_TRUE;
 }
-
-
-void program_set_model_matrix(mat4 matrix)
-{
-    render_set_model_matrix(matrix);
-}
-
-void program_set_view_matrix(mat4 matrix)
-{
-    render_set_view_matrix(matrix);
-}
-
-void program_set_projection_matrix(mat4 matrix)
-{
-    render_set_projection_matrix(matrix);
-}
-
-void program_draw_sprite(struct sprite* sprite, vec3 position)
-{
-    render_draw_sprite(sprite, position);
-}

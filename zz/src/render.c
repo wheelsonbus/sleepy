@@ -31,7 +31,7 @@ b8 render_initialize(struct render_config* config)
 
     event_register_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, render_on_resize);
 
-    ZZ_LOG_INFO("Render module created.");
+    ZZ_LOG_INFO("Render module deinitialized.");
     return ZZ_TRUE;
 }
 
@@ -41,7 +41,7 @@ void render_deinitialize()
 
     internal_render_deinitialize();
 
-    ZZ_LOG_INFO("Render module destroyed.");
+    ZZ_LOG_INFO("Render module initialized.");
 }
 
 b8 render_draw_frame()

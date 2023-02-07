@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZZ_EVENT_H
+#define ZZ_EVENT_H
 
 #include "zz.h"
 
@@ -78,3 +79,5 @@ ZZ_API b8 event_unregister_receiver(u16 code, void* receiver, event_callback_t c
 
 ZZ_API b8 event_send(u16 code, void* sender, union event_data data);
 ZZ_API b8 event_send_null(u16 code, void* sender);
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLAYGROUND_BOX_H
+#define PLAYGROUND_BOX_H
 
 #include <zz/zz.h>
 #include <zz/math.h>
@@ -13,3 +14,5 @@ struct box
 typedef struct {struct box* data; u16 length, capacity;} memory_array_box_t;
 
 void box_draw(struct box* box);
+
+#endif

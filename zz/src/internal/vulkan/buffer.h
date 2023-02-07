@@ -1,6 +1,6 @@
-#if defined(ZZ__VULKAN)
-
-#pragma once
+#ifdef ZZ_VULKAN
+#ifndef ZZ_INTERNAL_VULKAN_BUFFER_H
+#define ZZ_INTERNAL_VULKAN_BUFFER_H
 
 #include <vulkan/vulkan.h>
 
@@ -43,4 +43,5 @@ void internal_vulkan_buffer_unlock(struct internal_vulkan_buffer* buffer);
 
 b8 internal_vulkan_buffer_load(struct internal_vulkan_buffer* buffer, const void* data, u64 offset, u64 size, VkMemoryMapFlags flags);
 
+#endif
 #endif

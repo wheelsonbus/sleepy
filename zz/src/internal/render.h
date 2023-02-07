@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZZ_INTERNAL_RENDER_H
+#define ZZ_INTERNAL_RENDER_H
 
 #include "zz/zz.h"
 
@@ -21,3 +22,5 @@ void internal_render_set_model_matrix(mat4 matrix);
 void internal_render_set_view_matrix(mat4 matrix);
 void internal_render_set_projection_matrix(mat4 matrix);
 void internal_render_draw_sprite(struct sprite* sprite, vec3 position);
+
+#endif

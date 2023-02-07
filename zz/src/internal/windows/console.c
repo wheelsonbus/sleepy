@@ -1,4 +1,4 @@
-#if defined(ZZ__WINDOWS)
+#ifdef ZZ_WINDOWS
 
 #include "internal/console.h"
 

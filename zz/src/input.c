@@ -9,13 +9,13 @@ b8 input_initialize(struct input_config* config)
     memory_zero(&input.state, sizeof(input.state));
     memory_zero(&input.previous_state, sizeof(input.previous_state));
 
-    ZZ_LOG_INFO("Input module created.");
+    ZZ_LOG_INFO("Input module initialized.");
     return ZZ_TRUE;
 }
 
 void input_deinitialize()
 {
-    ZZ_LOG_INFO("Input module destroyed.");
+    ZZ_LOG_INFO("Input module deinitialized.");
 }
 
 void input_update()

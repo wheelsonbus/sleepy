@@ -1,4 +1,6 @@
-#if defined(ZZ__VULKAN)
+#ifdef ZZ_VULKAN
+#ifndef ZZ_INTERNAL_VLUKAN_VERTEX_H
+#define ZZ_INTERNAL_VLUKAN_VERTEX_H
 
 #include <vulkan/vulkan.h>
 
@@ -18,4 +20,5 @@ struct internal_vulkan_uniform_buffer_object
     mat4 projection;
 };
 
+#endif
 #endif

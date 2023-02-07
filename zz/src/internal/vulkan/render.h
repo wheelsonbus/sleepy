@@ -1,6 +1,6 @@
-#if defined(ZZ__VULKAN)
-
-#pragma once
+#ifdef ZZ_VULKAN
+#ifndef ZZ_INTERNAL_VULKAN_RENDER_H
+#define ZZ_INTERNAL_VULKAN_RENDER_H
 
 #include <vulkan/vulkan.h>
 
@@ -45,4 +45,5 @@ struct internal_render
     u16 current_frame;
 };
 
+#endif
 #endif

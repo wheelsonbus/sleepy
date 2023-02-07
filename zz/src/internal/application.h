@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZZ_INTERNAL_APPLICATION_H
+#define ZZ_INTERNAL_APPLICATION_H
 
 #include "zz/zz.h"
 
@@ -21,3 +22,5 @@ void internal_application_get_size(u16* width, u16* height);
 
 u64 internal_application_get_time();
 void internal_application_sleep(u64 milliseconds);
+
+#endif
