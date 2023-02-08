@@ -200,71 +200,74 @@ b8 zz_internal_render_draw_frame()
         return ZZ_FALSE; 
     }
 
-    vkWaitForFences(internal_render.device.device, 1, &internal_render.sync.inFlightFences.data[internal_render.current_frame], VK_TRUE, (uint64_t)-1);
-
-    uint32_t imageIndex;
-    VkResult acquireNextImageResult = vkAcquireNextImageKHR(internal_render.device.device, internal_render.swapchain.swapchain, (uint64_t)-1, internal_render.sync.imageAvailableSemaphores.data[internal_render.current_frame], VK_NULL_HANDLE, &imageIndex);
-    if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR)
+    if (internal_render.vertices.length != 0 && internal_render.indices.length != 0)
     {
-        ZZ_LOG_INFO("Recreating Vulkan swapchain.");
-        zz_internal_vulkan_swapchain_recreate(&internal_render.swapchain);
-        return ZZ_FALSE;
+        vkWaitForFences(internal_render.device.device, 1, &internal_render.sync.inFlightFences.data[internal_render.current_frame], VK_TRUE, (uint64_t)-1);
+
+        uint32_t imageIndex;
+        VkResult acquireNextImageResult = vkAcquireNextImageKHR(internal_render.device.device, internal_render.swapchain.swapchain, (uint64_t)-1, internal_render.sync.imageAvailableSemaphores.data[internal_render.current_frame], VK_NULL_HANDLE, &imageIndex);
+        if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR)
+        {
+            ZZ_LOG_INFO("Recreating Vulkan swapchain.");
+            zz_internal_vulkan_swapchain_recreate(&internal_render.swapchain);
+            return ZZ_FALSE;
+        }
+        else if (acquireNextImageResult != VK_SUCCESS && acquireNextImageResult != VK_SUBOPTIMAL_KHR)
+        {
+            return ZZ_FALSE;
+        }
+        
+        vkResetFences(internal_render.device.device, 1, &internal_render.sync.inFlightFences.data[internal_render.current_frame]);
+
+        zz_internal_vulkan_buffer_load(&internal_render.vertex_staging_buffer, internal_render.vertices.data, 0, sizeof(internal_render.vertices.data[0]) * internal_render.vertices.length, 0);
+        zz_internal_vulkan_command_pool_copy_buffer(&internal_render.command_pool, &internal_render.vertex_buffer, &internal_render.vertex_staging_buffer, sizeof(internal_render.vertices.data[0]) * internal_render.vertices.length);
+
+        zz_internal_vulkan_buffer_load(&internal_render.index_staging_buffer, internal_render.indices.data, 0, sizeof(internal_render.indices.data[0]) * internal_render.indices.length, 0);
+        zz_internal_vulkan_command_pool_copy_buffer(&internal_render.command_pool, &internal_render.index_buffer, &internal_render.index_staging_buffer, sizeof(internal_render.indices.data[0]) * internal_render.indices.length);
+
+        zz_internal_vulkan_buffer_load(&internal_render.uniform_buffers.data[internal_render.current_frame], &internal_render.uniform_buffer_object, 0, sizeof(internal_render.uniform_buffer_object), 0);
+
+        vkResetCommandBuffer(internal_render.command_pool.commandBuffers.data[internal_render.current_frame], 0);
+        zz_internal_vulkan_record_command_buffer(&internal_render.vertex_buffer, &internal_render.index_buffer, internal_render.indices.length, &internal_render.pipeline, internal_render.current_frame, internal_render.command_pool.commandBuffers.data[internal_render.current_frame], internal_render.render_pass.renderPass, internal_render.pipeline.pipeline, &internal_render.swapchain.framebuffers, &internal_render.swapchain.extent, imageIndex);
+
+        VkSubmitInfo submitInfo;
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.pNext = ZZ_NULL;
+        VkSemaphore submitWaitSemaphores[1] = {internal_render.sync.imageAvailableSemaphores.data[internal_render.current_frame]};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = submitWaitSemaphores;
+        VkPipelineStageFlags submitWaitDstStageMask[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submitInfo.pWaitDstStageMask = submitWaitDstStageMask;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &internal_render.command_pool.commandBuffers.data[internal_render.current_frame];
+        VkSemaphore submitSignalSemaphores[1] = {internal_render.sync.renderFinishedSemaphores.data[internal_render.current_frame]};
+        submitInfo.signalSemaphoreCount = 1; 
+        submitInfo.pSignalSemaphores = submitSignalSemaphores;
+
+        if (vkQueueSubmit(internal_render.device.graphicsQueue, 1, &submitInfo, internal_render.sync.inFlightFences.data[internal_render.current_frame]) != VK_SUCCESS)
+        {
+            return ZZ_FALSE;
+        }
+
+        VkPresentInfoKHR presentInfo;
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.pNext = ZZ_NULL;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = submitSignalSemaphores;
+        VkSwapchainKHR swapchains[1] = {internal_render.swapchain.swapchain};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapchains;
+        uint32_t imageIndices[1] = {imageIndex};
+        presentInfo.pImageIndices = imageIndices;
+        presentInfo.pResults = ZZ_NULL;
+
+        vkQueuePresentKHR(internal_render.device.presentQueue, &presentInfo);
+
+        internal_render.current_frame = (internal_render.current_frame + 1) % internal_render.sync.max_frames_in_flight;
+
+        zz_memory_array_clear(&internal_render.vertices);
+        zz_memory_array_clear(&internal_render.indices);
     }
-    else if (acquireNextImageResult != VK_SUCCESS && acquireNextImageResult != VK_SUBOPTIMAL_KHR)
-    {
-        return ZZ_FALSE;
-    }
-    
-    vkResetFences(internal_render.device.device, 1, &internal_render.sync.inFlightFences.data[internal_render.current_frame]);
-
-    zz_internal_vulkan_buffer_load(&internal_render.vertex_staging_buffer, internal_render.vertices.data, 0, sizeof(internal_render.vertices.data[0]) * internal_render.vertices.length, 0);
-    zz_internal_vulkan_command_pool_copy_buffer(&internal_render.command_pool, &internal_render.vertex_buffer, &internal_render.vertex_staging_buffer, sizeof(internal_render.vertices.data[0]) * internal_render.vertices.length);
-
-    zz_internal_vulkan_buffer_load(&internal_render.index_staging_buffer, internal_render.indices.data, 0, sizeof(internal_render.indices.data[0]) * internal_render.indices.length, 0);
-    zz_internal_vulkan_command_pool_copy_buffer(&internal_render.command_pool, &internal_render.index_buffer, &internal_render.index_staging_buffer, sizeof(internal_render.indices.data[0]) * internal_render.indices.length);
-
-    zz_internal_vulkan_buffer_load(&internal_render.uniform_buffers.data[internal_render.current_frame], &internal_render.uniform_buffer_object, 0, sizeof(internal_render.uniform_buffer_object), 0);
-
-    vkResetCommandBuffer(internal_render.command_pool.commandBuffers.data[internal_render.current_frame], 0);
-    zz_internal_vulkan_record_command_buffer(&internal_render.vertex_buffer, &internal_render.index_buffer, internal_render.indices.length, &internal_render.pipeline, internal_render.current_frame, internal_render.command_pool.commandBuffers.data[internal_render.current_frame], internal_render.render_pass.renderPass, internal_render.pipeline.pipeline, &internal_render.swapchain.framebuffers, &internal_render.swapchain.extent, imageIndex);
-
-    VkSubmitInfo submitInfo;
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.pNext = ZZ_NULL;
-    VkSemaphore submitWaitSemaphores[1] = {internal_render.sync.imageAvailableSemaphores.data[internal_render.current_frame]};
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = submitWaitSemaphores;
-    VkPipelineStageFlags submitWaitDstStageMask[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submitInfo.pWaitDstStageMask = submitWaitDstStageMask;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &internal_render.command_pool.commandBuffers.data[internal_render.current_frame];
-    VkSemaphore submitSignalSemaphores[1] = {internal_render.sync.renderFinishedSemaphores.data[internal_render.current_frame]};
-    submitInfo.signalSemaphoreCount = 1; 
-    submitInfo.pSignalSemaphores = submitSignalSemaphores;
-
-    if (vkQueueSubmit(internal_render.device.graphicsQueue, 1, &submitInfo, internal_render.sync.inFlightFences.data[internal_render.current_frame]) != VK_SUCCESS)
-    {
-        return ZZ_FALSE;
-    }
-
-    VkPresentInfoKHR presentInfo;
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.pNext = ZZ_NULL;
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = submitSignalSemaphores;
-    VkSwapchainKHR swapchains[1] = {internal_render.swapchain.swapchain};
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapchains;
-    uint32_t imageIndices[1] = {imageIndex};
-    presentInfo.pImageIndices = imageIndices;
-    presentInfo.pResults = ZZ_NULL;
-
-    vkQueuePresentKHR(internal_render.device.presentQueue, &presentInfo);
-
-    internal_render.current_frame = (internal_render.current_frame + 1) % internal_render.sync.max_frames_in_flight;
-
-    zz_memory_array_clear(&internal_render.vertices);
-    zz_memory_array_clear(&internal_render.indices);
 
     return ZZ_TRUE;
 }

@@ -9,6 +9,7 @@ int main()
     server_config.on_initialize = server_on_initialize;
     server_config.on_deinitialize = server_on_deinitialize;
     server_config.on_tick = server_on_tick;
+    server_config.on_packet = server_on_packet;
     
     if (!zz_server_initialize(&server_config))
     {

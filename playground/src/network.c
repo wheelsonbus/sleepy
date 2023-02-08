@@ -104,7 +104,7 @@ static void read_vec3(u8** buffer_iterator, vec3* v)
 u32 network_client_message_connection_write(u8* buffer, const struct network_client_message_connection* connection)
 {
     u8* buffer_iterator = buffer;
-    write_u8(&buffer_iterator, (u8)ZZ_NETWORK_CLIENT_MESSAGE_TYPE_CONNECTION);
+    write_u8(&buffer_iterator, (u8)PLAYGROUND_NETWORK_CLIENT_MESSAGE_TYPE_CONNECTION);
 
     return (u32)(buffer_iterator - buffer);
 }
@@ -115,13 +115,13 @@ void network_client_message_connection_read(u8* buffer, struct network_client_me
 
     u8 message_type;
     read_u8(&buffer_iterator, &message_type);
-    ZZ_ASSERT(message_type == (u8)ZZ_NETWORK_CLIENT_MESSAGE_TYPE_CONNECTION);
+    ZZ_ASSERT(message_type == (u8)PLAYGROUND_NETWORK_CLIENT_MESSAGE_TYPE_CONNECTION);
 }
 
 u32 network_client_message_disconnection_write(u8* buffer, const struct network_client_message_disconnection* disconnection)
 {
     u8* buffer_iterator = buffer;
-    write_u8(&buffer_iterator, (u8)ZZ_NETWORK_CLIENT_MESSAGE_TYPE_DISCONNECTION);
+    write_u8(&buffer_iterator, (u8)PLAYGROUND_NETWORK_CLIENT_MESSAGE_TYPE_DISCONNECTION);
 
     return (u32)(buffer_iterator - buffer);
 }
@@ -132,15 +132,15 @@ void network_client_message_disconnection_read(u8* buffer, struct network_client
 
     u8 message_type;
     read_u8(&buffer_iterator, &message_type);
-    ZZ_ASSERT(message_type == (u8)ZZ_NETWORK_CLIENT_MESSAGE_TYPE_DISCONNECTION);
+    ZZ_ASSERT(message_type == (u8)PLAYGROUND_NETWORK_CLIENT_MESSAGE_TYPE_DISCONNECTION);
 }
 
 u32 network_client_message_input_write(u8* buffer, const struct network_client_message_input* input)
 {
     u8* buffer_iterator = buffer;
-    write_u8(&buffer_iterator, (u8)ZZ_NETWORK_CLIENT_MESSAGE_TYPE_INPUT);
+    write_u8(&buffer_iterator, (u8)PLAYGROUND_NETWORK_CLIENT_MESSAGE_TYPE_INPUT);
 
-    u8 packed_buttons = (u8)(input->left ? ZZ_NETWORK_CLIENT_INPUT_BUTTON_FLAG_LEFT : 0) | (u8)(input->right ? ZZ_NETWORK_CLIENT_INPUT_BUTTON_FLAG_RIGHT : 0) | (u8)(input->up ? ZZ_NETWORK_CLIENT_INPUT_BUTTON_FLAG_UP : 0) | (u8)(input->down ? ZZ_NETWORK_CLIENT_INPUT_BUTTON_FLAG_DOWN : 0);
+    u8 packed_buttons = (u8)(input->left ? PLAYGROUND_NETWORK_CLIENT_INPUT_BUTTON_FLAG_LEFT : 0) | (u8)(input->right ? PLAYGROUND_NETWORK_CLIENT_INPUT_BUTTON_FLAG_RIGHT : 0) | (u8)(input->up ? PLAYGROUND_NETWORK_CLIENT_INPUT_BUTTON_FLAG_UP : 0) | (u8)(input->down ? PLAYGROUND_NETWORK_CLIENT_INPUT_BUTTON_FLAG_DOWN : 0);
     write_u8(&buffer_iterator, packed_buttons);
 
     return (u32)(buffer_iterator - buffer);
@@ -152,20 +152,20 @@ void network_client_message_input_read(u8* buffer, struct network_client_message
 
     u8 message_type;
     read_u8(&buffer_iterator, &message_type);
-    ZZ_ASSERT(message_type == (u8)ZZ_NETWORK_CLIENT_MESSAGE_TYPE_INPUT);
+    ZZ_ASSERT(message_type == (u8)PLAYGROUND_NETWORK_CLIENT_MESSAGE_TYPE_INPUT);
 
     u8 packed_buttons;
     read_u8(&buffer_iterator, &packed_buttons);
-    input->left = packed_buttons & ZZ_NETWORK_CLIENT_INPUT_BUTTON_FLAG_LEFT ? ZZ_TRUE : ZZ_FALSE;
-    input->right = packed_buttons & ZZ_NETWORK_CLIENT_INPUT_BUTTON_FLAG_RIGHT ? ZZ_TRUE : ZZ_FALSE;
-    input->up = packed_buttons & ZZ_NETWORK_CLIENT_INPUT_BUTTON_FLAG_UP ? ZZ_TRUE : ZZ_FALSE;
-    input->down = packed_buttons & ZZ_NETWORK_CLIENT_INPUT_BUTTON_FLAG_DOWN ? ZZ_TRUE : ZZ_FALSE;
+    input->left = packed_buttons & PLAYGROUND_NETWORK_CLIENT_INPUT_BUTTON_FLAG_LEFT ? ZZ_TRUE : ZZ_FALSE;
+    input->right = packed_buttons & PLAYGROUND_NETWORK_CLIENT_INPUT_BUTTON_FLAG_RIGHT ? ZZ_TRUE : ZZ_FALSE;
+    input->up = packed_buttons & PLAYGROUND_NETWORK_CLIENT_INPUT_BUTTON_FLAG_UP ? ZZ_TRUE : ZZ_FALSE;
+    input->down = packed_buttons & PLAYGROUND_NETWORK_CLIENT_INPUT_BUTTON_FLAG_DOWN ? ZZ_TRUE : ZZ_FALSE;
 }
 
 u32 network_server_message_admission_write(u8* buffer, const struct network_server_message_admission* admission)
 {
     u8* buffer_iterator = buffer;
-    write_u8(&buffer_iterator, (u8)ZZ_NETWORK_SERVER_MESSAGE_TYPE_ADMISSION);
+    write_u8(&buffer_iterator, (u8)PLAYGROUND_NETWORK_SERVER_MESSAGE_TYPE_ADMISSION);
     
     write_u8(&buffer_iterator, (u8)admission->success);
 
@@ -178,7 +178,7 @@ void network_server_message_admission_read(u8* buffer, struct network_server_mes
 
     u8 message_type;
     read_u8(&buffer_iterator, &message_type);
-    ZZ_ASSERT(message_type == (u8)ZZ_NETWORK_SERVER_MESSAGE_TYPE_ADMISSION);
+    ZZ_ASSERT(message_type == (u8)PLAYGROUND_NETWORK_SERVER_MESSAGE_TYPE_ADMISSION);
 
     u8 success_u8;
     read_u8(&buffer_iterator, &success_u8);
@@ -188,7 +188,7 @@ void network_server_message_admission_read(u8* buffer, struct network_server_mes
 u32 network_server_message_state_write(u8* buffer, const struct network_server_message_state* state)
 {
     u8* buffer_iterator = buffer;
-    write_u8(&buffer_iterator, (u8)ZZ_NETWORK_SERVER_MESSAGE_TYPE_STATE);
+    write_u8(&buffer_iterator, (u8)PLAYGROUND_NETWORK_SERVER_MESSAGE_TYPE_STATE);
     
     write_u8(&buffer_iterator, state->position_count);
     for (u8 i = 0; i < state->position_count; ++i)
@@ -205,7 +205,7 @@ void network_server_message_state_read(u8* buffer, struct network_server_message
 
     u8 message_type;
     read_u8(&buffer_iterator, &message_type);
-    ZZ_ASSERT(message_type == (u8)ZZ_NETWORK_SERVER_MESSAGE_TYPE_STATE);
+    ZZ_ASSERT(message_type == (u8)PLAYGROUND_NETWORK_SERVER_MESSAGE_TYPE_STATE);
 
     read_u8(&buffer_iterator, &state->position_count);
     for (u8 i = 0; i < state->position_count; ++i)

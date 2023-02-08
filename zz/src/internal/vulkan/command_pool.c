@@ -154,6 +154,7 @@ b8 zz_internal_vulkan_record_command_buffer(struct zz_internal_vulkan_buffer* ve
     uint32_t vertexBufferCount = 1;
     VkBuffer vertexBuffers[1] = {vertex_buffer->buffer};
     VkDeviceSize offsets[1] = {0};
+    
     vkCmdBindVertexBuffers(commandBuffer, 0, vertexBufferCount, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer, index_buffer->buffer, 0, VK_INDEX_TYPE_UINT32);
 

@@ -7,6 +7,7 @@
 #include "zz/input.h"
 #include "zz/application.h"
 #include "zz/render.h"
+#include "zz/network.h"
 
 #define ZZ_MILLISECONDS_PER_TICK 10
 #define ZZ_MILLISECONDS_PER_FRAME 0
@@ -63,12 +64,14 @@ static b8 on_key_press(void* sender, void* receiver, union zz_event_data data)
 
 b8 zz_client_initialize(struct zz_client_config* config)
 {
+    client.width = config->width;
+    client.height = config->height;
+    client.server_ip_endpoint = config->server_ip_endpoint;
     client.on_initialize = config->on_initialize;
     client.on_deinitialize = config->on_deinitialize;
     client.on_tick = config->on_tick;
     client.on_frame = config->on_frame;
-    client.width = config->width;
-    client.height = config->height;
+    client.on_packet = config->on_packet;
     
     client.running = ZZ_TRUE;
     client.suspended = ZZ_FALSE;
@@ -117,6 +120,14 @@ b8 zz_client_initialize(struct zz_client_config* config)
     if (!zz_render_initialize(&render_config))
     {
         ZZ_LOG_FATAL("Failed to initialize render module.");
+        return ZZ_FALSE;
+    }
+
+    struct zz_network_config network_config;
+    network_config.ip_endpoint = zz_network_ip_endpoint_fill(127, 0, 0, 1, 9091);
+    if (!zz_network_initialize(&network_config))
+    {
+        ZZ_LOG_FATAL("Failed to initialize network module.");
         return ZZ_FALSE;
     }
 
@@ -176,7 +187,12 @@ b8 zz_client_loop()
             client.accumulated_frame_time += delta_time;
 
             while (client.accumulated_tick_time >= ZZ_MILLISECONDS_PER_TICK)
-            {
+            {  
+                struct zz_network_packet packet;
+                while (zz_network_receive(&packet))
+                {
+                    client.on_packet(&packet);
+                }
                 zz_input_update();
                 client.on_tick(ZZ_MILLISECONDS_PER_TICK);
                 client.accumulated_tick_time -= ZZ_MILLISECONDS_PER_TICK;
@@ -193,4 +209,9 @@ b8 zz_client_loop()
     }
 
     return ZZ_TRUE;
+}
+
+ZZ_API struct zz_network_ip_endpoint zz_client_get_server_ip_endpoint()
+{
+    return client.server_ip_endpoint;
 }

@@ -3,6 +3,7 @@
 #include "zz/log.h"
 #include "zz/memory.h"
 #include "zz/event.h"
+#include "zz/network.h"
 
 #include "zz/application.h" // FIXME
 #include "zz/internal/application.h" // FIXME
@@ -23,6 +24,7 @@ b8 zz_server_initialize(struct zz_server_config* config)
     server.on_initialize = config->on_initialize;
     server.on_deinitialize = config->on_deinitialize;
     server.on_tick = config->on_tick;
+    server.on_packet = config->on_packet;
     
     server.running = ZZ_TRUE;
 
@@ -44,6 +46,14 @@ b8 zz_server_initialize(struct zz_server_config* config)
     if (!zz_event_initialize(&event_config))
     {
         ZZ_LOG_FATAL("Failed to initialize event module.");
+        return ZZ_FALSE;
+    }
+    
+    struct zz_network_config network_config;
+    network_config.ip_endpoint = zz_network_ip_endpoint_fill(127, 0, 0, 1, 9090);
+    if (!zz_network_initialize(&network_config))
+    {
+        ZZ_LOG_FATAL("Failed to initialize network module.");
         return ZZ_FALSE;
     }
 
@@ -68,6 +78,7 @@ void zz_server_deinitialize()
 
     zz_event_unregister_receiver(ZZ_EVENT_CODE_QUIT, ZZ_NULL, on_quit);
 
+    zz_network_deinitialize();
     zz_event_deinitialize();
     zz_memory_deinitialize();
 }
@@ -85,7 +96,11 @@ b8 zz_server_loop()
 
         while (server.accumulated_tick_time >= ZZ_MILLISECONDS_PER_TICK)
         {
-            zz_input_update();
+            struct zz_network_packet packet;
+            while (zz_network_receive(&packet))
+            {
+                server.on_packet(&packet);
+            }
             server.on_tick(ZZ_MILLISECONDS_PER_TICK);
             server.accumulated_tick_time -= ZZ_MILLISECONDS_PER_TICK;
         }
