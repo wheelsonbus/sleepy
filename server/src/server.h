@@ -13,6 +13,7 @@ struct client_input_state
 struct client
 {
     struct zz_network_ip_endpoint ip_endpoint;
+    u64 timeout;
     struct client_input_state input_state;
     struct client_input_state previous_input_state;
     struct box box;

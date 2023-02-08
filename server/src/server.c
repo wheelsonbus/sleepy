@@ -5,6 +5,8 @@
 #include <zz/render.h>
 #include <playground/network.h>
 
+#define TIMEOUT_MILLISECONDS 5000
+
 static zz_memory_array_client_t clients;
 
 b8 server_on_initialize()
@@ -47,6 +49,11 @@ b8 server_on_tick(u64 delta_time)
         zz_network_send(&packet);
 
         zz_memory_copy(&clients.data[i].previous_input_state, &clients.data[i].input_state, sizeof(clients.data[i].input_state));
+        clients.data[i].timeout += delta_time;
+        if (clients.data[i].timeout >= TIMEOUT_MILLISECONDS)
+        {
+            zz_memory_array_pop_at(&clients, i);
+        }
     }
 
     return ZZ_TRUE;
@@ -68,6 +75,7 @@ b8 server_on_packet(struct zz_network_packet* packet)
 
             struct client client;
             client.ip_endpoint = packet->ip_endpoint;
+            client.timeout = 0;
             zz_memory_zero(&client.input_state, sizeof(client.input_state));
             zz_memory_zero(&client.previous_input_state, sizeof(client.previous_input_state));
             client.box.position = (vec3){0.0f, 0.0f, 0.0f};
@@ -112,6 +120,8 @@ b8 server_on_packet(struct zz_network_packet* packet)
                     clients.data[i].input_state.right = input.right;
                     clients.data[i].input_state.up = input.up;
                     clients.data[i].input_state.down = input.down;
+
+                    clients.data[i].timeout = 0;
 
                     break;
                 }
