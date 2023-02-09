@@ -81,6 +81,8 @@ int main(int argc, char* argv[])
     client_config.width = 640;
     client_config.height = 640;
     client_config.server_ip_endpoint = zz_network_ip_endpoint_fill(a, b, c, d, port);
+    client_config.milliseconds_per_tick = client_milliseconds_per_tick;
+    client_config.milliseconds_per_frame = client_milliseconds_per_frame;
     client_config.on_initialize = client_on_initialize;
     client_config.on_deinitialize = client_on_deinitialize;
     client_config.on_tick = client_on_tick;

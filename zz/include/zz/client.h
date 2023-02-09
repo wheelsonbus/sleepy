@@ -18,7 +18,10 @@ struct zz_client
     b8 (*on_initialize)();
     b8 (*on_deinitialize)();
 
-    b8 (*on_tick)(u64 delta_time);
+    u64 milliseconds_per_tick;
+    u64 milliseconds_per_frame;
+
+    b8 (*on_tick)();
     b8 (*on_frame)(u64 delta_time);
 
     b8 (*on_packet)(struct zz_network_packet* packet);
@@ -32,10 +35,13 @@ struct zz_client_config
     
     struct zz_network_ip_endpoint server_ip_endpoint;
 
+    u64 milliseconds_per_tick;
+    u64 milliseconds_per_frame;
+
     b8 (*on_initialize)();
     b8 (*on_deinitialize)();
     
-    b8 (*on_tick)(u64 delta_time);
+    b8 (*on_tick)();
     b8 (*on_frame)(u64 delta_time);
 
     b8 (*on_packet)(struct zz_network_packet* packet);

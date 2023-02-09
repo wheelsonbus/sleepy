@@ -6,6 +6,7 @@
 int main()
 {
     struct zz_server_config server_config;
+    server_config.milliseconds_per_tick = server_milliseconds_per_tick;
     server_config.on_initialize = server_on_initialize;
     server_config.on_deinitialize = server_on_deinitialize;
     server_config.on_tick = server_on_tick;

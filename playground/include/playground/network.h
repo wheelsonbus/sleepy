@@ -6,6 +6,10 @@
 #include <zz/zz.h>
 #include <zz/math.h>
 
+#define NETWORK_MILLISECONDS_PER_TICK 20
+
+#define NETWORK_MAX_TICKS_AHEAD 1024
+
 enum network_client_message_type
 {
     PLAYGROUND_NETWORK_CLIENT_MESSAGE_TYPE_CONNECTION,
@@ -13,12 +17,12 @@ enum network_client_message_type
     PLAYGROUND_NETWORK_CLIENT_MESSAGE_TYPE_INPUT
 };
 
-struct network_client_message_connection
+struct network_client_connection
 {
 
 };
 
-struct network_client_message_disconnection
+struct network_client_disconnection
 {
 
 };
@@ -31,17 +35,28 @@ enum network_client_input_button_flag
     PLAYGROUND_NETWORK_CLIENT_INPUT_BUTTON_FLAG_DOWN = 1 << 3,
 };
 
-struct network_client_message_input
+struct network_client_input
 {
+    u32 server_tick;
+    u32 client_tick;
     b8 left, right, up, down;
 };
 
-PLAYGROUND_API u32 network_client_message_connection_write(u8* buffer, const struct network_client_message_connection* connection);
-PLAYGROUND_API void network_client_message_connection_read(u8* buffer, struct network_client_message_connection* connection);
-PLAYGROUND_API u32 network_client_message_disconnection_write(u8* buffer, const struct network_client_message_disconnection* disconnection);
-PLAYGROUND_API void network_client_message_disconnection_read(u8* buffer, struct network_client_message_disconnection* disconnection);
-PLAYGROUND_API u32 network_client_message_input_write(u8* buffer, const struct network_client_message_input* input);
-PLAYGROUND_API void network_client_message_input_read(u8* buffer, struct network_client_message_input* input);
+struct network_client_state
+{
+    vec3 position;
+};
+
+typedef struct {struct network_client_input* data; u16 length, capacity;} zz_memory_array_network_client_input_t;
+
+PLAYGROUND_API b8 network_client_state_equals(const struct network_client_state* a, const struct network_client_state* b);
+
+PLAYGROUND_API u32 network_client_message_write_connection(u8* buffer, const struct network_client_connection* connection);
+PLAYGROUND_API void network_client_message_read_connection(u8* buffer, struct network_client_connection* connection);
+PLAYGROUND_API u32 network_client_message_write_disconnection(u8* buffer, const struct network_client_disconnection* disconnection);
+PLAYGROUND_API void network_client_message_read_disconnection(u8* buffer, struct network_client_disconnection* disconnection);
+PLAYGROUND_API u32 network_client_message_write_input(u8* buffer, const struct network_client_input* input);
+PLAYGROUND_API void network_client_message_read_input(u8* buffer, struct network_client_input* input);
 
 enum network_server_message_type
 {
@@ -49,20 +64,30 @@ enum network_server_message_type
     PLAYGROUND_NETWORK_SERVER_MESSAGE_TYPE_STATE
 };
 
-struct network_server_message_admission
+struct network_server_admission
 {
     b8 success;
 };
 
-struct network_server_message_state
+struct network_server_state
 {
+    u32 tick;
     u8 position_count;
     vec3 positions[255];
+    struct network_client_state client_state;
 };
+typedef struct {struct network_server_state* data; u16 length, capacity;} zz_memory_array_network_server_state_t;
 
-PLAYGROUND_API u32 network_server_message_admission_write(u8* buffer, const struct network_server_message_admission* admission);
-PLAYGROUND_API void network_server_message_admission_read(u8* buffer, struct network_server_message_admission* admission);
-PLAYGROUND_API u32 network_server_message_state_write(u8* buffer, const struct network_server_message_state* state);
-PLAYGROUND_API void network_server_message_state_read(u8* buffer, struct network_server_message_state* state);
+PLAYGROUND_API u32 network_server_message_write_admission(u8* buffer, const struct network_server_admission* admission);
+PLAYGROUND_API void network_server_message_read_admission(u8* buffer, struct network_server_admission* admission);
+PLAYGROUND_API u32 network_server_message_write_state(u8* buffer, const struct network_server_state* state);
+PLAYGROUND_API void network_server_message_read_state(u8* buffer, struct network_server_state* state);
+
+struct network_state
+{
+    struct network_server_state server_state;
+    struct network_client_input client_input;
+};
+typedef struct {struct network_state* data; u16 length, capacity;} zz_memory_array_network_state_t;
 
 #endif

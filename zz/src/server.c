@@ -8,8 +8,6 @@
 #include "zz/application.h" // FIXME
 #include "zz/internal/application.h" // FIXME
 
-#define ZZ_MILLISECONDS_PER_TICK 10
-
 static struct zz_server server;
 
 static b8 on_quit(void* sender, void* receiver, union zz_event_data data)
@@ -21,6 +19,7 @@ static b8 on_quit(void* sender, void* receiver, union zz_event_data data)
 
 b8 zz_server_initialize(struct zz_server_config* config)
 {
+    server.milliseconds_per_tick = config->milliseconds_per_tick;
     server.on_initialize = config->on_initialize;
     server.on_deinitialize = config->on_deinitialize;
     server.on_tick = config->on_tick;
@@ -94,15 +93,15 @@ b8 zz_server_loop()
         server.last_frame_time += delta_time;
         server.accumulated_tick_time += delta_time;
 
-        while (server.accumulated_tick_time >= ZZ_MILLISECONDS_PER_TICK)
+        while (server.accumulated_tick_time >= server.milliseconds_per_tick)
         {
             struct zz_network_packet packet;
             while (zz_network_receive(&packet))
             {
                 server.on_packet(&packet);
             }
-            server.on_tick(ZZ_MILLISECONDS_PER_TICK);
-            server.accumulated_tick_time -= ZZ_MILLISECONDS_PER_TICK;
+            server.on_tick();
+            server.accumulated_tick_time -= server.milliseconds_per_tick;
         }
     }
 

@@ -100,6 +100,8 @@ ZZ_INLINE vec2 vec2_right() {return (vec2){1.0f, 0.0f};}
 ZZ_INLINE vec2 vec2_down() {return (vec2){0.0f, -1.0f};}
 ZZ_INLINE vec2 vec2_up() {return (vec2){0.0f, 1.0f};}
 
+ZZ_INLINE b8 vec2_equals(vec2 v0, vec2 v1) {return v0.x == v1.x && v0.y == v1.y;}
+
 ZZ_INLINE vec2 vec2_sum(vec2 v0, vec2 v1) {return (vec2){v0.x + v1.x, v0.y + v1.y};}
 ZZ_INLINE vec2 vec2_difference(vec2 v0, vec2 v1) {return (vec2){v0.x - v1.x, v0.y - v1.y};}
 ZZ_INLINE vec2 vec2_product(vec2 v0, vec2 v1) {return (vec2){v0.x * v1.x, v0.y * v1.y};}
@@ -131,6 +133,8 @@ ZZ_INLINE vec3 vec3_up() {return (vec3){0.0f, 1.0f, 0.0f};}
 ZZ_INLINE vec3 vec3_backward() {return (vec3){0.0f, 0.0f, -1.0f};}
 ZZ_INLINE vec3 vec3_forward() {return (vec3){0.0f, 0.0f, 1.0f};}
 
+ZZ_INLINE b8 vec3_equals(vec3 v0, vec3 v1) {return v0.x == v1.x && v0.y == v1.y && v0.z == v1.z;}
+
 ZZ_INLINE vec3 vec3_sum(vec3 v0, vec3 v1) {return (vec3){v0.x + v1.x, v0.y + v1.y, v0.z + v1.z};}
 ZZ_INLINE vec3 vec3_difference(vec3 v0, vec3 v1) {return (vec3){v0.x - v1.x, v0.y - v1.y, v0.z - v1.z};}
 ZZ_INLINE vec3 vec3_product(vec3 v0, vec3 v1) {return (vec3){v0.x * v1.x, v0.y * v1.y, v0.z * v1.z};}
@@ -156,6 +160,8 @@ ZZ_INLINE vec4 vec4_from_vec2(vec2 v, f32 z, f32 w) {return (vec4){v.x, v.y, z, 
 ZZ_INLINE vec4 vec4_from_vec3(vec3 v, f32 w) {return (vec4){v.x, v.y, v.z, w};}
 ZZ_INLINE vec4 vec4_zero() {return (vec4){0.0f, 0.0f, 0.0f, 0.0f};}
 ZZ_INLINE vec4 vec4_one() {return (vec4){1.0f, 1.0f, 1.0f, 1.0f};}
+
+ZZ_INLINE b8 vec4_equals(vec4 v0, vec4 v1) {return v0.x == v1.x && v0.y == v1.y && v0.z == v1.z && v0.w == v1.w;}
 
 ZZ_INLINE vec4 vec4_sum(vec4 v0, vec4 v1) {return (vec4){v0.x + v1.x, v0.y + v1.y, v0.z + v1.z, v0.w + v1.w};}
 ZZ_INLINE vec4 vec4_difference(vec4 v0, vec4 v1) {return (vec4){v0.x - v1.x, v0.y - v1.y, v0.z - v1.z, v0.w - v1.w};}

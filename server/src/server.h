@@ -3,26 +3,31 @@
 
 #include <zz/zz.h>
 #include <zz/network.h>
-#include <playground/box.h>
 
-struct client_input_state
-{
-    b8 left, right, up, down;
-};
+#include <playground/network.h>
+#include <playground/box.h>
 
 struct client
 {
     struct zz_network_ip_endpoint ip_endpoint;
     u64 timeout;
-    struct client_input_state input_state;
-    struct client_input_state previous_input_state;
+    zz_memory_array_network_client_input_t inputs;
+    struct network_client_input previous_input;
     struct box box;
 };
 typedef struct {struct client* data; u16 length, capacity;} zz_memory_array_client_t;
 
+struct server
+{
+    u32 tick;
+    zz_memory_array_client_t clients;
+};
+
+static const u64 server_milliseconds_per_tick = NETWORK_MILLISECONDS_PER_TICK;
+
 b8 server_on_initialize();
 b8 server_on_deinitialize();
-b8 server_on_tick(u64 delta_time);
+b8 server_on_tick();
 b8 server_on_packet(struct zz_network_packet* packet);
 
 #endif

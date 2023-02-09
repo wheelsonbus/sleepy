@@ -11,21 +11,25 @@ struct zz_server
     u64 accumulated_tick_time;
     u64 accumulated_frame_time;
     u64 last_frame_time;
+    
+    u64 milliseconds_per_tick;
 
     b8 (*on_initialize)();
     b8 (*on_deinitialize)();
 
-    b8 (*on_tick)(u64 delta_time);
+    b8 (*on_tick)();
 
     b8 (*on_packet)(struct zz_network_packet* packet);
 };
 
 struct zz_server_config
 {
+    u64 milliseconds_per_tick;
+
     b8 (*on_initialize)();
     b8 (*on_deinitialize)();
     
-    b8 (*on_tick)(u64 delta_time);
+    b8 (*on_tick)();
     
     b8 (*on_packet)(struct zz_network_packet* packet);
 };

@@ -9,9 +9,6 @@
 #include "zz/render.h"
 #include "zz/network.h"
 
-#define ZZ_MILLISECONDS_PER_TICK 10
-#define ZZ_MILLISECONDS_PER_FRAME 0
-
 static struct zz_client client;
 
 static b8 on_quit(void* sender, void* receiver, union zz_event_data data)
@@ -67,6 +64,8 @@ b8 zz_client_initialize(struct zz_client_config* config)
     client.width = config->width;
     client.height = config->height;
     client.server_ip_endpoint = config->server_ip_endpoint;
+    client.milliseconds_per_tick = config->milliseconds_per_tick;
+    client.milliseconds_per_frame = config->milliseconds_per_frame;
     client.on_initialize = config->on_initialize;
     client.on_deinitialize = config->on_deinitialize;
     client.on_tick = config->on_tick;
@@ -176,7 +175,7 @@ b8 zz_client_loop()
     {
         if (client.suspended)
         {
-            zz_application_sleep(ZZ_MILLISECONDS_PER_TICK);
+            zz_application_sleep(client.milliseconds_per_tick);
             client.last_frame_time = zz_application_get_time();
         }
         else
@@ -186,7 +185,7 @@ b8 zz_client_loop()
             client.accumulated_tick_time += delta_time;
             client.accumulated_frame_time += delta_time;
 
-            while (client.accumulated_tick_time >= ZZ_MILLISECONDS_PER_TICK)
+            while (client.accumulated_tick_time >= client.milliseconds_per_tick)
             {  
                 struct zz_network_packet packet;
                 while (zz_network_receive(&packet))
@@ -194,11 +193,11 @@ b8 zz_client_loop()
                     client.on_packet(&packet);
                 }
                 zz_input_update();
-                client.on_tick(ZZ_MILLISECONDS_PER_TICK);
-                client.accumulated_tick_time -= ZZ_MILLISECONDS_PER_TICK;
+                client.on_tick();
+                client.accumulated_tick_time -= client.milliseconds_per_tick;
             }
 
-            if (client.accumulated_frame_time >= ZZ_MILLISECONDS_PER_FRAME)
+            if (client.accumulated_frame_time >= client.milliseconds_per_frame)
             {
                 client.on_frame(client.accumulated_frame_time);
                 client.accumulated_frame_time = 0;
