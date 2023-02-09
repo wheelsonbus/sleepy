@@ -14,8 +14,8 @@ static struct client client;
 
 b8 client_on_initialize()
 {
-    client.server_tick = NETWORK_MAX_TICKS_AHEAD;
-    client.client_tick = NETWORK_MAX_TICKS_AHEAD;
+    client.tick = NETWORK_MAX_TICKS_AHEAD;
+    client.server_state.tick = NETWORK_MAX_TICKS_AHEAD;
 
     struct network_client_connection connection;
     struct zz_network_packet packet;
@@ -49,36 +49,61 @@ b8 client_on_deinitialize()
 
 b8 client_on_tick()
 {
-    if (client.client_tick != NETWORK_MAX_TICKS_AHEAD)
+    if (client.server_state.tick != NETWORK_MAX_TICKS_AHEAD)
     {
-        client.client_tick = (client.client_tick + 1) % NETWORK_MAX_TICKS_AHEAD;
+        if (client.tick == NETWORK_MAX_TICKS_AHEAD)
+        {
+            client.network_states[client.server_state.tick].server_state = client.server_state;
+            client.tick = (client.server_state.tick + 20) % NETWORK_MAX_TICKS_AHEAD;
+        }
+        else
+        {
+            if (!network_client_state_equals(&client.network_states[client.server_state.tick].server_state.client_state, &client.server_state.client_state))
+            {
+                ZZ_LOG_DEBUG("DESYNCED x%u", client.tick - client.server_state.tick);
+                client.network_states[client.server_state.tick].server_state = client.server_state;
+                for (u32 i = client.server_state.tick; i != client.tick; i = (i + 1) % NETWORK_MAX_TICKS_AHEAD)
+                {
+                    client_predict_tick(&client.network_states[i].server_state, &client.network_states[(i + 1) % NETWORK_MAX_TICKS_AHEAD].client_input, &client.network_states[(i + 1) % NETWORK_MAX_TICKS_AHEAD].server_state);
+                }
+            }
+            else
+            {
+                client.network_states[client.server_state.tick].server_state = client.server_state;
+            }
+        }
 
-        struct network_client_input input;
-        input.server_tick = client.server_tick;
-        input.client_tick = client.client_tick;
-        input.left = zz_input_get_key_state(ZZ_INPUT_KEY_CODE_LEFT);
-        input.right = zz_input_get_key_state(ZZ_INPUT_KEY_CODE_RIGHT);
-        input.up = zz_input_get_key_state(ZZ_INPUT_KEY_CODE_UP);
-        input.down = zz_input_get_key_state(ZZ_INPUT_KEY_CODE_DOWN);
+        if (client.tick != NETWORK_MAX_TICKS_AHEAD)
+        {
+            client.tick = (client.tick + 1) % NETWORK_MAX_TICKS_AHEAD;
 
-        struct zz_network_packet packet;
-        packet.size = network_client_message_write_input(packet.buffer, &input);
-        packet.ip_endpoint = zz_client_get_server_ip_endpoint();
-        zz_network_send(&packet);
+            struct network_client_input input;
+            input.server_tick = client.server_state.tick;
+            input.client_tick = client.tick;
+            input.left = zz_input_get_key_state(ZZ_INPUT_KEY_CODE_LEFT);
+            input.right = zz_input_get_key_state(ZZ_INPUT_KEY_CODE_RIGHT);
+            input.up = zz_input_get_key_state(ZZ_INPUT_KEY_CODE_UP);
+            input.down = zz_input_get_key_state(ZZ_INPUT_KEY_CODE_DOWN);
 
-        client.network_states[client.client_tick].client_input = input;
-        client_predict_tick(&client.network_states[(client.client_tick - 1) % NETWORK_MAX_TICKS_AHEAD].server_state, &client.network_states[client.client_tick].client_input, &client.network_states[client.client_tick].server_state);
+            struct zz_network_packet packet;
+            packet.size = network_client_message_write_input(packet.buffer, &input);
+            packet.ip_endpoint = zz_client_get_server_ip_endpoint();
+            zz_network_send(&packet);
 
-        f64 m = (float)client_milliseconds_per_tick * 0.001f * 2.0f;
-        camera.position.x -= m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_A);
-        camera.position.x += m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_D);
-        camera.position.y -= m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_W);
-        camera.position.y += m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_S);
-        camera.position.z -= m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_Z);
-        camera.position.z += m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_X);
+            client.network_states[client.tick].client_input = input;
+            client_predict_tick(&client.network_states[(client.tick - 1) % NETWORK_MAX_TICKS_AHEAD].server_state, &client.network_states[client.tick].client_input, &client.network_states[client.tick].server_state);
 
-        zz_render_set_view_matrix(camera_get_view_matrix(&camera));
-        zz_render_set_projection_matrix(camera_get_projection_matrix(&camera));
+            f64 m = (float)client_milliseconds_per_tick * 0.001f * 2.0f;
+            camera.position.x -= m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_A);
+            camera.position.x += m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_D);
+            camera.position.y -= m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_W);
+            camera.position.y += m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_S);
+            camera.position.z -= m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_Z);
+            camera.position.z += m * zz_input_get_key_state(ZZ_INPUT_KEY_CODE_X);
+
+            zz_render_set_view_matrix(camera_get_view_matrix(&camera));
+            zz_render_set_projection_matrix(camera_get_projection_matrix(&camera));
+        }
     }
 
     return ZZ_TRUE;
@@ -86,10 +111,13 @@ b8 client_on_tick()
 
 b8 client_on_frame(u64 delta_time)
 {
-    struct box box;
-    box.position = client.network_states[client.client_tick].server_state.client_state.position;
-    box.sprite.size = vec2_fill(1.0f, 1.0f);
-    box_draw(&box);
+    if (client.tick != NETWORK_MAX_TICKS_AHEAD)
+    {
+        struct box box;
+        box.position = client.network_states[client.tick].server_state.client_state.position;
+        box.sprite.size = vec2_fill(1.0f, 1.0f);
+        box_draw(&box);
+    }
 
     return ZZ_TRUE;
 }
@@ -115,31 +143,7 @@ b8 client_on_packet(struct zz_network_packet* packet)
 
         case PLAYGROUND_NETWORK_SERVER_MESSAGE_TYPE_STATE:
         {
-            struct network_server_state server_state;
-            network_server_message_read_state(packet->buffer, &server_state);
-
-            client.server_tick = server_state.tick;
-            if (client.client_tick != NETWORK_MAX_TICKS_AHEAD)
-            {
-                if (!network_client_state_equals(&client.network_states[client.server_tick].server_state.client_state, &server_state.client_state))
-                {
-                    ZZ_LOG_DEBUG("DESYNCED x%u", client.client_tick - client.server_tick);
-                    client.network_states[client.server_tick].server_state = server_state;
-                    for (u32 i = client.server_tick; i != client.client_tick; i = (i + 1) % NETWORK_MAX_TICKS_AHEAD)
-                    {
-                        client_predict_tick(&client.network_states[i].server_state, &client.network_states[(i + 1) % NETWORK_MAX_TICKS_AHEAD].client_input, &client.network_states[(i + 1) % NETWORK_MAX_TICKS_AHEAD].server_state);
-                    }
-                }
-                else
-                {
-                    client.network_states[client.server_tick].server_state = server_state;
-                }
-            }
-            else
-            {
-                client.network_states[client.server_tick].server_state = server_state;
-                client.client_tick = client.server_tick;
-            }
+            network_server_message_read_state(packet->buffer, &client.server_state);
         }
         break;
     }

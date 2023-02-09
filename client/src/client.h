@@ -11,8 +11,8 @@ static const u64 client_milliseconds_per_frame = 0;
 
 struct client
 {
-    u32 server_tick;
-    u32 client_tick;
+    u32 tick;
+    struct network_server_state server_state;
     struct network_state network_states[NETWORK_MAX_TICKS_AHEAD];
 };
 
