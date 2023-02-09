@@ -11,8 +11,8 @@ struct client
 {
     struct zz_network_ip_endpoint ip_endpoint;
     u64 timeout;
-    zz_memory_array_network_client_input_t inputs;
-    struct network_client_input previous_input;
+    struct network_client_input inputs[NETWORK_MAX_TICKS_AHEAD];
+    b8 inputs_available[NETWORK_MAX_TICKS_AHEAD];
     struct box box;
 };
 typedef struct {struct client* data; u16 length, capacity;} zz_memory_array_client_t;

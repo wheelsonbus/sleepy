@@ -30,31 +30,19 @@ b8 server_on_tick()
     f64 m = (float)server_milliseconds_per_tick * 0.001f * 2.0f;
     for (u16 i = 0; i < server.clients.length; ++i)
     {
-        struct network_client_input input;
-        b8 input_available = ZZ_FALSE;
-        for (u16 j = 0; j < server.clients.data[i].inputs.length; ++j)
+        if (!server.clients.data[i].inputs_available[server.tick])
         {
-            if (server.clients.data[i].inputs.data[j].client_tick == server.tick)
-            {
-                input = server.clients.data[i].inputs.data[j];
-                input_available = ZZ_TRUE;
-            }
+            server.clients.data[i].inputs[server.tick] = server.clients.data[i].inputs[(server.tick - 1) % NETWORK_MAX_TICKS_AHEAD];
         }
-
-        if (!input_available)
+        else
         {
-            input = server.clients.data[i].previous_input;
+            server.clients.data[i].inputs_available[server.tick] = ZZ_FALSE;
         }
         
-        server.clients.data[i].box.position.x -= m * input.left;
-        server.clients.data[i].box.position.x += m * input.right;
-        server.clients.data[i].box.position.y -= m * input.up;
-        server.clients.data[i].box.position.y += m * input.down;
-
-        if (input_available)
-        {
-            server.clients.data[i].previous_input = input;
-        }
+        server.clients.data[i].box.position.x -= m * server.clients.data[i].inputs[server.tick].left;
+        server.clients.data[i].box.position.x += m * server.clients.data[i].inputs[server.tick].right;
+        server.clients.data[i].box.position.y -= m * server.clients.data[i].inputs[server.tick].up;
+        server.clients.data[i].box.position.y += m * server.clients.data[i].inputs[server.tick].down;
     }
 
     for (u16 i = 0; i < server.clients.length; ++i)
@@ -62,7 +50,6 @@ b8 server_on_tick()
         struct network_server_state state;
         state.tick = server.tick;
         state.client_state.position = server.clients.data[i].box.position;
-
         state.position_count = server.clients.length - 1;
         u16 k = 0;
         for (u16 j = 0; j < server.clients.length; ++j)
@@ -109,11 +96,7 @@ b8 server_on_packet(struct zz_network_packet* packet)
             struct client client;
             client.ip_endpoint = packet->ip_endpoint;
             client.timeout = 0;
-            zz_memory_array_create_and_reserve(&client.inputs, 1);
-            struct network_client_input input;
-            zz_memory_zero(&input, sizeof(input));
-            zz_memory_array_push(&client.inputs, input);
-            zz_memory_zero(&client.previous_input, sizeof(client.previous_input));
+            zz_memory_zero(&client.inputs, sizeof(client.inputs));
             client.box.position = (vec3){0.0f, 0.0f, 0.0f};
             client.box.sprite.size = (vec2){1.0f, 1.0f};
             zz_memory_array_push(&server.clients, client);
@@ -135,7 +118,6 @@ b8 server_on_packet(struct zz_network_packet* packet)
             {
                 if (zz_network_ip_endpoint_equals(&server.clients.data[i].ip_endpoint, &packet->ip_endpoint))
                 {
-                    zz_memory_array_destroy(&server.clients.data[i].inputs);
                     zz_memory_array_pop_at(&server.clients, i);
                     break;
                 }
@@ -153,7 +135,8 @@ b8 server_on_packet(struct zz_network_packet* packet)
                 {
                     struct network_client_input input;
                     network_client_message_read_input(packet->buffer, &input);
-                    zz_memory_array_push(&server.clients.data[i].inputs, input);
+                    server.clients.data[i].inputs[input.client_tick] = input;
+                    server.clients.data[i].inputs_available[input.client_tick] = ZZ_TRUE;
 
                     server.clients.data[i].timeout = 0;
 
