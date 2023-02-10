@@ -32,7 +32,7 @@ b8 server_on_tick()
     {
         if (!server.clients.data[i].inputs_available[server.tick])
         {
-            server.clients.data[i].inputs[server.tick] = server.clients.data[i].inputs[(server.tick - 1) % NETWORK_MAX_TICKS_AHEAD];
+            server.clients.data[i].inputs[server.tick] = server.clients.data[i].inputs[(server.tick - 1) % NETWORK_MAX_TICKS];
         }
         else
         {
@@ -49,6 +49,7 @@ b8 server_on_tick()
     {
         struct network_server_state state;
         state.tick = server.tick;
+        state.latency = server.clients.data[i].latency;
         state.client_state.position = server.clients.data[i].box.position;
         state.position_count = server.clients.length - 1;
         u16 k = 0;
@@ -56,7 +57,7 @@ b8 server_on_tick()
         {
             if (i != j)
             {
-                state.positions[k] = server.clients.data[k].box.position;
+                state.positions[k] = server.clients.data[j].box.position;
                 ++k;
             }
         }
@@ -69,12 +70,13 @@ b8 server_on_tick()
         server.clients.data[i].timeout += server_milliseconds_per_tick;
         if (server.clients.data[i].timeout >= TIMEOUT_MILLISECONDS)
         {
-            zz_memory_array_pop_at(&server.clients, i);
+            zz_memory_array_pop_at(&server.clients, i, ZZ_NULL);
+            zz_memory_array_contract(&server.clients);
             ZZ_LOG_INFO("Client timed out.");
         }
     }
 
-    server.tick = (server.tick + 1) % NETWORK_MAX_TICKS_AHEAD;
+    server.tick = (server.tick + 1) % NETWORK_MAX_TICKS;
 
     return ZZ_TRUE;
 }
@@ -95,11 +97,12 @@ b8 server_on_packet(struct zz_network_packet* packet)
 
             struct client client;
             client.ip_endpoint = packet->ip_endpoint;
+            client.latency = 0;
             client.timeout = 0;
             zz_memory_zero(&client.inputs, sizeof(client.inputs));
             client.box.position = (vec3){0.0f, 0.0f, 0.0f};
             client.box.sprite.size = (vec2){1.0f, 1.0f};
-            zz_memory_array_push(&server.clients, client);
+            zz_memory_array_push(&server.clients, &client);
 
             struct network_server_admission admission;
             admission.success = ZZ_TRUE;
@@ -118,7 +121,8 @@ b8 server_on_packet(struct zz_network_packet* packet)
             {
                 if (zz_network_ip_endpoint_equals(&server.clients.data[i].ip_endpoint, &packet->ip_endpoint))
                 {
-                    zz_memory_array_pop_at(&server.clients, i);
+                    zz_memory_array_pop_at(&server.clients, i, ZZ_NULL);
+                    zz_memory_array_contract(&server.clients);
                     break;
                 }
             }
@@ -135,6 +139,11 @@ b8 server_on_packet(struct zz_network_packet* packet)
                 {
                     struct network_client_input input;
                     network_client_message_read_input(packet->buffer, &input);
+                    server.clients.data[i].latency = server.tick - input.client_tick;
+                    if (server.clients.data[i].latency > NETWORK_MAX_TICKS_AHEAD)
+                    {
+                        server.clients.data[i].latency -= NETWORK_MAX_TICKS;
+                    }
                     server.clients.data[i].inputs[input.client_tick] = input;
                     server.clients.data[i].inputs_available[input.client_tick] = ZZ_TRUE;
 

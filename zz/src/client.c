@@ -50,7 +50,6 @@ static b8 on_resize(void* sender, void* receiver, union zz_event_data data)
 static b8 on_key_press(void* sender, void* receiver, union zz_event_data data)
 {
     u16 code = data.u16[0];
-    ZZ_LOG_DEBUG("%c", code);
     if (code == ZZ_INPUT_KEY_CODE_ESCAPE)
     {
         zz_event_send_null(ZZ_EVENT_CODE_QUIT, 0);
@@ -63,6 +62,7 @@ b8 zz_client_initialize(struct zz_client_config* config)
 {
     client.width = config->width;
     client.height = config->height;
+    client.client_ip_endpoint = config->client_ip_endpoint;
     client.server_ip_endpoint = config->server_ip_endpoint;
     client.milliseconds_per_tick = config->milliseconds_per_tick;
     client.milliseconds_per_frame = config->milliseconds_per_frame;
@@ -123,7 +123,7 @@ b8 zz_client_initialize(struct zz_client_config* config)
     }
 
     struct zz_network_config network_config;
-    network_config.ip_endpoint = zz_network_ip_endpoint_fill(127, 0, 0, 1, 9091);
+    network_config.ip_endpoint = client.client_ip_endpoint;
     if (!zz_network_initialize(&network_config))
     {
         ZZ_LOG_FATAL("Failed to initialize network module.");

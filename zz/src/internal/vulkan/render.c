@@ -291,17 +291,17 @@ void zz_internal_render_draw_sprite(struct zz_sprite* sprite, vec3 position)
 {
     u32 index = (u32)internal_render.vertices.length;
 
-    zz_memory_array_push(&internal_render.vertices, ((struct zz_internal_vulkan_vertex){(vec3){position.x, position.y, position.z}}));
-    zz_memory_array_push(&internal_render.vertices, ((struct zz_internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y, position.z}}));
-    zz_memory_array_push(&internal_render.vertices, ((struct zz_internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y + sprite->size.y, position.z}}));
-    zz_memory_array_push(&internal_render.vertices, ((struct zz_internal_vulkan_vertex){(vec3){position.x, position.y + sprite->size.y, position.z}}));
+    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x, position.y, position.z}}));
+    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y, position.z}}));
+    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y + sprite->size.y, position.z}}));
+    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x, position.y + sprite->size.y, position.z}}));
 
-    zz_memory_array_push(&internal_render.indices, index + 0);
-    zz_memory_array_push(&internal_render.indices, index + 1);
-    zz_memory_array_push(&internal_render.indices, index + 2);
-    zz_memory_array_push(&internal_render.indices, index + 2);
-    zz_memory_array_push(&internal_render.indices, index + 3);
-    zz_memory_array_push(&internal_render.indices, index + 0);
+    zz_memory_array_push(&internal_render.indices, &index); ++index;
+    zz_memory_array_push(&internal_render.indices, &index); ++index;
+    zz_memory_array_push(&internal_render.indices, &index);
+    zz_memory_array_push(&internal_render.indices, &index); ++index;
+    zz_memory_array_push(&internal_render.indices, &index); index -= 3;
+    zz_memory_array_push(&internal_render.indices, &index);
 }
 
 #endif

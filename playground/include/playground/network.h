@@ -6,9 +6,13 @@
 #include <zz/zz.h>
 #include <zz/math.h>
 
-#define NETWORK_MILLISECONDS_PER_TICK 20
+#define NETWORK_MILLISECONDS_PER_TICK 10
 
-#define NETWORK_MAX_TICKS_AHEAD 1024
+#define NETWORK_MAX_TICKS 256
+#define NETWORK_MAX_TICKS_AHEAD 32
+
+#define NETWORK_LATENCY_TARGET -2
+#define NETWORK_LATENCY_TOLERANCE 1
 
 enum network_client_message_type
 {
@@ -72,6 +76,7 @@ struct network_server_admission
 struct network_server_state
 {
     u32 tick;
+    i32 latency;
     u8 position_count;
     vec3 positions[255];
     struct network_client_state client_state;

@@ -13,6 +13,7 @@ struct zz_client
     u64 accumulated_frame_time;
     u64 last_frame_time;
 
+    struct zz_network_ip_endpoint client_ip_endpoint;
     struct zz_network_ip_endpoint server_ip_endpoint;
 
     b8 (*on_initialize)();
@@ -33,6 +34,7 @@ struct zz_client_config
     u16 x, y;
     u16 width, height;
     
+    struct zz_network_ip_endpoint client_ip_endpoint;
     struct zz_network_ip_endpoint server_ip_endpoint;
 
     u64 milliseconds_per_tick;

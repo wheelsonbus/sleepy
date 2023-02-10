@@ -120,12 +120,55 @@ void _zz_memory_array_create(void** data, u16* length, u16* capacity, u16 stride
     *capacity = 0;
 }
 
+void _zz_memory_array_create_and_reserve(void** data, u16* length, u16* capacity, u16 stride, u16 n)
+{
+    _zz_memory_array_create(data, length, capacity, stride);
+    _zz_memory_array_reserve(data, length, capacity, stride, n);
+}
+
 void _zz_memory_array_destroy(void** data, u16* length, u16* capacity, u16 stride)
 {
     zz_memory_deallocate(*data, *capacity * stride, ZZ_MEMORY_TAG_ARRAY);
     *data = 0;
     *length = 0;
     *capacity = 0;
+}
+
+void _zz_memory_array_push(void** data, u16* length, u16* capacity, u16 stride, void* input)
+{
+    _zz_memory_array_expand(data, length, capacity, stride);
+    zz_memory_copy((u8*)*data + (*length * stride), input, stride);
+    *length += 1;
+}
+
+void _zz_memory_array_pop(void** data, u16* length, u16* capacity, u16 stride, void* output)
+{
+    if (output != ZZ_NULL)
+    {
+        zz_memory_copy(output, (u8*)*data + ((*length - 1) * stride), stride);
+    }
+    *length -= 1;
+}
+
+void _zz_memory_array_push_at(void** data, u16* length, u16* capacity, u16 stride, u16 index, void* input)
+{
+    _zz_memory_array_expand_at(data, length, capacity, stride, index);
+    zz_memory_copy((u8*)*data + (index * stride), input, stride);
+    *length += 1;
+}
+
+void _zz_memory_array_pop_at(void** data, u16* length, u16* capacity, u16 stride, u16 index, void* output)
+{
+    if (output != ZZ_NULL)
+    {
+        zz_memory_copy(output, (u8*)*data + (index * stride), stride);
+    }
+    _zz_memory_array_remove_at(data, length, capacity, stride, index);
+}
+
+void _zz_memory_array_clear(void** data, u16* length, u16* capacity, u16 stride)
+{
+    *length = 0;
 }
 
 void _zz_memory_array_expand(void** data, u16* length, u16* capacity, u16 stride)
@@ -180,11 +223,9 @@ void _zz_memory_array_expand_at(void** data, u16* length, u16* capacity, u16 str
 
 void _zz_memory_array_remove_at(void** data, u16* length, u16* capacity, u16 stride, u16 index)
 {
-    zz_memory_copy((u8*)*data + (index * stride), (u8*)*data + ((index + 1) * stride), (*length - index) * stride);
+    if (index != *length - 1)
+    {
+        zz_memory_copy((u8*)*data + (index * stride), (u8*)*data + ((index + 1) * stride), (*length - index) * stride);
+    }
     *length -= 1;
-}
-
-void _zz_memory_array_clear(void** data, u16* length, u16* capacity, u16 stride)
-{
-    *length = 0;
 }

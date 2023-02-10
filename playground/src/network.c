@@ -26,12 +26,37 @@ static void write_u64(u8** buffer_iterator, u64 u)
     zz_memory_copy(*buffer_iterator, &u, sizeof(u));
     *buffer_iterator += sizeof(u);
 }
+
+static void write_i8(u8** buffer_iterator, i8 i)
+{
+    **buffer_iterator = i;
+    ++(*buffer_iterator);
+}
+
+static void write_i16(u8** buffer_iterator, i16 i)
+{
+    zz_memory_copy(*buffer_iterator, &i, sizeof(i));
+    *buffer_iterator += sizeof(i);
+}
+*/
+static void write_i32(u8** buffer_iterator, i32 i)
+{
+    zz_memory_copy(*buffer_iterator, &i, sizeof(i));
+    *buffer_iterator += sizeof(i);
+}
+/*
+static void write_i64(u8** buffer_iterator, i64 i)
+{
+    zz_memory_copy(*buffer_iterator, &i, sizeof(i));
+    *buffer_iterator += sizeof(i);
+}
 */
 static void write_f32(u8** buffer_iterator, f32 f)
 {
     zz_memory_copy(*buffer_iterator, &f, sizeof(f));
     *buffer_iterator += sizeof(f);
 }
+
 /*
 static void write_f64(u8** buffer_iterator, f64 f)
 {
@@ -74,6 +99,30 @@ static void read_u64(u8** buffer_iterator, u64* u)
 {
     zz_memory_copy(u, *buffer_iterator, sizeof(*u));
     *buffer_iterator += sizeof(*u);
+}
+
+static void read_i8(u8** buffer_iterator, i8* i)
+{
+	*i = (i8)(**buffer_iterator);
+	++(*buffer_iterator);
+}
+
+static void read_i16(u8** buffer_iterator, i16* i)
+{
+    zz_memory_copy(i, *buffer_iterator, sizeof(*i));
+    *buffer_iterator += sizeof(*i);
+}
+*/
+static void read_i32(u8** buffer_iterator, i32* i)
+{
+    zz_memory_copy(i, *buffer_iterator, sizeof(*i));
+    *buffer_iterator += sizeof(*i);
+}
+/*
+static void read_i64(u8** buffer_iterator, i64* i)
+{
+    zz_memory_copy(i, *buffer_iterator, sizeof(*i));
+    *buffer_iterator += sizeof(*i);
 }
 */
 static void read_f32(u8** buffer_iterator, f32* f)
@@ -202,6 +251,7 @@ u32 network_server_message_write_state(u8* buffer, const struct network_server_s
     write_u8(&buffer_iterator, (u8)PLAYGROUND_NETWORK_SERVER_MESSAGE_TYPE_STATE);
     
     write_u32(&buffer_iterator, state->tick);
+    write_i32(&buffer_iterator, state->latency);
 
     write_u8(&buffer_iterator, state->position_count);
     for (u8 i = 0; i < state->position_count; ++i)
@@ -223,6 +273,7 @@ void network_server_message_read_state(u8* buffer, struct network_server_state* 
     ZZ_ASSERT(message_type == (u8)PLAYGROUND_NETWORK_SERVER_MESSAGE_TYPE_STATE);
     
     read_u32(&buffer_iterator, &state->tick);
+    read_i32(&buffer_iterator, &state->latency);
 
     read_u8(&buffer_iterator, &state->position_count);
     for (u8 i = 0; i < state->position_count; ++i)

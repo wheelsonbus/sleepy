@@ -58,7 +58,7 @@ b8 zz_internal_vulkan_pipeline_create(struct zz_internal_vulkan_pipeline* pipeli
     zz_memory_array_create_and_reserve(&descriptorSetLayouts, pipeline->uniform_buffers->length);
     for (u16 i = 0; i < descriptorSetLayouts.capacity; i += 1)
     {
-        zz_memory_array_push(&descriptorSetLayouts, pipeline->descriptorSetLayout);
+        zz_memory_array_push(&descriptorSetLayouts, &pipeline->descriptorSetLayout);
     }
 
     VkDescriptorSetAllocateInfo descriptorSetAllocateInfo;

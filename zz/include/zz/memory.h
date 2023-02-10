@@ -46,23 +46,31 @@ ZZ_API char* zz_memory_get_usage_string();
 #define zz_memory_array_t(type) struct {type* data; u16 length, capacity;}
 
 #define zz_memory_array_create(array) _zz_memory_array_create(_zz_memory_array_unpack(array))
-#define zz_memory_array_create_and_reserve(array, capacity) _zz_memory_array_create(_zz_memory_array_unpack(array)); _zz_memory_array_reserve(_zz_memory_array_unpack(array), capacity)
+#define zz_memory_array_create_and_reserve(array, capacity) _zz_memory_array_create_and_reserve(_zz_memory_array_unpack(array), capacity)
 #define zz_memory_array_destroy(array) _zz_memory_array_destroy(_zz_memory_array_unpack(array))
 
-#define zz_memory_array_push(array, value) _zz_memory_array_expand(_zz_memory_array_unpack(array)); (array)->data[(array)->length++] = (value)
-#define zz_memory_array_pop(array) (array)->data[--(array)->length]
-#define zz_memory_array_push_at(array, index, value) _zz_memory_array_expand_at(_zz_memory_array_unpack(array), index); (array)->data[index] = (value)
-#define zz_memory_array_pop_at(array, index) (array)->data[index]; _zz_memory_array_remove_at(_zz_memory_array_unpack(array), index)
+#define zz_memory_array_push(array, input) _zz_memory_array_push(_zz_memory_array_unpack(array), input)
+#define zz_memory_array_pop(array, output) _zz_memory_array_pop(_zz_memory_array_unpack(array), output)
+#define zz_memory_array_push_at(array, index, input) _zz_memory_array_push_at(_zz_memory_array_unpack(array), index, input)
+#define zz_memory_array_pop_at(array, index, output) _zz_memory_array_pop_at(_zz_memory_array_unpack(array), index, output)
 #define zz_memory_array_clear(array) _zz_memory_array_clear(_zz_memory_array_unpack(array))
 
+#define zz_memory_array_contract(array) _zz_memory_array_contract(_zz_memory_array_unpack(array));
+
 ZZ_API void _zz_memory_array_create(void** data, u16* length, u16* capacity, u16 stride);
+ZZ_API void _zz_memory_array_create_and_reserve(void** data, u16* length, u16* capacity, u16 stride, u16 n);
 ZZ_API void _zz_memory_array_destroy(void** data, u16* length, u16* capacity, u16 stride);
+
+ZZ_API void _zz_memory_array_push(void** data, u16* length, u16* capacity, u16 stride, void* input);
+ZZ_API void _zz_memory_array_pop(void** data, u16* length, u16* capacity, u16 stride, void* output);
+ZZ_API void _zz_memory_array_push_at(void** data, u16* length, u16* capacity, u16 stride, u16 index, void* input);
+ZZ_API void _zz_memory_array_pop_at(void** data, u16* length, u16* capacity, u16 stride, u16 index, void* output);
+ZZ_API void _zz_memory_array_clear(void** data, u16* length, u16* capacity, u16 stride);
 
 ZZ_API void _zz_memory_array_expand(void** data, u16* length, u16* capacity, u16 stride);
 ZZ_API void _zz_memory_array_contract(void** data, u16* length, u16* capacity, u16 stride);
 ZZ_API void _zz_memory_array_reserve(void** data, u16* length, u16* capacity, u16 stride, u16 n);
 ZZ_API void _zz_memory_array_expand_at(void** data, u16* length, u16* capacity, u16 stride, u16 index);
 ZZ_API void _zz_memory_array_remove_at(void** data, u16* length, u16* capacity, u16 stride, u16 index);
-ZZ_API void _zz_memory_array_clear(void** data, u16* length, u16* capacity, u16 stride);
 
 #endif

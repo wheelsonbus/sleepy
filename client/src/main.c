@@ -8,69 +8,135 @@
 
 int main(int argc, char* argv[])
 {
+    u8 client_a = 127;
+    u8 client_b = 0;
+    u8 client_c = 0;
+    u8 client_d = 1;
+    u32 client_port = 9091;
 
-    u8 a = 127;
-    u8 b = 0;
-    u8 c = 0;
-    u8 d = 1;
-    u32 port = 9090;
+    u8 server_a = 127;
+    u8 server_b = 0;
+    u8 server_c = 0;
+    u8 server_d = 1;
+    u32 server_port = 9090;
 
     int i, j, l;
-    int* p;
     for (i = 0; i < argc; ++i)
     {
         switch(argv[i][0])
         {
             case '-':
+            {
                 switch(argv[i][1])
                 {
-                    case 's':
+                    case 'c':
+                    {
                         ++i;
                         j = 0;
                         char* start = &argv[i][j];
                         char* end;
+
                         while (argv[i][j] != '.')
                         {
                             ++j;
                         }
-                        a = strtol(start, &end, 10);
+                        end = &argv[i][j];
+                        client_a = strtol(start, &end, 10);
                         ++j;
+
                         start = &argv[i][j];
                         while (argv[i][j] != '.')
                         {
                             ++j;
                         }
                         end = &argv[i][j];
-                        b = strtol(start, &end, 10);
+                        client_b = strtol(start, &end, 10);
                         ++j;
+
                         start = &argv[i][j];
                         while (argv[i][j] != '.')
                         {
                             ++j;
                         }
                         end = &argv[i][j];
-                        c = strtol(start, &end, 10);
+                        client_c = strtol(start, &end, 10);
                         ++j;
+
                         start = &argv[i][j];
                         while (argv[i][j] != ':')
                         {
                             ++j;
                         }
                         end = &argv[i][j];
-                        d = strtol(start, &end, 10);
+                        client_d = strtol(start, &end, 10);
                         ++j;
+
                         start = &argv[i][j];
                         while (argv[i][j] != '\0')
                         {
                             ++j;
                         }
                         end = &argv[i][j];
-                        port = strtol(start, &end, 10);
+                        client_port = strtol(start, &end, 10);
+                        ++j;
+                    }
+                    break;
+
+                    case 's':
+                    {
+                        ++i;
+                        j = 0;
+                        char* start = &argv[i][j];
+                        char* end;
+
+                        while (argv[i][j] != '.')
+                        {
+                            ++j;
+                        }
+                        end = &argv[i][j];
+                        server_a = strtol(start, &end, 10);
                         ++j;
 
-                        break;
+                        start = &argv[i][j];
+                        while (argv[i][j] != '.')
+                        {
+                            ++j;
+                        }
+                        end = &argv[i][j];
+                        server_b = strtol(start, &end, 10);
+                        ++j;
+
+                        start = &argv[i][j];
+                        while (argv[i][j] != '.')
+                        {
+                            ++j;
+                        }
+                        end = &argv[i][j];
+                        server_c = strtol(start, &end, 10);
+                        ++j;
+
+                        start = &argv[i][j];
+                        while (argv[i][j] != ':')
+                        {
+                            ++j;
+                        }
+                        end = &argv[i][j];
+                        server_d = strtol(start, &end, 10);
+                        ++j;
+
+                        start = &argv[i][j];
+                        while (argv[i][j] != '\0')
+                        {
+                            ++j;
+                        }
+                        end = &argv[i][j];
+                        server_port = strtol(start, &end, 10);
+                        ++j;
+                    }
+                    break;
                 }
-                break;
+            }
+            break;
         }
     }
 
@@ -80,7 +146,8 @@ int main(int argc, char* argv[])
     client_config.y = 32;
     client_config.width = 640;
     client_config.height = 640;
-    client_config.server_ip_endpoint = zz_network_ip_endpoint_fill(a, b, c, d, port);
+    client_config.client_ip_endpoint = zz_network_ip_endpoint_fill(client_a, client_b, client_c, client_d, client_port);
+    client_config.server_ip_endpoint = zz_network_ip_endpoint_fill(server_a, server_b, server_c, server_d, server_port);
     client_config.milliseconds_per_tick = client_milliseconds_per_tick;
     client_config.milliseconds_per_frame = client_milliseconds_per_frame;
     client_config.on_initialize = client_on_initialize;

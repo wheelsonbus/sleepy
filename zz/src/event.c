@@ -42,7 +42,7 @@ b8 zz_event_register_receiver(u16 code, void* receiver, zz_event_callback_t call
     struct zz_event_receiver_registration registration;
     registration.receiver = receiver;
     registration.callback = callback;
-    zz_memory_array_push(&event.registries[code].registrations, registration);
+    zz_memory_array_push(&event.registries[code].registrations, &registration);
     return ZZ_TRUE;
 }
 
@@ -54,7 +54,7 @@ b8 zz_event_unregister_receiver(u16 code, void* receiver, zz_event_callback_t ca
         struct zz_event_receiver_registration registration = event.registries[code].registrations.data[i];
         if (registration.receiver == receiver && registration.callback == callback)
         {
-            registration = zz_memory_array_pop_at(&event.registries[code].registrations, i);
+            zz_memory_array_pop_at(&event.registries[code].registrations, i, ZZ_NULL);
             return ZZ_TRUE;
         }
     }
