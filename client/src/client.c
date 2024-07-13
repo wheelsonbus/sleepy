@@ -26,7 +26,7 @@ b8 client_on_initialize()
     texture_config.path = "../playground/assets/four.texture";
     zz_texture_create(&texture, &texture_config);
     zz_texture_destroy(&texture);
-
+    
     client.server_state.tick = NETWORK_MAX_TICKS;
     client.tick = NETWORK_MAX_TICKS;
 

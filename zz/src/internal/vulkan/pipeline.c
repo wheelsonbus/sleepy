@@ -42,12 +42,22 @@ b8 zz_internal_vulkan_pipeline_create(struct zz_internal_vulkan_pipeline* pipeli
     uboDescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     uboDescriptorSetLayoutBinding.pImmutableSamplers = ZZ_NULL;
 
+    VkDescriptorSetLayoutBinding textureDescriptorSetLayoutBinding;
+    textureDescriptorSetLayoutBinding.binding = 1;
+    textureDescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    textureDescriptorSetLayoutBinding.descriptorCount = 1;
+    textureDescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    textureDescriptorSetLayoutBinding.pImmutableSamplers = ZZ_NULL;
+
+    uint32_t descriptorSetLayoutBindingCount = 2;
+    VkDescriptorSetLayoutBinding descriptorSetLayoutBindings[2] = {uboDescriptorSetLayoutBinding, textureDescriptorSetLayoutBinding};
+
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
     descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     descriptorSetLayoutCreateInfo.pNext = ZZ_NULL;
     descriptorSetLayoutCreateInfo.flags = 0;
-    descriptorSetLayoutCreateInfo.bindingCount = 1;
-    descriptorSetLayoutCreateInfo.pBindings = &uboDescriptorSetLayoutBinding;
+    descriptorSetLayoutCreateInfo.bindingCount = descriptorSetLayoutBindingCount;
+    descriptorSetLayoutCreateInfo.pBindings = descriptorSetLayoutBindings;
 
     if (vkCreateDescriptorSetLayout(pipeline->device->device, &descriptorSetLayoutCreateInfo, ZZ_NULL, &pipeline->descriptorSetLayout) != VK_SUCCESS)
     {
@@ -138,9 +148,15 @@ b8 zz_internal_vulkan_pipeline_create(struct zz_internal_vulkan_pipeline* pipeli
     positionVertexInputAttributeDescription.binding = 0;
     positionVertexInputAttributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
     positionVertexInputAttributeDescription.offset = offsetof(struct zz_internal_vulkan_vertex, position);
+    
+    VkVertexInputAttributeDescription textureCoordinatesVertexInputAttributeDescription;
+    textureCoordinatesVertexInputAttributeDescription.location = 1;
+    textureCoordinatesVertexInputAttributeDescription.binding = 0;
+    textureCoordinatesVertexInputAttributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
+    textureCoordinatesVertexInputAttributeDescription.offset = offsetof(struct zz_internal_vulkan_vertex, texture_coordinates);
 
-    uint32_t vertexInputAttributeDescriptionCount = 1;
-    VkVertexInputAttributeDescription vertexInputAttributeDescriptions[1] = {positionVertexInputAttributeDescription};
+    uint32_t vertexInputAttributeDescriptionCount = 2;
+    VkVertexInputAttributeDescription vertexInputAttributeDescriptions[2] = {positionVertexInputAttributeDescription, textureCoordinatesVertexInputAttributeDescription};
 
     VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo;
     pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

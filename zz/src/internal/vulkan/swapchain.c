@@ -2,11 +2,15 @@
 
 #include "swapchain.h"
 
+#include <zz/log.h>
+
 b8 zz_internal_vulkan_swapchain_create(struct zz_internal_vulkan_swapchain* swapchain, const struct zz_internal_vulkan_swapchain_config* config)
 {
     swapchain->surface = config->surface;
     swapchain->device = config->device;
     swapchain->render_pass = config->render_pass;
+
+    ZZ_LOG_DEBUG("%d", swapchain->device->device);
 
     u16 width, height;
     zz_application_get_size(&width, &height);

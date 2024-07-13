@@ -45,5 +45,7 @@ struct zz_internal_render
     u16 current_frame;
 };
 
+static struct zz_internal_render internal_render;
+
 #endif
 #endif

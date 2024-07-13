@@ -6,8 +6,6 @@
 #include "zz/log.h"
 #include "zz/application.h"
 
-static struct zz_internal_render internal_render;
-
 b8 zz_internal_render_initialize(struct zz_internal_render_config* config)
 {
     internal_render.framebuffer_resized = ZZ_FALSE;
@@ -291,10 +289,10 @@ void zz_internal_render_draw_sprite(struct zz_sprite* sprite, vec3 position)
 {
     u32 index = (u32)internal_render.vertices.length;
 
-    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x, position.y, position.z}}));
-    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y, position.z}}));
-    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y + sprite->size.y, position.z}}));
-    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x, position.y + sprite->size.y, position.z}}));
+    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x, position.y, position.z}, (vec2){0.0f, 0.0f}}));
+    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y, position.z}, (vec2){1.0f, 0.0f}}));
+    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x + sprite->size.x, position.y + sprite->size.y, position.z}, (vec2){1.0f, 1.0f}}));
+    zz_memory_array_push(&internal_render.vertices, &((struct zz_internal_vulkan_vertex){(vec3){position.x, position.y + sprite->size.y, position.z}, (vec2){0.0f, 1.0f}}));
 
     zz_memory_array_push(&internal_render.indices, &index); ++index;
     zz_memory_array_push(&internal_render.indices, &index); ++index;

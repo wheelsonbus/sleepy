@@ -10,6 +10,7 @@
 struct zz_internal_vulkan_vertex
 {
     vec3 position;
+    vec2 texture_coordinates;
 };
 typedef struct {struct zz_internal_vulkan_vertex* data; u16 length, capacity;} zz_memory_array_internal_vulkan_vertex_t;
 
