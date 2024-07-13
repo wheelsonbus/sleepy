@@ -14,6 +14,19 @@ static struct client client;
 
 b8 client_on_initialize()
 {
+#include <zz/palette.h>
+    struct zz_palette palette;
+    struct zz_palette_config palette_config;
+    palette_config.path = "../playground/assets/four.palette";
+    zz_palette_create(&palette, &palette_config);
+    zz_palette_destroy(&palette);
+#include <zz/texture.h>
+    struct zz_texture texture;
+    struct zz_texture_config texture_config;
+    texture_config.path = "../playground/assets/four.texture";
+    zz_texture_create(&texture, &texture_config);
+    zz_texture_destroy(&texture);
+
     client.server_state.tick = NETWORK_MAX_TICKS;
     client.tick = NETWORK_MAX_TICKS;
 

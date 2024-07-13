@@ -10,6 +10,7 @@ enum zz_memory_tag
     ZZ_MEMORY_TAG_RENDER,
     ZZ_MEMORY_TAG_STRING,
     ZZ_MEMORY_TAG_ARRAY,
+    ZZ_MEMORY_TAG_ASSET,
 
     ZZ_MEMORY_TAG_MAX,
 };
