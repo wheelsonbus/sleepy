@@ -19,7 +19,7 @@
 
 #include "manifest.h"
 
-typedef struct {u16* data; u16 length, capacity;} zz_memory_array_u16_t;
+typedef struct {u32* data; u16 length, capacity;} zz_memory_array_u32_t;
 
 struct zz_internal_render
 {
@@ -37,7 +37,7 @@ struct zz_internal_render
     struct zz_internal_vulkan_buffer index_buffer;
     struct zz_internal_vulkan_buffer index_staging_buffer;
     zz_memory_array_internal_vulkan_vertex_t vertices;
-    zz_memory_array_u16_t indices;
+    zz_memory_array_u32_t indices;
 
     zz_memory_array_internal_vulkan_buffer_t uniform_buffers;
     struct zz_internal_vulkan_uniform_buffer_object uniform_buffer_object;
