@@ -47,6 +47,20 @@ ZZ_STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 ZZ_STATIC_ASSERT(sizeof(b8) == 1, "Expected b8 to be 1 byte.");
 ZZ_STATIC_ASSERT(sizeof(b32) == 4, "Expected b32 to be 4 bytes.");
 
+#ifdef ZZ_LITTLE_ENDIAN
+#define ZZ_FROM_LITTLE_ENDIAN_U16(x) ((u16)(x))
+#define ZZ_FROM_LITTLE_ENDIAN_U32(x) ((u32)(x))
+#define ZZ_FROM_BIG_ENDIAN_U16(x) ((u16)(((x) >> 8) | ((x) << 8)))
+#define ZZ_FROM_BIG_ENDIAN_U32(x) ((u32)(((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24)))
+#elif ZZ_BIG_ENDIAN
+#define ZZ_FROM_LITTLE_ENDIAN_U16(x) ((u16)(((x) >> 8) | ((x) << 8)))
+#define ZZ_FROM_LITTLE_ENDIAN_U32(x) ((u32)(((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24)))
+#define ZZ_FROM_BIG_ENDIAN_U16(x) ((u16)(x))
+#define ZZ_FROM_BIG_ENDIAN_U32(x) ((u32)(x))
+#else
+ZZ_STATIC_ASSERT(0, "Expected ZZ_LITTLE_ENDIAN or ZZ_BIG_ENDIAN to be defined.");
+#endif
+
 #ifdef ZZ_EXPORT
 #ifdef _MSC_VER
 #define ZZ_API __declspec(dllexport)

@@ -13,7 +13,7 @@ set target=client
 set compilerFlags=-g
 set includeFlags=-I../zz/include -I../playground/include
 set linkerFlags=-L../bin/ -lzz.lib -lplayground.lib
-set definitions=-DZZ_DEBUG
+set definitions=-DZZ_LITTLE_ENDIAN -DZZ_DEBUG
 
 echo "Building %target%%..."
 clang %sourceFiles% %compilerFlags% -o ../bin/%target%.exe %includeFlags% %linkerFlags% %definitions%

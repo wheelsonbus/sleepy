@@ -13,7 +13,7 @@ set target=playground
 set compilerFlags=-g -shared -Wvarargs -Wall -Werror -Wno-missing-braces
 set includeFlags=-Iinclude -I../zz/include
 set linkerFlags=-L../bin/ -lzz.lib
-set definitions=-DPLAYGROUND_EXPORT -DZZ_DEBUG
+set definitions=-DZZ_LITTLE_ENDIAN -DPLAYGROUND_EXPORT -DZZ_DEBUG
 
 echo "Building %target%%..."
 clang %sourceFiles% %compilerFlags% -o ../bin/%target%.dll %includeFlags% %linkerFlags% %definitions%
