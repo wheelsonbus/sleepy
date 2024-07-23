@@ -17,8 +17,6 @@
 #include "sync.h"
 #include "buffer.h"
 
-#include "manifest.h"
-
 typedef struct {u16* data; u16 length, capacity;} zz_memory_array_u16_t;
 
 struct zz_internal_render
