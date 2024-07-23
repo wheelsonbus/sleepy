@@ -8,6 +8,7 @@
 
 static struct zz_internal_render internal_render;
 
+#include "manifest.h"
 static struct zz_internal_vulkan_manifest manifest;
 
 b8 zz_internal_render_initialize(struct zz_internal_render_config* config)
