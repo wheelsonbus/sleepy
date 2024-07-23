@@ -5,8 +5,6 @@
 #include "zz/event.h"
 #include "zz/application.h"
 
-//static struct render render;
-
 static b8 on_resize(void* sender, void* receiver, union zz_event_data data)
 {
     u16 width = data.u16[0];
@@ -31,7 +29,7 @@ b8 zz_render_initialize(struct zz_render_config* config)
 
     zz_event_register_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, on_resize);
 
-    ZZ_LOG_INFO("Render module deinitialized.");
+    ZZ_LOG_INFO("Render module initialized.");
     return ZZ_TRUE;
 }
 
@@ -41,7 +39,7 @@ void zz_render_deinitialize()
 
     zz_internal_render_deinitialize();
 
-    ZZ_LOG_INFO("Render module initialized.");
+    ZZ_LOG_INFO("Render module deinitialized.");
 }
 
 b8 zz_render_draw_frame()

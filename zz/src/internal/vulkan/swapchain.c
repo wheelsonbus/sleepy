@@ -2,6 +2,8 @@
 
 #include "swapchain.h"
 
+#include <zz/log.h>
+
 b8 zz_internal_vulkan_swapchain_create(struct zz_internal_vulkan_swapchain* swapchain, const struct zz_internal_vulkan_swapchain_config* config)
 {
     swapchain->surface = config->surface;

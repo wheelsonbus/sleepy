@@ -13,7 +13,8 @@ b8 zz_network_initialize(struct zz_network_config* config)
     internal_network_config.ip_endpoint = network.ip_endpoint;
     if (!zz_internal_network_initialize(&internal_network_config))
     {
-        return ZZ_TRUE;
+        ZZ_LOG_FATAL("Failed to create internal network module.");
+        return ZZ_FALSE;
     }
 
     ZZ_LOG_INFO("Network module initialized.");

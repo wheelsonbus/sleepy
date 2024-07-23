@@ -6,11 +6,6 @@
 #include "memory.h"
 #include "zz/internal/application.h"
 
-struct zz_application
-{    
-    
-};
-
 struct zz_application_config
 {
     char* name;
