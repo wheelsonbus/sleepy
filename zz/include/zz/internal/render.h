@@ -23,4 +23,6 @@ void zz_internal_render_set_view_matrix(mat4 matrix);
 void zz_internal_render_set_projection_matrix(mat4 matrix);
 void zz_internal_render_draw_sprite(struct zz_sprite* sprite, vec3 position);
 
+b8 zz_internal_render_manifest_load(char* path);
+
 #endif

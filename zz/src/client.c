@@ -158,6 +158,7 @@ void zz_client_deinitialize()
     zz_event_unregister_receiver(ZZ_EVENT_CODE_RESIZE, ZZ_NULL, on_resize);
     zz_event_unregister_receiver(ZZ_EVENT_CODE_KEY_PRESS, ZZ_NULL, on_key_press);
 
+    zz_network_deinitialize();
     zz_render_deinitialize();
     zz_application_deinitialize();
     zz_input_deinitialize();
@@ -210,7 +211,7 @@ b8 zz_client_loop()
     return ZZ_TRUE;
 }
 
-ZZ_API struct zz_network_ip_endpoint zz_client_get_server_ip_endpoint()
+struct zz_network_ip_endpoint zz_client_get_server_ip_endpoint()
 {
     return client.server_ip_endpoint;
 }

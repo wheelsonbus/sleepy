@@ -10,8 +10,6 @@ b8 zz_internal_vulkan_swapchain_create(struct zz_internal_vulkan_swapchain* swap
     swapchain->device = config->device;
     swapchain->render_pass = config->render_pass;
 
-    ZZ_LOG_DEBUG("%d", swapchain->device->device);
-
     u16 width, height;
     zz_application_get_size(&width, &height);
     if (width == 0 || height == 0)

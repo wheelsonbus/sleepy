@@ -6,6 +6,10 @@
 #include "zz/log.h"
 #include "zz/application.h"
 
+static struct zz_internal_render internal_render;
+
+static struct zz_internal_vulkan_manifest manifest;
+
 b8 zz_internal_render_initialize(struct zz_internal_render_config* config)
 {
     internal_render.framebuffer_resized = ZZ_FALSE;
@@ -148,6 +152,15 @@ b8 zz_internal_render_initialize(struct zz_internal_render_config* config)
         ZZ_LOG_FATAL("Failed to create Vulkan command pool.");
         return ZZ_FALSE;
     }
+
+    struct zz_internal_vulkan_manifest_config manifest_config;
+    manifest_config.device = &internal_render.device;
+    if (!zz_internal_vulkan_manifest_create(&manifest, &manifest_config))
+    {
+        ZZ_LOG_FATAL("Failed to create render manifest.");
+        return ZZ_FALSE;
+    }
+    zz_internal_vulkan_manifest_load(&manifest, "four.manifest");
 
     return ZZ_TRUE;
 }

@@ -5,8 +5,6 @@
 #include "zz/event.h"
 #include "zz/application.h"
 
-//static struct render render;
-
 static b8 on_resize(void* sender, void* receiver, union zz_event_data data)
 {
     u16 width = data.u16[0];
